@@ -37,7 +37,6 @@ class System:
             self.populations.append(pop)
             self.params = {**self.params,**pop.params}
             self.vars.append(pop.var)
-            self.all_params = [self.params[param] for param in self.params]
             self.ODEs_changed = True
 
     def get_names(self):
@@ -50,6 +49,7 @@ class System:
         return [self.populations[i].ODE for i in range(len(self.populations))]
     
     def get_ODEs_subbed(self):
+        self.all_params = [self.params[param] for param in self.params]
         return [pop.ODE.subs(self.all_params) for pop in self.populations] 
     
     def add_interaction(self,pop_1,pop_2,rate_12 = 0,rate_21 = 0):
@@ -114,4 +114,4 @@ class Subpopulation(Population):
         self.parent_species = parent_species
         parent_species.subspecies.append(self)
         self.id =  f"{parent_species.id}({len(parent_species.subspecies)})"
-        super().init_identifiers(name,self.id)
+        super().init_identifiers(name,self.id) 
