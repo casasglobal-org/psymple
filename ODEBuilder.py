@@ -115,30 +115,3 @@ class Subpopulation(Population):
         parent_species.subspecies.append(self)
         self.id =  f"{parent_species.id}({len(parent_species.subspecies)})"
         super().init_identifiers(name,self.id)
-
-
-birds = Population('birds')
-cats = Population('cats')
-
-eggs = Subpopulation('eggs', birds)
-chicks = Subpopulation('chicks', birds)
-
-eggs.add_growth_rate(3)
-eggs.add_capacity(5000)
-cats.add_growth_rate(0)
-chicks.add_growth_rate(0)
-
-ODE = System()
-
-ODE.add_population(birds)
-ODE.add_population(cats)
-
-sol = ODE.sol([0,25],[1,0,0])
-
-print_sol(sol,[0,25])
- 
-
-
-
-
-
