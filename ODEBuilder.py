@@ -102,6 +102,13 @@ class Unit(Population):
         self.change_ODEs([self],[growth_rate_symbol * self.global_var_name])
         self.params.update({f"{self.name} growth rate": [growth_rate_symbol, rate]})
 
+    def add_capacity(self,capacity: float = 0):
+        capacity_symbol = sym.Symbol(f"K_{self.name}")
+        growth_rate_symbol = self.params[f"{self.name} growth rate"][0]
+        self.change_ODEs([self],[-self.global_var_name**2 * growth_rate_symbol / capacity_symbol])
+        self.params.update({f"{self.name} capacity": [capacity_symbol, capacity]})
+
+
     def update_initial_value(self,initial_value: float = 0):
         self.initial_value = initial_value
 

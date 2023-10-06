@@ -3,29 +3,39 @@
 
 from ODEBuilder import *
 
-worms = Population('worms')
-birds = Population('birds')
+### Define the 3 species: Worms, Bird Eggs, Bird Adults, and initial rates
 
-eggs = Subpopulation('eggs',birds)
-adults = Subpopulation('adults',birds)
+Worms = Unit('Worms',100)
 
-worms.add_growth_rate(3)
-eggs.add_growth_rate(-1)
-eggs.add_capacity(1000)
-adults.add_growth_rate(-0.5)
-birds.link_lifestage(adults,eggs,1)
+BirdEggs = Unit('BirdEggs',50)
+BirdAdults = Unit('BirdAdults',0)
+
+Worms.add_growth_rate(1)
+BirdEggs.add_growth_rate(-1)
+BirdEggs.add_capacity(1000)
+
+### Group the Bird Eggs and Bird Adults into a Birds population, and link eggs to adults
+
+Birds = Population('Birds')
+
+Birds.add_unit(BirdEggs)
+Birds.add_unit(BirdAdults)
+
+Birds.link_lifestage(BirdEggs,BirdAdults,1)
+
+### Add everything into a System, and add predator-prey interations between worms and birds
 
 ODE = System()
 
-ODE.add_population(worms)
-ODE.add_population(birds)
+ODE.add_system(Worms)
+ODE.add_system(Birds)
 
-ODE.add_interaction(worms,eggs,0,1/45)
-ODE.add_interaction(worms,adults,-0.1,0)
+ODE.add_interaction(Worms,BirdEggs,0,0.02)
+ODE.add_interaction(Worms,BirdAdults,-0.5,0)
 
 print(ODE.get_ODEs_subbed()) ### prints system ODEs with parameters
 
-sol = ODE.sol([0,10],[50,45,0])
+### Solve and print the system
 
-print_sol(sol,[0,10])
+ODE.sol([0,25],print = True)
 
