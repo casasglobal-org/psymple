@@ -2,16 +2,11 @@
 
 from ODEBuilder import *
 
-beetles = Population('beetles')
+beetles = Unit('beetles',500)
 
 beetles.add_growth_rate(2*sym.sin(T)+0.3)
-beetles.add_capacity(60000)
+beetles.add_capacity(20000)
 
-ODE = System()
+print(beetles.get_ODEs_subbed()) ### prints system ODEs with parameters
 
-ODE.add_population(beetles)
-
-print(ODE.get_ODEs_subbed()) ### prints system ODEs with parameters
-
-sol = ODE.sol([0,25],[5000])
-print_sol(sol,[0,25])
+beetles.sol([0,25],print = True)
