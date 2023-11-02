@@ -1,4 +1,4 @@
-from discretised_model import *
+from populations import *
 
 FlyEggs1 = Population("flyeggs1")
 FlyEggs2 = Population("flyeggs2")
