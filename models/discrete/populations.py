@@ -1,12 +1,13 @@
 import sympy as sym
 import numpy as np
 from collections import defaultdict
-from DegreeDays import DegreeDays, FFTemperature
+#from DegreeDays import DegreeDays, FFTemperature
 from functools import reduce
 from operator import add
 
 # Create the dictionary passed to sym.sympify and sym.lambdify to convert custom functions
-sym_custom_ns = {'DegreeDays': DegreeDays, 'FFTemperature': FFTemperature}
+sym_custom_ns = {}
+#sym_custom_ns = {'DegreeDays': DegreeDays, 'FFTemperature': FFTemperature}
 
 T = sym.Symbol('T')
 
