@@ -2,7 +2,7 @@ import sympy as sym
 import numpy as np
 import networkx as nx
 from collections import defaultdict
-#from DegreeDays import DegreeDays, FFTemperature
+#from custom_functions import DegreeDays, FFTemperature
 from functools import reduce
 from operator import add
 from typing import List
