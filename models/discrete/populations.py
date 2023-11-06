@@ -1,9 +1,11 @@
 import sympy as sym
 import numpy as np
+import networkx as nx
 from collections import defaultdict
 #from DegreeDays import DegreeDays, FFTemperature
 from functools import reduce
 from operator import add
+from typing import List
 
 # Create the dictionary passed to sym.sympify and sym.lambdify to convert custom functions
 sym_custom_ns = {}
@@ -42,7 +44,7 @@ class Parameter(Symbol_Wrapper):
 
     def __init__(self, symbol, value, description):
         super().__init__(symbol, description)
-        self.value = value
+        self.value = sym.sympify(value)
 
     @classmethod
     def basic(cls, symbol_name, symbol_letter, value, description = None):
@@ -109,7 +111,7 @@ class Container:
 
    
 class Variables(Container):
-    def __init__(self, variables: list[Variable] = None):
+    def __init__(self, variables: List[Variable] = None):
         super().__init__(variables)
         self.variables = self.objects
         self.contains_type = Variable
@@ -126,7 +128,7 @@ class Variables(Container):
         
 
 class Parameters(Container):
-    def __init__(self, parameters: list[Parameter] = None):
+    def __init__(self, parameters: List[Parameter] = None):
         super().__init__(parameters)
         self.parameters = self.objects
         self.contains_type = (Parameter, Variable)
@@ -316,6 +318,9 @@ class Window:
 System
 '''
 
+class PopulationSystemError(Exception):
+    pass
+
 class System:
     def __init__(self, population):
         self.population = population
@@ -324,12 +329,31 @@ class System:
         self.variables = self.population.variables + self.system_variables
         self.parameters = self.population.parameters
         self.update_rules = self.population.update_rules._combine_update_rules()
-        self._compute_parameter_graph()
-        self._compute_parameters()
-        self._lambify_update_rules()
+        # If the calls below happen during construction, we need to think about
+        # how to write tests for each of these components.
+        # self._compute_parameter_update_order()
+        # self._compute_parameters()
+        # self._lambify_update_rules()
 
-    def _compute_parameter_graph(self):
-        pass
+    def _compute_parameter_update_order(self):
+        variable_symbols = {v.symbol for v in self.variables}
+        parameter_symbols = {p.symbol : p for p in self.parameters}
+        G = nx.DiGraph()
+        G.add_nodes_from(parameter_symbols)
+        for parameter in self.parameters:
+            parsym = parameter.symbol
+            dependencies = parameter.value.free_symbols
+            for dependency in dependencies:
+                if dependency in parameter_symbols:
+                    G.add_edge(dependency, parsym)
+                elif dependency not in variable_symbols:
+                    raise PopulationSystemError(f"Parameter {parsym} references undefined symbol {dependency}")
+        try:
+            nodes = nx.topological_sort(G)
+            ordered_parameters = [parameter_symbols[n] for n in nodes]
+        except nx.exception.NetworkXUnfeasible:
+            raise PopulationSystemError(f"System parameters contain cyclic dependencies")
+        return ordered_parameters
 
     def _compute_parameters(self):
         sub_values = zip(self.parameters.get_symbols(), self.parameters.get_values())
