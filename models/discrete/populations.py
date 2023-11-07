@@ -329,11 +329,14 @@ class System:
         self.variables = self.population.variables + self.system_variables
         self.parameters = self.population.parameters
         self.update_rules = self.population.update_rules._combine_update_rules()
-        # If the calls below happen during construction, we need to think about
-        # how to write tests for each of these components.
-        # self._compute_parameter_update_order()
-        # self._compute_parameters()
-        # self._lambify_update_rules()
+        self._compiled = False
+
+    def _compile(self):
+        if not self._compiled:
+            self._compute_parameter_update_order()
+            self._compute_parameters()
+            self._lambify_update_rules()
+            self._compiled = True
 
     def _compute_parameter_update_order(self):
         variable_symbols = {v.symbol for v in self.variables}
@@ -363,24 +366,25 @@ class System:
         for u in self.update_rules:
             u.equation_lambdified = sym.lambdify([u.all_variables.get_symbols() + self.system_variables.get_symbols()], u.equation)
 
-    def advance_time(self, time_step):
+    def _advance_time(self, time_step):
         for v in self.variables:
             v.buffer = v.time_series[-1]
         for u in self.update_rules:
             u.variable.time_series.append(u.variable.buffer + time_step * u.equation_lambdified([v.buffer for v in u.all_variables] + [v.buffer for v in self.system_variables] ))
         self.system_time.time_series.append(self.system_time.time_series[-1] + time_step)
 
-    def advance_time_unit(self, n_steps):
+    def _advance_time_unit(self, n_steps):
         if n_steps <= 0 or not isinstance(n_steps, int):
             raise ValueError(f"Number of time steps in a day must be a positive integer, not '{n_steps}'.")
         for i in range(n_steps):
-            self.advance_time(1/n_steps)
+            self._advance_time(1/n_steps)
 
     def simulate(self, t_end, n_steps):
+        self._compile()
         if n_steps <= 0 or not isinstance(n_steps, int):
             raise ValueError(f"Simulation time must terminate at a positive integer, not '{n_steps}'.")
         for i in range(t_end):
-            self.advance_time_unit(n_steps)
+            self._advance_time_unit(n_steps)
 
 
 

@@ -29,9 +29,9 @@ AB.variables[2].time_series = [1]
 
 print("Uncombined update rules:", [str(u) for u in AB.update_rules])
 
-sys = AB.compile()
+system = AB.compile()
 
-print("Combined update rules:", [str(u) for u in sys.update_rules])
+print("Combined update rules:", [str(u) for u in system.update_rules])
 
 '''
 We have created the system
@@ -39,9 +39,9 @@ We have created the system
     d[x_B]/dt = x_A - 1.1*x_B
 which has a stable fixed point (x_A, x_B) = (100/3, 1000/33) ~ (33.3333, 30.3030)
 '''
-sys.simulate(t_end = 100, n_steps = 24)   #Simulate for 100 days, 24 steps per day (hourly simulation)
+system.simulate(t_end = 100, n_steps = 24)   #Simulate for 100 days, 24 steps per day (hourly simulation)
 
-print(sys.variables.get_symbols(), sys.variables.get_final_values())
+print(system.variables.get_symbols(), system.variables.get_final_values())
 
 
 
