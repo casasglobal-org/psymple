@@ -32,12 +32,20 @@ class Variable(Symbol_Wrapper):
         self.time_series = time_series
 
     @classmethod
-    def basic(cls, symbol_name, symbol_letter = 'x', time_series = None, description = None):
-        return cls(sym.Symbol(f"{symbol_letter}_{symbol_name}"), time_series or [0], description or f"{symbol_name} variable")
+    def basic(cls, symbol_name, symbol_letter='x', time_series=None, initial_value=0, description=None):
+        return cls(sym.Symbol(
+            f"{symbol_letter}_{symbol_name}"),
+            time_series or [initial_value],
+            description or f"{symbol_name} variable"
+        )
     
     @classmethod
-    def summary(cls, symbol_name, symbol_letter = 's', contents = None, description = None):
-        return cls(sym.Symbol(f"{symbol_letter}_{symbol_name}"), contents, description or f"{symbol_name} summary variable")
+    def summary(cls, symbol_name, symbol_letter='s', contents=None, description=None):
+        return cls(sym.Symbol(
+            f"{symbol_letter}_{symbol_name}"),
+            contents,
+            description or f"{symbol_name} summary variable"
+        )
     
 
 class Parameter(Symbol_Wrapper):
@@ -204,7 +212,6 @@ class Update_Rule:
         equation_variables = [pop.variables._objectify(symbol) for symbol in equation_symbols.intersection(pop_vars)]
         equation_parameters = [pop.parameters._objectify(symbol) for symbol in equation_symbols.intersection(pop_params)]
         return cls(variable, equation, Variables(equation_variables), Parameters(equation_parameters), description or f"{variable.symbol} update rule")
-    
 
     def __str__(self):
         return f"{self.description}: d[{self.variable.symbol}]/dt = {self.equation} in variables '{self.all_variables.get_symbols()}' and parameters {self.parameters.get_symbols()}"
@@ -217,6 +224,21 @@ class Update_Rule:
         if difference:
             raise Exception(f"The {'symbol' if len(difference) == 1 else 'symbols'} '{difference}' in equation '{self.equation}' {'does' if len(difference) == 1 else 'do'} not have an associated {Variable.__name__} object.")
     
+    def _lambdify_equation(self, system_variables):
+        # System variables are added to the variable list here.
+        # This doesn't seem like the right place.
+        if self.equation_lambdified is None:
+            self.all_variables = self.all_variables + system_variables
+            variables = self.all_variables.get_symbols()
+            self.equation_lambdified = sym.lambdify(variables, self.equation)
+
+    def update_variable(self, time_step):        
+        # We need to make sure all Variable objects are Singletons.
+        # Otherwise this will not work.
+        args = [v.buffer for v in self.all_variables]
+        new_value = self.variable.buffer + time_step * self.equation_lambdified(*args)
+        self.variable.time_series.append(new_value)
+
     def get_variables(self):
         return [v.symbol for v in self.all_variables]
     
@@ -239,9 +261,9 @@ Population classes
 '''
 
 class Population:
-    def __init__(self, name: str):
+    def __init__(self, name: str, initial_value=0):
         self.name = name
-        self.variable = Variable.basic(name, description = f"{name} population variable")
+        self.variable = Variable.basic(name, description = f"{name} population variable", initial_value=0)
         self.populations = []
         self.windows = []
         self.variables = Variables([self.variable])
@@ -364,13 +386,19 @@ class System:
     
     def _lambify_update_rules(self):
         for u in self.update_rules:
-            u.equation_lambdified = sym.lambdify([u.all_variables.get_symbols() + self.system_variables.get_symbols()], u.equation)
+            u._lambdify_equation(self.system_variables)
 
     def _advance_time(self, time_step):
         for v in self.variables:
             v.buffer = v.time_series[-1]
+        # You're assuming here that the UpdateRule references the same
+        # instance of Variable as the instance stored in self.variables.
+        # This smells wrong.
+        # This seems to be an argument for NOT storing variables as variables,
+        # but instead implicitly via UpdateRules only, or attaching UpdateRules
+        # to variable objects directly (as attributes).
         for u in self.update_rules:
-            u.variable.time_series.append(u.variable.buffer + time_step * u.equation_lambdified([v.buffer for v in u.all_variables] + [v.buffer for v in self.system_variables] ))
+            u.update_variable(time_step)
         self.system_time.time_series.append(self.system_time.time_series[-1] + time_step)
 
     def _advance_time_unit(self, n_steps):
