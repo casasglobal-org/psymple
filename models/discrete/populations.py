@@ -116,7 +116,7 @@ class Container:
             return type(self)(self.objects[index])
         elif isinstance(index, int):
             return self.objects[index]
-        elif isinstance(index, str):
+        elif isinstance(index, (str, sym.Symbol)):
             return self._objectify(index)
 
     def _duplicates(self, list, object):
