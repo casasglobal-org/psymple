@@ -14,11 +14,11 @@ sym_custom_ns = {}
 
 
 """
-Symbol_Wrapper classes
+SymbolWrapper classes
 """
 
 
-class Symbol_Wrapper:
+class SymbolWrapper:
     def __init__(self, symbol: sym.Symbol, description: str):
         self.symbol = symbol
         self.description = description
@@ -27,7 +27,7 @@ class Symbol_Wrapper:
         return f"{type(self).__name__} object: {self.description} \n {self.symbol}"
 
 
-class Variable(Symbol_Wrapper):
+class Variable(SymbolWrapper):
     def __init__(self, symbol, initial_value, description):
         super().__init__(symbol, description)
         self.initial_value = initial_value
@@ -54,11 +54,22 @@ class Variable(Symbol_Wrapper):
 class SimVariable(Variable):
     def __init__(self, variable, time_series=None):
         super().__init__(variable.symbol, variable.initial_value, variable.description)
-        self.equation = None
+        self.update_rule = None
         self.time_series = [self.initial_value]
+        self.buffer = self.initial_value
+
+    def sub_parameters(self):
+        self.update_rule.sub_parameters()
+
+    def update_buffer(self):
+        self.buffer = self.time_series[-1]
+
+    def update_time_series(self, time_step):
+        new_value = self.update_rule.evaluate_update(self.buffer, time_step)
+        self.time_series.append(new_value)
 
 
-class Parameter(Symbol_Wrapper):
+class Parameter(SymbolWrapper):
     def __init__(self, symbol, value, description):
         super().__init__(symbol, description)
         self.value = sym.sympify(value)
@@ -98,7 +109,7 @@ class Container:
             objects = []
         # TODO: check for duplicates in objects on creation
         self.objects = objects
-        # self.contains_type = Symbol_Wrapper
+        # self.contains_type = SymbolWrapper
 
     def __add__(self, other):
         if isinstance(other, type(self)):
@@ -185,18 +196,18 @@ class Parameters(Container):
         return [obj.value for obj in self.objects]
 
 
-class Update_Rules(Container):
+class UpdateRules(Container):
     def __init__(self, update_rules: list = None):
         super().__init__(update_rules)
         self.update_rules = self.objects
-        self.contains_type = Update_Rule
+        self.contains_type = UpdateRule
         self.check_duplicates = False
 
-    def get_equations(self):
-        return [u.equation for u in self]
+    # def get_equations(self):
+    #     return [u.equation for u in self]
 
-    def get_equations_lambdified(self):
-        return [u.equation_lambdified for u in self]
+    # def get_equations_lambdified(self):
+    #     return [u._equation_lambdified for u in self]
 
     def _combine_update_rules(self):
         vars = list(set(u.variable for u in self))
@@ -204,7 +215,7 @@ class Update_Rules(Container):
         for var in vars:
             updates_for_var = [u for u in self if u.variable == var]
             new_rules.append(self._combine(var, updates_for_var))
-        return Update_Rules(new_rules)
+        return UpdateRules(new_rules)
 
     def _combine(self, variable, update_rules):
         try:
@@ -217,7 +228,7 @@ class Update_Rules(Container):
         parameters = Parameters(
             list(set([p for u in update_rules for p in u.parameters]))
         )
-        return Update_Rule(
+        return UpdateRule(
             variable,
             equation,
             variables,
@@ -240,7 +251,7 @@ TODO: abstract Equation_Wrapper class? Need to see how Operator class develops
 """
 
 
-class Update_Rule:
+class UpdateRule:
     # TODO: need to go through (at refactor) what checks we want to do eagerly (eg. equation completeness), and which
     #       we want to happen at compile. If none, then update_rule doesn't need to store its variable and
     #       parameter dependencies, and we create a 'SimUpdateRule' class to attach to SimVariables in System.
@@ -257,7 +268,7 @@ class Update_Rule:
         self.variables = variables
         self.parameters = parameters
         self.description = description
-        self.equation_lambdified = None
+        self._equation_lambdified = None
         # self._check_equation_completeness()
 
     @classmethod
@@ -315,6 +326,31 @@ class Update_Rule:
                 f"The {'symbol' if len(difference) == 1 else 'symbols'} '{difference}' in equation '{self.equation}' {'does' if len(difference) == 1 else 'do'} not have an associated {Variable.__name__} object."
             )
 
+    def sub_parameters(self):
+        # TODO: We now need to update the variable dependencies
+        # with the parameter dependencies that we introduced.
+        # Without this, parameters cannot contain references to variables (including T)
+        self.equation = self.equation.subs(
+            ((p.symbol, p.computed_value) for p in self.parameters)
+        )
+        # All dependent parameters have been subbed out.
+        self.parameters = Parameters()
+        self._equation_lambdified = None
+
+    def _lambdify(self):
+        self._equation_lambdified = sym.lambdify(
+            self.variables.get_symbols() + self.parameters.get_symbols(),
+            self.equation,
+        )
+
+    def evaluate_update(self, old_value, time_step):
+        if self._equation_lambdified is None:
+            self._lambdify()
+        v_args = [v.buffer for v in self.variables]
+        p_args = [p.computed_value for p in self.parameters]
+        args = v_args + p_args
+        return old_value + time_step * self._equation_lambdified(*args)
+
     def get_variables(self):
         return [v.symbol for v in self.variables]
 
@@ -322,7 +358,7 @@ class Update_Rule:
         return [p.symbol for p in self.parameters]
 
 
-class SimUpdateRule(Update_Rule):
+class SimUpdateRule(UpdateRule):
     def __init__(self, update_rule):
         super().__init__(
             update_rule.variable,
@@ -335,7 +371,7 @@ class SimUpdateRule(Update_Rule):
 
 class Operator:
     """
-    An Operator object will define generic update rules for a Variables object, in the same way that an Update_Rule defines
+    An Operator object will define generic update rules for a Variables object, in the same way that an UpdateRule defines
     an update rule for a Variable object.
     """
 
@@ -361,7 +397,7 @@ class Population:
         self.windows = []
         self.variables = Variables([self.variable])
         self.parameters = Parameters()
-        self.update_rules = Update_Rules()
+        self.update_rules = UpdateRules()
 
     def get_population_names(self):
         return [pop.name for pop in self.populations]
@@ -389,7 +425,7 @@ class Population:
         setattr(self.parameters, symbol_name, param)
 
     def _add_update_rule(self, variable, equation, description=None):
-        update_rule = Update_Rule.add_from_pop(
+        update_rule = UpdateRule.add_from_pop(
             self, self.variables._objectify(variable), equation, description
         )
         self.update_rules += update_rule
@@ -457,12 +493,6 @@ class System:
         self.variables = self._create_variables(population.variables + time)
         self.parameters = self._create_parameters(population.parameters)
         self._assign_update_rules(population.update_rules)
-        # If the calls below happen during construction, we need to think about
-        # how to write tests for each of these components.
-        # self._compute_parameter_update_order()
-        self._compute_parameters()
-        self._sub_parameters()
-        self._lambify_update_rules()
 
     def _create_variables(self, variables):
         return Variables([SimVariable(variable) for variable in variables])
@@ -471,7 +501,7 @@ class System:
         return Parameters([SimParameter(parameter) for parameter in parameters])
 
     def _assign_update_rules(self, update_rules):
-        new_update_rules = Update_Rules(
+        new_update_rules = UpdateRules(
             [SimUpdateRule(update_rule) for update_rule in update_rules]
         )
         for rule in new_update_rules:
@@ -480,14 +510,14 @@ class System:
             updates_for_variable = [
                 update for update in new_update_rules if update.variable == variable
             ]
-            variable.equation = new_update_rules._combine(
+            variable.update_rule = new_update_rules._combine(
                 variable, updates_for_variable
             )
             (
-                variable.equation.variables,
-                variable.equation.parameters,
-            ) = Update_Rule._get_dependencies(
-                variable.equation.equation, self.variables, self.parameters
+                variable.update_rule.variables,
+                variable.update_rule.parameters,
+            ) = UpdateRule._get_dependencies(
+                variable.update_rule.equation, self.variables, self.parameters
             )
 
     def _compute_parameter_update_order(self):
@@ -515,24 +545,15 @@ class System:
         return ordered_parameters
 
     def _compute_parameters(self):
-        ordered_parameters = self._compute_parameter_update_order()
+        self.parameters = Parameters(self._compute_parameter_update_order())
         sub_list = []
-        for parameter in ordered_parameters:
+        for parameter in self.parameters:
             parameter.computed_value = parameter.value.subs(sub_list)
             sub_list.append((parameter.symbol, parameter.computed_value))
 
     def _sub_parameters(self):
         for variable in self.variables:
-            variable.equation.equation_subbed = variable.equation.equation.subs(
-                ((p.symbol, p.computed_value) for p in variable.equation.parameters)
-            )
-
-    def _lambify_update_rules(self):
-        for variable in self.variables:
-            variable.equation.equation_lambdified = sym.lambdify(
-                variable.equation.variables.get_symbols(),
-                variable.equation.equation_subbed,
-            )
+            variable.sub_parameters()
 
     def _wrap_for_solve_ivp(self, *args):
         """
@@ -541,7 +562,7 @@ class System:
         # FIXME: doesn't work with the solve_ivp function call signature of f(t,[y0,y1,...]) yet. Needs a deeper think about how time
         # is handled generally.
         return [
-            u.equation_lambdified(
+            u._equation_lambdified(
                 [
                     args[i]
                     for i in [self.variables.objects.index(v) for v in u.variables]
@@ -550,33 +571,29 @@ class System:
             for u in self.update_rules
         ]
 
-    def advance_time(self, time_step):
+    def _advance_time(self, time_step):
         for variable in self.variables:
-            variable.buffer = variable.time_series[-1]
+            variable.update_buffer()
         for variable in self.variables:
-            variable.time_series.append(
-                variable.buffer
-                + time_step
-                * variable.equation.equation_lambdified(
-                    *[v.buffer for v in variable.equation.variables]
-                )
-            )
+            variable.update_time_series(time_step)
         self.variables[time.symbol].time_series.append(
             self.variables[time.symbol].time_series[-1] + time_step
         )
 
-    def advance_time_unit(self, n_steps):
+    def _advance_time_unit(self, n_steps):
         if n_steps <= 0 or not isinstance(n_steps, int):
             raise ValueError(
                 f"Number of time steps in a day must be a positive integer, not '{n_steps}'."
             )
         for i in range(n_steps):
-            self.advance_time(1 / n_steps)
+            self._advance_time(1 / n_steps)
 
     def simulate(self, t_end, n_steps):
+        self._compute_parameters()
+        self._sub_parameters()
         if n_steps <= 0 or not isinstance(n_steps, int):
             raise ValueError(
                 f"Simulation time must terminate at a positive integer, not '{n_steps}'."
             )
         for i in range(t_end):
-            self.advance_time_unit(n_steps)
+            self._advance_time_unit(n_steps)

@@ -29,7 +29,7 @@ AB.variables._edit("remove", 0)
 
 sys = AB.compile()
 
-print([(var.symbol, var.equation.equation, var.equation.equation_subbed) for var in sys.variables])
+print([(var.symbol, var.update_rule.equation) for var in sys.variables])
 
 """
 We have created the system
@@ -46,9 +46,5 @@ plt.grid()
 plt.show()
 
 """
-
-
-
-
 
 print(sys.variables.get_symbols(), sys.variables.get_final_values())
