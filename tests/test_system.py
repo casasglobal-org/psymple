@@ -1,5 +1,6 @@
 import unittest
-from models.discrete.populations import Population, System, PopulationSystemError
+from models.populations import Population
+from models.system import PopulationSystemError, System
 
 
 class TestSystemParameterOrdering(unittest.TestCase):

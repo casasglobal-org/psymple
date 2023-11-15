@@ -1,5 +1,5 @@
 import unittest
-from models.discrete.populations import Population
+from models.populations import Population
 
 
 # Note: these classes are mostly for structuring tests.
