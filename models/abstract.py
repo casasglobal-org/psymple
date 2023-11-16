@@ -42,6 +42,9 @@ class Container(ABC):
 
     # TODO: We should define __iter__().
 
+    def __len__(self):
+        return len(self.objects)
+
     def __getitem__(self, index):
         if isinstance(index, slice):
             return type(self)(self.objects[index])

@@ -60,7 +60,9 @@ class System:
                 # print(f"Warning: Variable {variable.symbol} has no update rule.")
                 variable.set_update_rule(SimUpdateRule(variable))
         for parameter in self.parameters:
-            parameter.initialize_update_rule(self.variables, self.parameters)
+            parameter.initialize_update_rule(
+                self.variables + self.time, self.parameters
+            )
 
     def _compute_parameter_update_order(self):
         variable_symbols = {v.symbol for v in self.variables + self.time}
