@@ -3,6 +3,7 @@ from operator import add
 from typing import List  # Deprecated since Python 3.9
 
 import sympy as sym
+
 from models.abstract import Container, SymbolWrapper
 from models.globals import sym_custom_ns
 
@@ -38,8 +39,11 @@ class SimVariable(Variable):
         self.time_series = [self.initial_value]
         self.buffer = self.initial_value
 
-    def sub_parameters(self):
-        self.update_rule.sub_parameters()
+    def set_update_rule(self, update_rule):
+        self.update_rule = update_rule
+
+    def substitute_parameters(self):
+        self.update_rule.substitute_parameters()
 
     def update_buffer(self):
         self.buffer = self.time_series[-1]
@@ -94,6 +98,12 @@ class SimParameter(Parameter):
         super().__init__(parameter.symbol, parameter.value, parameter.description)
         self.computed_value = computed_value
 
+    def substitute_parameters(self):
+        self.update_rule.substitute_parameters()
+
+    def update_time_series(self, time_step):
+        self.computed_value = self.update_rule.computed_value(self.computed_value)
+
 
 class Parameters(Container):
     def __init__(self, parameters: List[Parameter] = None):
@@ -131,24 +141,10 @@ class UpdateRule:
     ):
         self.variable = variable
         self.equation = sym.sympify(equation, locals=sym_custom_ns)
-        self.variables = variables
-        self.parameters = parameters
+        self._initialize_dependencies(variables, parameters)
         self.description = description
         self._equation_lambdified = None
         # self._check_equation_completeness()
-
-    @classmethod
-    def add_from_pop(cls, pop, variable: Variable, equation, description=None):
-        equation_variables, equation_parameters = cls._get_dependencies(
-            equation, pop.variables, pop.parameters, warn=True
-        )
-        return cls(
-            variable,
-            equation,
-            equation_variables,
-            equation_parameters,
-            description or f"{variable.symbol} update rule",
-        )
 
     def __str__(self):
         return (
@@ -157,9 +153,8 @@ class UpdateRule:
             f"{self.parameters.get_symbols()}"
         )
 
-    @staticmethod
-    def _get_dependencies(
-        equation, variables: Variables, parameters: Parameters, warn=True
+    def _initialize_dependencies(
+        self, variables: Variables, parameters: Parameters, warn=True
     ):
         """
         Returns the sublists of variables and parameters whose symbols appear as
@@ -172,7 +167,7 @@ class UpdateRule:
         """
         variable_symbols = set(variables.get_symbols())
         parameter_symbols = set(parameters.get_symbols())
-        equation_symbols = sym.sympify(equation, locals=sym_custom_ns).free_symbols
+        equation_symbols = sym.sympify(self.equation, locals=sym_custom_ns).free_symbols
         if warn and not equation_symbols.issubset(
             variable_symbols.union(parameter_symbols)
         ):
@@ -185,7 +180,8 @@ class UpdateRule:
             parameters._objectify(symbol)
             for symbol in equation_symbols.intersection(parameter_symbols)
         ]
-        return Variables(equation_variables), Parameters(equation_parameters)
+        self.variables = Variables(equation_variables)
+        self.parameters = Parameters(equation_parameters)
 
     def _check_equation_completeness(self):
         variable_symbols = self.variables.get_symbols()
@@ -200,7 +196,7 @@ class UpdateRule:
                 f"associated {Variable.__name__} object."
             )
 
-    def sub_parameters(self):
+    def substitute_parameters(self):
         # TODO: We now need to update the variable dependencies
         # with the parameter dependencies that we introduced.
         # Without this, parameters cannot contain references to variables (including T)
@@ -233,8 +229,14 @@ class UpdateRule:
 
 
 class SimUpdateRule(UpdateRule):
-    def __init__(self, update_rule):
-        super().__init__(
+    # TODO: substitute_parameters, _lambdify and evaluate_update
+    # should be defined within this class, not the more general UpdateRule.
+    # However, the UpdateRules._combine always returns an UpdateRule,
+    # Rather than the specific class of the input.
+
+    @classmethod
+    def from_update_rule(update_rule):
+        SimUpdateRule(
             update_rule.variable,
             update_rule.equation,
             update_rule.variables,
@@ -249,6 +251,14 @@ class UpdateRules(Container):
         self.update_rules = self.objects
         self.contains_type = UpdateRule
         self.check_duplicates = False
+
+    # def get_combined_update_rules_for_variable(self, variable):
+    #     variable_rules = UpdateRules([
+    #         update for update in self.update_rules if update.variable == variable
+    #     ])
+    #     variable.update_rule = new_update_rules._combine(
+    #         variable, updates_for_variable
+    #     )
 
     # def get_equations(self):
     #     return [u.equation for u in self]

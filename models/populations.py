@@ -1,4 +1,5 @@
 import numpy as np
+
 from models.abstract import Container
 from models.variables import (
     Parameter,
@@ -54,9 +55,7 @@ class Population:
     def __init__(self, name: str, initial_value=None):
         self.name = name
         self.variable = Variable.basic(
-            name,
-            description=f"{name} population variable",
-            initial_value=initial_value
+            name, description=f"{name} population variable", initial_value=initial_value
         )
         self.populations = []
         self.windows = []
@@ -90,8 +89,12 @@ class Population:
         setattr(self.parameters, symbol_name, param)
 
     def _add_update_rule(self, variable, equation, description=None):
-        update_rule = UpdateRule.add_from_pop(
-            self, self.variables._objectify(variable), equation, description
+        update_rule = UpdateRule(
+            self.variables._objectify(variable),
+            equation,
+            self.variables,
+            self.parameters,
+            description,
         )
         self.update_rules += update_rule
 

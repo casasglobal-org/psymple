@@ -32,7 +32,9 @@ AB.variables._edit("remove", 0)
 
 sys = System(AB)
 
-print([(var.symbol, var.update_rule.equation) for var in sys.variables])
+for var in sys.variables:
+    print(var.symbol)
+    print(var.update_rule.equation)
 
 """
 We have created the system
@@ -42,11 +44,12 @@ which has a stable fixed point (x_A, x_B) = (100/3, 1000/33) ~ (33.3333, 30.3030
 """
 
 sys.simulate(
-    t_end=10, n_steps=24
+    t_end=100, n_steps=24
 )  # Simulate for 100 days, 24 steps per day (hourly simulation)
+
 """
-plt.plot(sys.system_time.time_series, sys.variables[0].time_series)
-plt.plot(sys.system_time.time_series, sys.variables[1].time_series)
+plt.plot(sys.time.time_series, sys.variables[0].time_series)
+plt.plot(sys.time.time_series, sys.variables[1].time_series)
 plt.grid()
 plt.show()
 

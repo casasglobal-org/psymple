@@ -1,4 +1,5 @@
 import networkx as nx
+
 from models.globals import T
 from models.variables import (
     Parameters,
@@ -6,7 +7,6 @@ from models.variables import (
     SimUpdateRule,
     SimVariable,
     UpdateRule,
-    UpdateRules,
     Variable,
     Variables,
 )
@@ -18,8 +18,17 @@ class PopulationSystemError(Exception):
 
 class System:
     def __init__(self, population):
-        self.time = Variable(T, 0, "system time")
-        self.variables = self._create_variables(population.variables + self.time)
+        self.time = SimVariable(Variable(T, 0, "system time"))
+        self.time.set_update_rule(
+            UpdateRule(
+                self.time,
+                "1",
+                Variables(),
+                Parameters(),
+                "system time",
+            )
+        )
+        self.variables = self._create_variables(population.variables)
         self.parameters = self._create_parameters(population.parameters)
         self._assign_update_rules(population.update_rules)
 
@@ -30,27 +39,20 @@ class System:
         return Parameters([SimParameter(parameter) for parameter in parameters])
 
     def _assign_update_rules(self, update_rules):
-        new_update_rules = UpdateRules(
-            [SimUpdateRule(update_rule) for update_rule in update_rules]
-        )
-        for rule in new_update_rules:
-            rule.variable = self.variables[rule.variable.symbol]
-        for variable in self.variables:
-            updates_for_variable = [
-                update for update in new_update_rules if update.variable == variable
-            ]
-            variable.update_rule = new_update_rules._combine(
-                variable, updates_for_variable
+        combined_update_rules = update_rules._combine_update_rules()
+        for rule in combined_update_rules:
+            variable = self.variables[rule.variable.symbol]
+            new_rule = SimUpdateRule(
+                variable,
+                rule.equation,
+                self.variables + self.time,
+                self.parameters,
+                rule.description,
             )
-            (
-                variable.update_rule.variables,
-                variable.update_rule.parameters,
-            ) = UpdateRule._get_dependencies(
-                variable.update_rule.equation, self.variables, self.parameters
-            )
+            variable.set_update_rule(new_rule)
 
     def _compute_parameter_update_order(self):
-        variable_symbols = {v.symbol for v in self.variables}
+        variable_symbols = {v.symbol for v in self.variables + self.time}
         parameter_symbols = {p.symbol: p for p in self.parameters}
         G = nx.DiGraph()
         G.add_nodes_from(parameter_symbols)
@@ -80,9 +82,9 @@ class System:
             parameter.computed_value = parameter.value.subs(sub_list)
             sub_list.append((parameter.symbol, parameter.computed_value))
 
-    def _sub_parameters(self):
+    def _substitute_parameters(self):
         for variable in self.variables:
-            variable.sub_parameters()
+            variable.substitute_parameters()
 
     def _wrap_for_solve_ivp(self, *args):
         """
@@ -103,14 +105,12 @@ class System:
         ]
 
     def _advance_time(self, time_step):
+        self.time.update_buffer()
+        self.time.update_time_series(time_step)
         for variable in self.variables:
             variable.update_buffer()
         for variable in self.variables:
             variable.update_time_series(time_step)
-        time_symbol = self.time.symbol
-        self.variables[time_symbol].time_series.append(
-            self.variables[time_symbol].time_series[-1] + time_step
-        )
 
     def _advance_time_unit(self, n_steps):
         if n_steps <= 0 or not isinstance(n_steps, int):
@@ -123,7 +123,7 @@ class System:
 
     def simulate(self, t_end, n_steps):
         self._compute_parameters()
-        self._sub_parameters()
+        self._substitute_parameters()
         if n_steps <= 0 or not isinstance(n_steps, int):
             raise ValueError(
                 "Simulation time must terminate at a positive integer, "

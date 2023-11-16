@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
 
 import sympy as sym
+
 from models.globals import sym_custom_ns
 
 
@@ -33,8 +34,7 @@ class Container(ABC):
         for obj in to_add:
             if self.check_duplicates:
                 self._duplicates(self.get_symbols(), obj.symbol)
-            self.objects.append(obj)
-        return type(self)(self.objects)
+        return type(self)(self.objects + to_add)
 
     # TODO: We should define __iter__().
 
