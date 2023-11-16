@@ -41,13 +41,17 @@ sys.simulate(
     t_end=100, n_steps=24
 )  # Simulate for 100 days, 24 steps per day (hourly simulation)
 
-"""
-plt.plot(sys.time.time_series, sys.variables[0].time_series)
-plt.plot(sys.time.time_series, sys.variables[1].time_series)
-plt.grid()
-plt.show()
+sys.plot_solution({"x_A", "x_B"}, (0, 10))
 
-"""
+sys.plot_solution({
+    "x_A" : "r+",
+    "x_B" : {
+        "color": 'green',
+        "marker": 'o',
+        "linestyle": 'dashed',
+        "linewidth": 2,
+    }
+})
 
 for var in sys.variables:
     print(f"d({var.symbol})/dT = {var.update_rule.equation}")

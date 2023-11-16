@@ -1,3 +1,6 @@
+from bisect import bisect
+
+import matplotlib.pyplot as plt
 import networkx as nx
 
 from models.globals import T
@@ -114,11 +117,11 @@ class System:
 
     def _advance_time(self, time_step):
         self.time.update_buffer()
-        self.time.update_time_series(time_step)
         for variable in self.variables:
             variable.update_buffer()
         for variable in self.variables:
             variable.update_time_series(time_step)
+        self.time.update_time_series(time_step)
 
     def _advance_time_unit(self, n_steps):
         if n_steps <= 0 or not isinstance(n_steps, int):
@@ -138,3 +141,26 @@ class System:
         self._compute_substitutions()
         for i in range(t_end):
             self._advance_time_unit(n_steps)
+
+    def plot_solution(self, variables, t_range=None):
+        t_series = self.time.time_series
+        if t_range is None:
+            sl = slice(None, None)
+        else:
+            lower = bisect(t_series, t_range[0])
+            upper = bisect(t_series, t_range[1])
+            sl = slice(lower, upper)
+        if isinstance(variables, set):
+            variables = {v: {} for v in variables}
+        legend = []
+        for var_name, options in variables.items():
+            variable = self.variables[var_name]
+            if isinstance(options, str):
+                plt.plot(t_series[sl], variable.time_series[sl], options)
+            else:
+                plt.plot(t_series[sl], variable.time_series[sl], **options)
+            legend.append(variable.symbol.name)
+        plt.legend(legend, loc='best')
+        plt.xlabel('time')
+        plt.grid()
+        plt.show()
