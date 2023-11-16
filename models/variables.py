@@ -4,8 +4,8 @@ from typing import List  # Deprecated since Python 3.9
 
 import sympy as sym
 
-from models.abstract import Container, SymbolWrapper
-from models.globals import sym_custom_ns
+from models.abstract import Container, DependencyError, SymbolWrapper
+from models.globals import T, sym_custom_ns
 
 
 class Variable(SymbolWrapper):
@@ -19,7 +19,7 @@ class Variable(SymbolWrapper):
     ):
         return cls(
             sym.Symbol(f"{symbol_letter}_{symbol_name}"),
-            [initial_value] or [0],
+            initial_value,
             description or f"{symbol_name} variable",
         )
 
@@ -42,8 +42,8 @@ class SimVariable(Variable):
     def set_update_rule(self, update_rule):
         self.update_rule = update_rule
 
-    def substitute_parameters(self):
-        self.update_rule.substitute_parameters()
+    def substitute_parameters(self, variables):
+        self.update_rule.substitute_parameters(variables)
 
     def update_buffer(self):
         self.buffer = self.time_series[-1]
@@ -93,16 +93,38 @@ class Parameter(SymbolWrapper):
 
 
 class SimParameter(Parameter):
-    # Possibly not a required class
     def __init__(self, parameter, computed_value=None):
         super().__init__(parameter.symbol, parameter.value, parameter.description)
+        # TODO: Redundancy:
+        # The value attribute inherited from Parameter is redundant here
+        # because it's implicit in the UpdateRule.
         self.computed_value = computed_value
+        self.update_rule = None
 
-    def substitute_parameters(self):
-        self.update_rule.substitute_parameters()
+    def initialize_update_rule(self, variables, parameters):
+        self.update_rule = SimUpdateRule(
+            parameters[self.symbol],
+            self.value,
+            variables,
+            parameters,
+            f"UpdateRule for {self.symbol} ({self.description})",
+        )
 
-    def update_time_series(self, time_step):
-        self.computed_value = self.update_rule.computed_value(self.computed_value)
+    def dependent_parameters(self):
+        return self.update_rule.parameters
+
+    def set_update_rule(self, update_rule):
+        self.update_rule = update_rule
+
+    @property
+    def expression(self):
+        return self.update_rule.equation
+
+    def substitute_parameters(self, variables):
+        self.update_rule.substitute_parameters(variables)
+
+    def update_value(self):
+        self.computed_value = self.update_rule.evaluate_expression()
 
 
 class Parameters(Container):
@@ -134,17 +156,32 @@ class UpdateRule:
     def __init__(
         self,
         variable: Variable,
-        equation,
-        variables: Variables,
-        parameters: Parameters,
-        description: str,
+        equation="0",
+        variables: Variables = Variables(),
+        parameters: Parameters = Parameters(),
+        description: str = "",
     ):
+        """
+        An update rule is a expression/equation that is used for updating
+        a referenced variable (or parameter). At any given point in time,
+        the update rule knows what variables and parameters its expression
+        depends on, and does not contain any other symbols (with the exception
+        of T, the time symbol, and global function names.)
+        TODO: Proper handling of global functions.
+
+        Args:
+            variable: the variable/parameter the UpdateRule is for,
+            equation: the expression
+            variables: dependent variables
+            parameters: dependent parameters
+            description: short description of the rule
+        """
+
         self.variable = variable
         self.equation = sym.sympify(equation, locals=sym_custom_ns)
         self._initialize_dependencies(variables, parameters)
         self.description = description
         self._equation_lambdified = None
-        # self._check_equation_completeness()
 
     def __str__(self):
         return (
@@ -157,21 +194,25 @@ class UpdateRule:
         self, variables: Variables, parameters: Parameters, warn=True
     ):
         """
-        Returns the sublists of variables and parameters whose symbols appear as
-        free symbols of self.equation
+        Computes variable/parameter dependencies, i.e. the subsets of
+        variables/parameters whose symbols appear as free symbols of self.equation.
 
         Args:
-            variables (Variables)
-            parameters (Parameters)
+            variables (Variables): Variables that self.equation may contain
+            parameters (Parameters): Parameters that equation may contain
             warn (bool): raise an error if there are symbols not accounted for
         """
         variable_symbols = set(variables.get_symbols())
         parameter_symbols = set(parameters.get_symbols())
+        all_symbols = variable_symbols | parameter_symbols | {T}
         equation_symbols = sym.sympify(self.equation, locals=sym_custom_ns).free_symbols
-        if warn and not equation_symbols.issubset(
-            variable_symbols.union(parameter_symbols)
-        ):
-            print("Unaccounted symbols in equation")
+        if warn and not equation_symbols.issubset(all_symbols):
+            undefined_symbols = equation_symbols - all_symbols
+            raise DependencyError(
+                f"Undefined symbols in expression {self.equation}: "
+                f"The following symbols are not part of {all_symbols}: "
+                f"{undefined_symbols}"
+            )
         equation_variables = [
             variables._objectify(symbol)
             for symbol in equation_symbols.intersection(variable_symbols)
@@ -183,28 +224,12 @@ class UpdateRule:
         self.variables = Variables(equation_variables)
         self.parameters = Parameters(equation_parameters)
 
-    def _check_equation_completeness(self):
-        variable_symbols = self.variables.get_symbols()
-        parameter_symbols = self.parameters.get_symbols()
-        equation_symbols = self.equation.free_symbols
-        difference = equation_symbols - set(variable_symbols + parameter_symbols)
-        if difference:
-            raise Exception(
-                f"The {'symbol' if len(difference) == 1 else 'symbols'} "
-                f"'{difference}' in equation '{self.equation}' "
-                f"{'does' if len(difference) == 1 else 'do'} not have an "
-                f"associated {Variable.__name__} object."
-            )
-
-    def substitute_parameters(self):
-        # TODO: We now need to update the variable dependencies
-        # with the parameter dependencies that we introduced.
-        # Without this, parameters cannot contain references to variables (including T)
+    def substitute_parameters(self, variables):
         self.equation = self.equation.subs(
-            ((p.symbol, p.computed_value) for p in self.parameters)
+            ((p.symbol, p.expression) for p in self.parameters)
         )
         # All dependent parameters have been subbed out.
-        self.parameters = Parameters()
+        self._initialize_dependencies(variables, Parameters())
         self._equation_lambdified = None
 
     def _lambdify(self):
@@ -213,13 +238,17 @@ class UpdateRule:
             self.equation,
         )
 
-    def evaluate_update(self, old_value, time_step):
+    def evaluate_expression(self):
         if self._equation_lambdified is None:
             self._lambdify()
         v_args = [v.buffer for v in self.variables]
         p_args = [p.computed_value for p in self.parameters]
         args = v_args + p_args
-        return old_value + time_step * self._equation_lambdified(*args)
+        return self._equation_lambdified(*args)
+
+    def evaluate_update(self, old_value, time_step):
+        value = self.evaluate_expression()
+        return old_value + time_step * value
 
     def get_variables(self):
         return [v.symbol for v in self.variables]
@@ -233,15 +262,19 @@ class SimUpdateRule(UpdateRule):
     # should be defined within this class, not the more general UpdateRule.
     # However, the UpdateRules._combine always returns an UpdateRule,
     # Rather than the specific class of the input.
+    #
+    # TODO: Redundancy: SimUpdateRules don't actually need to know their variable
+    # because the variable knows the SimUpdateRule.
 
     @classmethod
-    def from_update_rule(update_rule):
-        SimUpdateRule(
-            update_rule.variable,
-            update_rule.equation,
-            update_rule.variables,
-            update_rule.parameters,
-            update_rule.description,
+    def from_update_rule(cls, rule, variables, parameters):
+        variable = variables[rule.variable.symbol]
+        return SimUpdateRule(
+            variable,
+            rule.equation,
+            variables,
+            parameters,
+            rule.description,
         )
 
 

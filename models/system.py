@@ -6,7 +6,6 @@ from models.variables import (
     SimParameter,
     SimUpdateRule,
     SimVariable,
-    UpdateRule,
     Variable,
     Variables,
 )
@@ -20,7 +19,7 @@ class System:
     def __init__(self, population):
         self.time = SimVariable(Variable(T, 0, "system time"))
         self.time.set_update_rule(
-            UpdateRule(
+            SimUpdateRule(
                 self.time,
                 "1",
                 Variables(),
@@ -33,23 +32,35 @@ class System:
         self._assign_update_rules(population.update_rules)
 
     def _create_variables(self, variables):
+        for variable in variables:
+            if variable.initial_value is None:
+                # print(f"Warning: Variable {variable.symbol} has no initial value")
+                variable.initial_value = 0
         return Variables([SimVariable(variable) for variable in variables])
 
     def _create_parameters(self, parameters):
+        for parameter in parameters:
+            if parameter.value is None:
+                raise PopulationSystemError(
+                    f"Parameter {parameter.symbol} has no value"
+                )
         return Parameters([SimParameter(parameter) for parameter in parameters])
 
     def _assign_update_rules(self, update_rules):
         combined_update_rules = update_rules._combine_update_rules()
         for rule in combined_update_rules:
-            variable = self.variables[rule.variable.symbol]
-            new_rule = SimUpdateRule(
-                variable,
-                rule.equation,
-                self.variables + self.time,
-                self.parameters,
-                rule.description,
+            new_rule = SimUpdateRule.from_update_rule(
+                rule, self.variables + self.time, self.parameters
             )
+            # variable = self.variables[rule.variable.symbol]
+            variable = new_rule.variable
             variable.set_update_rule(new_rule)
+        for variable in self.variables:
+            if variable.update_rule is None:
+                # print(f"Warning: Variable {variable.symbol} has no update rule.")
+                variable.set_update_rule(SimUpdateRule(variable))
+        for parameter in self.parameters:
+            parameter.initialize_update_rule(self.variables, self.parameters)
 
     def _compute_parameter_update_order(self):
         variable_symbols = {v.symbol for v in self.variables + self.time}
@@ -58,11 +69,10 @@ class System:
         G.add_nodes_from(parameter_symbols)
         for parameter in self.parameters:
             parsym = parameter.symbol
-            dependencies = parameter.value.free_symbols
-            for dependency in dependencies:
-                if dependency in parameter_symbols:
-                    G.add_edge(dependency, parsym)
-                elif dependency not in variable_symbols:
+            for dependency in parameter.dependent_parameters():
+                if dependency.symbol in parameter_symbols:
+                    G.add_edge(dependency.symbol, parsym)
+                elif dependency.symbol not in variable_symbols:
                     raise PopulationSystemError(
                         f"Parameter {parsym} references undefined symbol {dependency}"
                     )
@@ -75,16 +85,12 @@ class System:
             )
         return ordered_parameters
 
-    def _compute_parameters(self):
+    def _compute_substitutions(self):
         self.parameters = Parameters(self._compute_parameter_update_order())
-        sub_list = []
         for parameter in self.parameters:
-            parameter.computed_value = parameter.value.subs(sub_list)
-            sub_list.append((parameter.symbol, parameter.computed_value))
-
-    def _substitute_parameters(self):
+            parameter.substitute_parameters(self.variables + self.time)
         for variable in self.variables:
-            variable.substitute_parameters()
+            variable.substitute_parameters(self.variables + self.time)
 
     def _wrap_for_solve_ivp(self, *args):
         """
@@ -122,12 +128,11 @@ class System:
             self._advance_time(1 / n_steps)
 
     def simulate(self, t_end, n_steps):
-        self._compute_parameters()
-        self._substitute_parameters()
         if n_steps <= 0 or not isinstance(n_steps, int):
             raise ValueError(
                 "Simulation time must terminate at a positive integer, "
                 f"not '{n_steps}'."
             )
+        self._compute_substitutions()
         for i in range(t_end):
             self._advance_time_unit(n_steps)

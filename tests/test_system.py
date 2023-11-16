@@ -1,4 +1,5 @@
 import unittest
+from models.abstract import DependencyError
 from models.populations import Population
 from models.system import PopulationSystemError, System
 
@@ -28,8 +29,8 @@ class TestSystemParameterOrdering(unittest.TestCase):
         param_names = self.compute_ordered_param_names(population)
         self.assertIn(param_names, expected)
 
-    def check_expected_error(self, population):
-        with self.assertRaises(PopulationSystemError):
+    def check_expected_error(self, population, error):
+        with self.assertRaises(error):
             param_names = self.compute_ordered_param_names(population)
 
     def test_minimal(self):
@@ -52,7 +53,7 @@ class TestSystemParameterOrdering(unittest.TestCase):
         # making this test redundant (i.e. a similar test should be for Population)
         pop = Population("pop")
         pop._add_parameter("basic", "growth_rate", "r", "r_something*5")
-        self.check_expected_error(pop)
+        self.check_expected_error(pop, DependencyError)
 
     def test_unordered(self):
         pop = Population("pop")
@@ -75,7 +76,7 @@ class TestSystemParameterOrdering(unittest.TestCase):
         pop = Population("pop")
         pop._add_parameter("basic", "growth_rate", "r", "r_something*5")
         pop._add_parameter("basic", "something", "r", "r_growth_rate+10")
-        self.check_expected_error(pop)
+        self.check_expected_error(pop, PopulationSystemError)
 
     def test_multiple_aspects(self):
         pop = Population("pop")
