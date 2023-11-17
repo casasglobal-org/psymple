@@ -20,7 +20,7 @@ class PopulationSystemError(Exception):
 
 class System:
     def __init__(self, population):
-        self.time = SimVariable(Variable(T, 0, "system time"))
+        self.time = SimVariable(Variable(T, 0., "system time"))
         self.time.set_update_rule(
             SimUpdateRule(
                 self.time,

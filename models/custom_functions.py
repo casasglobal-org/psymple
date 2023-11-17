@@ -4,6 +4,8 @@ import numpy as np
 import sympy as sym
 from scipy.integrate import quad
 from scipy.optimize import root_scalar
+from sympy.abc import x, a, b
+from sympy import integrate, sympify
 
 T = sym.Symbol("T")
 
@@ -29,9 +31,11 @@ test_temps = [
 
 
 def DegreeDays_fun(
-    model_day: int, base_temp: float, temperature_data: list = test_temps
+    model_day: float, base_temp: float, temperature_data: list = test_temps
 ):
+    integral = None
     model_day = math.floor(model_day)
+    base_temp = float(base_temp)
     if model_day == 1:
         temp_max_prev = temperature_data[model_day - 1][0]
     else:
@@ -40,21 +44,23 @@ def DegreeDays_fun(
 
     def sin_interpolate_minus_base(x, a, b):
         return (b - a) / 2 * np.sin(2 * np.pi * (x + 1 / 4)) + (b + a) / 2 - base_temp
+    
+    if not integral:
+        integral = integrate(sympify('(b - a) / 2 * sin(2 * pi * (x + 1 / 4)) + (b + a) / 2 - c'), x)
 
-    root1 = root_scalar(
-        sin_interpolate_minus_base, args=(temp_min, temp_max_prev), bracket=(0, 0.5)
-    )
-    root2 = root_scalar(
-        sin_interpolate_minus_base, args=(temp_min, temp_max), bracket=(0.5, 1)
-    )
-    area_1, err = quad(
-        sin_interpolate_minus_base, 0, root1.root, args=(temp_min, temp_max_prev)
-    )
-    area_2, err = quad(
-        sin_interpolate_minus_base, root2.root, 1, args=(temp_min, temp_max)
-    )
+    if base_temp <= temp_min:
+        return (temp_max_prev + temp_max)/4 + temp_min/2 - base_temp
 
-    return area_1 + area_2
+    result = 0
+    for i, max in enumerate([temp_max_prev, temp_max]):
+        if base_temp < max:
+            root = root_scalar(
+                sin_interpolate_minus_base, args=(temp_min, max), bracket=(i/2, (i+1)/2)
+            )
+            integral_eval = integral.subs({'a': temp_min, 'b': max, 'c': base_temp})
+            area = (integral_eval.subs({'x': i}) - integral_eval.subs({'x': root.root})).evalf()
+            result += (-1)**(i+1) * area
+    return result
 
 
 class DegreeDays(sym.Function):
@@ -83,11 +89,10 @@ class DegreeDays(sym.Function):
         Defines numeric evalation behaviour when function is called with float inputs.
         Required to implement lambdify behaviour.
         """
-        return sym.Float(DegreeDays_fun(self.args[0], self.args[1]))._eval_evalf(prec)
-
-
-# print(DegreeDays(6.0,9.1))
-
+        day, base_temp = self.args
+        result = DegreeDays_fun(day, base_temp)
+        return sym.Float(result)._eval_evalf(prec)
+    
 
 def FFTemperature_fun(
     model_day: float,
@@ -105,6 +110,7 @@ def FFTemperature_fun(
 
 
 class FFTemperature(sym.Function):
+    #TODO: this could have a doit() method
     @classmethod
     def eval(cls, model_day, temp_min, temp_max):
         if isinstance(model_day, sym.Float) and model_day < 0:

@@ -73,7 +73,7 @@ class Variables(Container):
 class Parameter(SymbolWrapper):
     def __init__(self, symbol, value, description):
         super().__init__(symbol, description)
-        self.value = sym.sympify(value)
+        self.value = sym.sympify(value, locals = sym_custom_ns)
 
     @classmethod
     def basic(cls, symbol_name, symbol_letter, value, description=None):
@@ -235,7 +235,7 @@ class UpdateRule:
     def _lambdify(self):
         self._equation_lambdified = sym.lambdify(
             self.variables.get_symbols() + self.parameters.get_symbols(),
-            self.equation,
+            self.equation, modules = [sym_custom_ns, "scipy", "numpy"]
         )
 
     def evaluate_expression(self):
