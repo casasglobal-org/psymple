@@ -1,5 +1,6 @@
 import unittest
-from models.discrete.populations import Population
+from models.populations import Population
+from models.custom_functions import DegreeDays
 
 
 # Note: these classes are mostly for structuring tests.
@@ -28,3 +29,11 @@ class TestVariablesFromPopulation(unittest.TestCase):
         flyeggs._add_population(flyeggs2)
 
         self.check_variables(flyeggs, ["x_flyeggs", "x_flyeggs1", "x_flyeggs2"])
+
+class TestCustomFunctions(unittest.TestCase):
+    def test_DegreeDays(self): 
+        self.assertAlmostEqual(DegreeDays(6.0, 9.1), 3.9372650)
+        self.assertEqual(DegreeDays(6.0, 23.2), 0)
+        self.assertEqual(DegreeDays(6.0, 2.0), 9.575)
+        self.assertEqual(DegreeDays(-1.0, 9.1), 0)
+        
