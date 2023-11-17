@@ -2,7 +2,6 @@ import math
 
 import numpy as np
 import sympy as sym
-from scipy.integrate import quad
 from scipy.optimize import root_scalar
 from sympy.abc import x, a, b
 from sympy import integrate, sympify

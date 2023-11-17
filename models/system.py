@@ -1,4 +1,5 @@
 from bisect import bisect
+from scipy.integrate import solve_ivp
 
 import matplotlib.pyplot as plt
 import networkx as nx
@@ -20,7 +21,7 @@ class PopulationSystemError(Exception):
 
 class System:
     def __init__(self, population):
-        self.time = SimVariable(Variable(T, 0., "system time"))
+        self.time = SimVariable(Variable(T, 0.0, "system time"))
         self.time.set_update_rule(
             SimUpdateRule(
                 self.time,
@@ -97,22 +98,25 @@ class System:
         for variable in self.variables:
             variable.substitute_parameters(self.variables + self.time)
 
-    def _wrap_for_solve_ivp(self, *args):
+    def _wrap_for_solve_ivp(self, t, y):
         """
         returns a callable function of all system variables for use with solve_ivp,
         wrapping lambdified update rules
         """
-        # FIXME: doesn't work with the solve_ivp function call signature of
-        # f(t,[y0,y1,...]) yet. Needs a deeper think about how time
-        # is handled generally.
+        for variable in self.variables:
+            if variable.update_rule._equation_lambdified is None:
+                variable.update_rule._lambdify()
+
         return [
-            u._equation_lambdified(
-                [
-                    args[i]
-                    for i in [self.variables.objects.index(v) for v in u.variables]
-                ]
+            v.update_rule._equation_lambdified(
+                **{
+                    p: y[self.variables.objects.index(self.variables[p])]
+                    if p != "T"
+                    else t
+                    for p in v.update_rule._equation_lambdified.__code__.co_varnames
+                }
             )
-            for u in self.update_rules
+            for v in self.variables
         ]
 
     def _advance_time(self, time_step):
@@ -142,6 +146,10 @@ class System:
         for i in range(t_end):
             self._advance_time_unit(n_steps)
 
+    def simulate_cts(self, t_end):
+        self._compute_substitutions()
+        return solve_ivp(self._wrap_for_solve_ivp, [0,t_end], self.variables.get_final_values(), dense_output = True)
+
     def plot_solution(self, variables, t_range=None):
         t_series = self.time.time_series
         if t_range is None:
@@ -160,7 +168,7 @@ class System:
             else:
                 plt.plot(t_series[sl], variable.time_series[sl], **options)
             legend.append(variable.symbol.name)
-        plt.legend(legend, loc='best')
-        plt.xlabel('time')
+        plt.legend(legend, loc="best")
+        plt.xlabel("time")
         plt.grid()
         plt.show()
