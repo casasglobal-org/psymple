@@ -10,6 +10,13 @@ authors = [
 ]
 description = "Population Modeling"
 readme = "README.md"
+dependencies = [
+    "matplotlib>=3.2.1",
+    "networkx~=3.1",
+    "numpy>=1.19.5",
+    "sympy>=1.9",
+    "scipy>=1.11",
+]
 requires-python = ">=3.9"
 #keywords = ["one", "two"]
 #license = {text = "BSD-3-Clause"}
