@@ -4,8 +4,8 @@ from typing import List  # Deprecated since Python 3.9
 
 import sympy as sym
 
-from models.abstract import Container, DependencyError, SymbolWrapper
-from models.globals import T, sym_custom_ns
+from psymple.abstract import Container, DependencyError, SymbolWrapper
+from psymple.globals import T, sym_custom_ns
 
 
 class Variable(SymbolWrapper):

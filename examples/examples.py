@@ -2,8 +2,8 @@ import os
 import sys
 sys.path.append(os.path.join(os.path.dirname(__file__),'../'))
 
-from models.populations import IndexedPopulation, Population
-from models.variables import Parameter
+from psymple.populations import IndexedPopulation, Population
+from psymple.variables import Parameter
 
 FlyEggs1 = Population("flyeggs1")
 FlyEggs2 = Population("flyeggs2")

@@ -1,6 +1,6 @@
 import unittest
-from models.populations import Population
-from models.custom_functions import DegreeDays
+from psymple.populations import Population
+from psymple.custom_functions import DegreeDays
 
 
 # Note: these classes are mostly for structuring tests.

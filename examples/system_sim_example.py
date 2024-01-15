@@ -3,8 +3,8 @@ import sys
 sys.path.append(os.path.join(os.path.dirname(__file__),'../'))
 
 # import matplotlib.pyplot as plt
-from models.populations import Population
-from models.system import System
+from psymple.populations import Population
+from psymple.system import System
 
 A = Population("A", initial_value=100)
 B = Population("B", initial_value=1)

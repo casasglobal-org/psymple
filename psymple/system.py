@@ -4,8 +4,8 @@ from scipy.integrate import solve_ivp
 import matplotlib.pyplot as plt
 import networkx as nx
 
-from models.globals import T
-from models.variables import (
+from psymple.globals import T
+from psymple.variables import (
     Parameters,
     SimParameter,
     SimUpdateRule,

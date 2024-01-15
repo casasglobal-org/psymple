@@ -1,7 +1,7 @@
 import numpy as np
 
-from models.abstract import Container
-from models.variables import (
+from psymple.abstract import Container
+from psymple.variables import (
     Parameter,
     Parameters,
     UpdateRule,

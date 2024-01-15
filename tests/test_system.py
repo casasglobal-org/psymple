@@ -1,10 +1,10 @@
 import unittest
 import sympy as sym
 
-from models.abstract import DependencyError
-from models.populations import Population
-from models.variables import SimVariable, SimParameter, SimUpdateRule
-from models.system import PopulationSystemError, System
+from psymple.abstract import DependencyError
+from psymple.populations import Population
+from psymple.variables import SimVariable, SimParameter, SimUpdateRule
+from psymple.system import PopulationSystemError, System
 
 
 class TestInitialization(unittest.TestCase):

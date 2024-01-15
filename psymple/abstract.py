@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 
 import sympy as sym
 
-from models.globals import sym_custom_ns
+from psymple.globals import sym_custom_ns
 
 
 class DependencyError(Exception):

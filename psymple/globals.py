@@ -1,5 +1,5 @@
 import sympy as sym
-from models.custom_functions import DegreeDays, FFTemperature
+from psymple.custom_functions import DegreeDays, FFTemperature
 
 # from custom_functions import DegreeDays, FFTemperature
 
