@@ -1,0 +1,20 @@
+[build-system]
+requires = ["setuptools>=61.0", "setuptools-scm"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "psymple-test"
+authors = [
+    {name = "George Simmons", email = "g.simmons@idems.international"},
+    {name = "Georg Osang", email = "gosang@idems.international"},
+]
+description = "Population Modeling"
+readme = "README.md"
+requires-python = ">=3.9"
+#keywords = ["one", "two"]
+#license = {text = "BSD-3-Clause"}
+classifiers = [
+    "Programming Language :: Python :: 3",
+]
+dynamic = ["version"]
+#Look up how to deal with versions
