@@ -23,7 +23,7 @@ requires-python = ">=3.9"
 classifiers = [
     "Programming Language :: Python :: 3",
 ]
-#dynamic = ["version"]
-version = "0.0.3"
+dynamic = ["version"]
+#version = "0.0.3"
 
 #[tool.setuptools_scm]
