@@ -1,6 +1,6 @@
 import os
 import sys
-sys.path.append(os.path.join(os.path.dirname(__file__),'../'))
+sys.path.append(os.path.join(os.path.dirname(__file__), '../'))
 
 # import matplotlib.pyplot as plt
 from psymple.populations import Population
@@ -38,7 +38,7 @@ which has a stable fixed point (x_A, x_B) = (100/3, 1000/33) ~ (33.3333, 30.3030
 """
 
 sys.simulate(
-    t_end=100, n_steps=24
+    t_end=100, n_steps=24, mode = "cts",
 )  # Simulate for 100 days, 24 steps per day (hourly simulation)
 
 sys.plot_solution({"x_A", "x_B"}, (0, 10))

@@ -1,5 +1,6 @@
 from bisect import bisect
 from scipy.integrate import solve_ivp
+from numpy import linspace
 
 import matplotlib.pyplot as plt
 import networkx as nx
@@ -136,19 +137,25 @@ class System:
         for i in range(n_steps):
             self._advance_time(1 / n_steps)
 
-    def simulate(self, t_end, n_steps):
-        if n_steps <= 0 or not isinstance(n_steps, int):
+    def simulate(self, t_end, n_steps, mode):
+        if t_end <= 0 or not isinstance(t_end, int):
             raise ValueError(
                 "Simulation time must terminate at a positive integer, "
-                f"not '{n_steps}'."
+                f"not '{t_end}'."
             )
         self._compute_substitutions()
-        for i in range(t_end):
-            self._advance_time_unit(n_steps)
+        if mode == "discrete" or mode == "dscr":
+            print("dscr")
+            for i in range(t_end):
+                self._advance_time_unit(n_steps)
+        elif mode == "continuous" or mode == "cts":
+            print("cts")
+            sol = solve_ivp(self._wrap_for_solve_ivp, [0,t_end], self.variables.get_final_values(), dense_output = True)
+            t = linspace(0, t_end, n_steps * t_end + 1)
+            self.time.time_series = t
+            for variable in self.variables:
+                variable.time_series = sol.sol(t)[self.variables.objects.index(variable)]
 
-    def simulate_cts(self, t_end):
-        self._compute_substitutions()
-        return solve_ivp(self._wrap_for_solve_ivp, [0,t_end], self.variables.get_final_values(), dense_output = True)
 
     def plot_solution(self, variables, t_range=None):
         t_series = self.time.time_series
