@@ -1,6 +1,6 @@
-import os
+import pathlib
 import sys
-sys.path.append(os.path.join(os.path.dirname(__file__),'../'))
+sys.path.insert(0, str(pathlib.Path(__file__).parents[1]))
 
 from psymple.populations import IndexedPopulation, Population
 from psymple.variables import Parameter
