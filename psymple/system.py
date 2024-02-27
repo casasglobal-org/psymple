@@ -21,7 +21,7 @@ class PopulationSystemError(Exception):
 
 
 class System:
-    def __init__(self, population):
+    def __init__(self, population=None, simvariables=Variables(), simparameters=Parameters()):
         self.time = SimVariable(Variable(T, 0.0, "system time"))
         self.time.set_update_rule(
             SimUpdateRule(
@@ -32,9 +32,13 @@ class System:
                 "system time",
             )
         )
-        self.variables = self._create_variables(population.variables)
-        self.parameters = self._create_parameters(population.parameters)
-        self._assign_update_rules(population.update_rules)
+        if population is not None:
+            self.variables = self._create_variables(population.variables)
+            self.parameters = self._create_parameters(population.parameters)
+            self._assign_update_rules(population.update_rules)
+        else:
+            self.variables = simvariables
+            self.parameters = simparameters
 
     def _create_variables(self, variables):
         for variable in variables:
@@ -137,7 +141,7 @@ class System:
         for i in range(n_steps):
             self._advance_time(1 / n_steps)
 
-    def simulate(self, t_end, n_steps, mode):
+    def simulate(self, t_end, n_steps, mode="dscr"):
         if t_end <= 0 or not isinstance(t_end, int):
             raise ValueError(
                 "Simulation time must terminate at a positive integer, "

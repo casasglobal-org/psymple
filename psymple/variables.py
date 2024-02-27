@@ -9,7 +9,7 @@ from psymple.globals import T, sym_custom_ns
 
 
 class Variable(SymbolWrapper):
-    def __init__(self, symbol, initial_value, description):
+    def __init__(self, symbol, initial_value, description=""):
         super().__init__(symbol, description)
         self.initial_value = initial_value
 
@@ -71,7 +71,7 @@ class Variables(Container):
 
 
 class Parameter(SymbolWrapper):
-    def __init__(self, symbol, value, description):
+    def __init__(self, symbol, value, description=""):
         super().__init__(symbol, description)
         self.value = sym.sympify(value, locals = sym_custom_ns)
 

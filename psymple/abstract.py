@@ -9,9 +9,10 @@ class DependencyError(Exception):
     pass
 
 
-class SymbolWrapper(ABC):
-    @abstractmethod
-    def __init__(self, symbol: sym.Symbol, description: str):
+class SymbolWrapper:
+    def __init__(self, symbol: sym.Symbol, description: str = ""):
+        if type(symbol) is str:
+            symbol = sym.sympify(symbol)
         self.symbol = symbol
         self.description = description
 
