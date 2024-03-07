@@ -15,6 +15,7 @@ from psymple.ported_objects import (
     FunctionalPortedObject,
     InputPort,
     OutputPort,
+    ParameterAssignment,
     Port,
     PortedObject,
     VariableAggregationWiring,
@@ -140,17 +141,17 @@ class TestInitialization(unittest.TestCase):
         # self.assertEqual(rabbit_port.assignment.expression, 0.01 * sym.sympify("rabbits"))
 
     def test_functional(self):
-        fpo = FunctionalPortedObject("double")
-        fpo.add_assignment(ParameterAssignment("new", "2*old"))
-        fpo.add_input_port(InputPort("old"))
-        fpo.add_output_port(OutputPort("new"))
+        fpo = FunctionalPortedObject("double", [InputPort("old")], [ParameterAssignment("new", "2*old")])
+        # fpo.add_assignment(ParameterAssignment("new", "2*old"))
+        # fpo.add_input_port(InputPort("old"))
+        # fpo.add_output_port(OutputPort("new"))
         compiled = fpo.compile()
 
     def test_parameters(self):
         fpo = FunctionalPortedObject("double")
-        fpo.add_assignment(ParameterAssignment("new", "2*old"))
         fpo.add_input_port(InputPort("old"))
-        fpo.add_output_port(OutputPort("new"))
+        fpo.add_assignment(ParameterAssignment("new", "2*old"))
+        # fpo.add_output_port(OutputPort("new"))
 
         rabbits = Variable("rabbits", 50)
         assg = DifferentialAssignment(rabbits, sym.sympify("r_growth") * sym.sympify("rabbits"))
@@ -163,20 +164,10 @@ class TestInitialization(unittest.TestCase):
         cpo_eco.add_input_port(InputPort("r_growth", default_value=0.01))
         cpo_eco.add_directed_wire("r_growth", "double.old")
         cpo_eco.add_directed_wire("double.new", "rabbit growth.r_growth")
+        cpo_eco.add_variable_port(VariablePort("rabbits"))
         cpo_eco.add_variable_aggregation_wiring(["rabbit growth.rabbits"], "rabbits")
 
         compiled = cpo_eco.compile()
-
-
-class FunctionalPortedObject(PortedObject):
-    def __init__(self, name):
-        super().__init__(name)
-        self.assignments = {}
-
-    def add_assignment(self, assignment):
-        # new output port for the RHS
-        # input ports for the free parameters on the LHS
-        pass
 
         # pop = Population("pop", initial_value=23.5)
         # system = System(pop)

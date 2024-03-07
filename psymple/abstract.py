@@ -12,9 +12,13 @@ class DependencyError(Exception):
 class SymbolWrapper:
     def __init__(self, symbol: sym.Symbol, description: str = ""):
         if type(symbol) is str:
-            symbol = sym.sympify(symbol)
+            symbol = sym.Symbol(symbol)
         self.symbol = symbol
         self.description = description
+
+    @property
+    def name(self):
+        return str(self.symbol)    
 
     def __str__(self):
         return f"{type(self).__name__} object: {self.description} \n {self.symbol}"
