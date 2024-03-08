@@ -73,7 +73,7 @@ class Variables(Container):
 class Parameter(SymbolWrapper):
     def __init__(self, symbol, value, description=""):
         super().__init__(symbol, description)
-        self.value = sym.sympify(value, locals = sym_custom_ns)
+        self.value = sym.sympify(value, locals=sym_custom_ns)
 
     @classmethod
     def basic(cls, symbol_name, symbol_letter, value, description=None):
@@ -235,7 +235,8 @@ class UpdateRule:
     def _lambdify(self):
         self._equation_lambdified = sym.lambdify(
             self.variables.get_symbols() + self.parameters.get_symbols(),
-            self.equation, modules = [sym_custom_ns, "scipy", "numpy"]
+            self.equation,
+            modules=[sym_custom_ns, "scipy", "numpy"],
         )
 
     def evaluate_expression(self):
@@ -265,10 +266,19 @@ class SimUpdateRule(UpdateRule):
     #
     # TODO: Redundancy: SimUpdateRules don't actually need to know their variable
     # because the variable knows the SimUpdateRule.
+    # Note: only works for variables, not parameters
 
     @classmethod
     def from_update_rule(cls, rule, variables, parameters):
-        variable = variables[rule.variable.symbol]
+        if rule.variable.symbol in variables:
+            variable = variables[rule.variable.symbol]
+        elif rule.variable.symbol in parameters:
+            variable = parameters[rule.variable.symbol]
+        else:
+            raise ValueError(
+                f"Symbol {rule.variable.symbol} neither in "
+                f"provided variables {variables} nor parameters {parameters}"
+            )
         return SimUpdateRule(
             variable,
             rule.equation,
@@ -300,10 +310,10 @@ class UpdateRules(Container):
     #     return [u._equation_lambdified for u in self]
 
     def _combine_update_rules(self):
-        vars = list(set(u.variable for u in self))
+        vars = list(set(u.variable for u in self.objects))
         new_rules = []
         for var in vars:
-            updates_for_var = [u for u in self if u.variable == var]
+            updates_for_var = [u for u in self.objects if u.variable == var]
             new_rules.append(self._combine(var, updates_for_var))
         return UpdateRules(new_rules)
 

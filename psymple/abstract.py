@@ -18,10 +18,10 @@ class SymbolWrapper:
 
     @property
     def name(self):
-        return str(self.symbol)    
+        return str(self.symbol)
 
-    def __str__(self):
-        return f"{type(self).__name__} object: {self.description} \n {self.symbol}"
+    def __repr__(self):
+        return f"{type(self).__name__} object: {self.symbol} ({self.description})"
 
 
 class Container(ABC):
@@ -58,6 +58,13 @@ class Container(ABC):
         elif isinstance(index, (str, sym.Symbol)):
             return self._objectify(index)
 
+    def __contains__(self, item):
+        try:
+            self[item]
+        except StopIteration:
+            return False
+        return True
+
     def _duplicates(self, list, object):
         if object in list:
             raise Exception(
@@ -78,7 +85,7 @@ class Container(ABC):
         if isinstance(expr, str) or isinstance(expr, sym.Symbol):
             return next(
                 obj
-                for obj in self
+                for obj in self.objects
                 if obj.symbol == sym.sympify(expr, locals=sym_custom_ns)
             )
         elif isinstance(expr, self.contains_type):
@@ -88,3 +95,6 @@ class Container(ABC):
                 f"arguments to _objectify should be of type {repr(str)}, "
                 f"{repr(sym.Symbol)} or {self.contains_type}"
             )
+
+    def __repr__(self):
+        return "[" + ", ".join([str(obj) for obj in self.objects]) + "]"

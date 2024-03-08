@@ -1,5 +1,6 @@
 import pathlib
 import sys
+
 sys.path.insert(0, str(pathlib.Path(__file__).parents[1]))
 
 import sympy as sym
@@ -35,8 +36,12 @@ fox_growth = VariablePortedObject("fox growth", [assg])
 
 rabbits = Variable("rabbits", 10)
 foxes = Variable("foxes", 5)
-assg1 = DifferentialAssignment(rabbits, -0.4 * sym.sympify("foxes") * sym.sympify("rabbits"))
-assg2 = DifferentialAssignment(foxes, 0.1 * sym.sympify("foxes") * sym.sympify("rabbits"))
+assg1 = DifferentialAssignment(
+    rabbits, -0.4 * sym.sympify("foxes") * sym.sympify("rabbits")
+)
+assg2 = DifferentialAssignment(
+    foxes, 0.1 * sym.sympify("foxes") * sym.sympify("rabbits")
+)
 predation = VariablePortedObject("predation", [assg1, assg2])
 
 cpo_eco = CompositePortedObject("ecosystem")
@@ -45,13 +50,22 @@ cpo_eco.add_child(fox_growth)
 cpo_eco.add_child(predation)
 cpo_eco.add_variable_port(VariablePort("foxes"))
 cpo_eco.add_variable_port(VariablePort("rabbits"))
-cpo_eco.add_variable_aggregation_wiring(["rabbit growth.rabbits", "predation.rabbits"], "rabbits")
-cpo_eco.add_variable_aggregation_wiring(["fox growth.foxes", "predation.foxes"], "foxes")
+cpo_eco.add_variable_aggregation_wiring(
+    ["rabbit growth.rabbits", "predation.rabbits"], "rabbits"
+)
+cpo_eco.add_variable_aggregation_wiring(
+    ["fox growth.foxes", "predation.foxes"], "foxes"
+)
 
 compiled = cpo_eco.compile()
 
-simvariables, simparameters = compiled.get_simvariablesparameters()
-sys = System(simvariables=simvariables, simparameters=simparameters)
+for s in compiled.symbol_identifications:
+    print(s)
+for sc in compiled.get_all_symbol_containers():
+    print(sc)
+
+var, par = compiled.get_assignments()
+sys = System(variable_assignments=var, parameter_assignments=par)
 
 for var in sys.variables:
     print(f"d({var.symbol})/dT = {var.update_rule.equation}")

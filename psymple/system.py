@@ -7,12 +7,19 @@ import networkx as nx
 
 from psymple.globals import T
 from psymple.variables import (
+    Parameter,
     Parameters,
     SimParameter,
     SimUpdateRule,
     SimVariable,
     Variable,
     Variables,
+    UpdateRules,
+)
+
+from psymple.ported_objects import (
+    ParameterAssignment,
+    DifferentialAssignment,
 )
 
 
@@ -21,7 +28,9 @@ class PopulationSystemError(Exception):
 
 
 class System:
-    def __init__(self, population=None, simvariables=Variables(), simparameters=Parameters()):
+    def __init__(
+        self, population=None, variable_assignments=[], parameter_assignments=[]
+    ):
         self.time = SimVariable(Variable(T, 0.0, "system time"))
         self.time.set_update_rule(
             SimUpdateRule(
@@ -37,13 +46,39 @@ class System:
             self.parameters = self._create_parameters(population.parameters)
             self._assign_update_rules(population.update_rules)
         else:
-            self.variables = simvariables
-            self.parameters = simparameters
+            self._create_from_assignments(variable_assignments, parameter_assignments)
+
+    def _create_from_assignments(self, variable_assignments, parameter_assignments):
+        variables = []
+        for assg in variable_assignments:
+            assert isinstance(assg, DifferentialAssignment)
+            assert isinstance(assg.variable, Variable)
+            variables.append(assg.variable)
+            # print(assg)
+        variables = Variables(variables)
+
+        parameters = []
+        for assg in parameter_assignments:
+            assert isinstance(assg, ParameterAssignment)
+            assert isinstance(assg.parameter, Parameter)
+            parameters.append(assg.parameter)
+            # print(assg)
+        parameters = Parameters(parameters)
+
+        self.variables = self._create_variables(variables)
+        self.parameters = self._create_parameters(parameters)
+        update_rules = UpdateRules(
+            [
+                assg.to_update_rule(self.variables, self.parameters)
+                for assg in variable_assignments + parameter_assignments
+            ]
+        )
+        self._assign_update_rules(update_rules)
 
     def _create_variables(self, variables):
         for variable in variables:
             if variable.initial_value is None:
-                # print(f"Warning: Variable {variable.symbol} has no initial value")
+                print(f"Warning: Variable {variable.symbol} has no initial value")
                 variable.initial_value = 0
         return Variables([SimVariable(variable) for variable in variables])
 
@@ -75,7 +110,13 @@ class System:
 
     def _compute_parameter_update_order(self):
         variable_symbols = {v.symbol for v in self.variables + self.time}
+        # print("params")
+        # for par in self.parameters:
+        #     print(type(par), par)
         parameter_symbols = {p.symbol: p for p in self.parameters}
+        # print("param symbol")
+        # for symbol in parameter_symbols:
+        #     print(type(symbol), symbol)
         G = nx.DiGraph()
         G.add_nodes_from(parameter_symbols)
         for parameter in self.parameters:
@@ -154,12 +195,18 @@ class System:
                 self._advance_time_unit(n_steps)
         elif mode == "continuous" or mode == "cts":
             print("cts")
-            sol = solve_ivp(self._wrap_for_solve_ivp, [0,t_end], self.variables.get_final_values(), dense_output = True)
+            sol = solve_ivp(
+                self._wrap_for_solve_ivp,
+                [0, t_end],
+                self.variables.get_final_values(),
+                dense_output=True,
+            )
             t = linspace(0, t_end, n_steps * t_end + 1)
             self.time.time_series = t
             for variable in self.variables:
-                variable.time_series = sol.sol(t)[self.variables.objects.index(variable)]
-
+                variable.time_series = sol.sol(t)[
+                    self.variables.objects.index(variable)
+                ]
 
     def plot_solution(self, variables, t_range=None):
         t_series = self.time.time_series

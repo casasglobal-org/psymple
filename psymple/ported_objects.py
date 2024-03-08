@@ -10,7 +10,7 @@ from psymple.abstract import DependencyError, SymbolWrapper
 from psymple.variables import (
     Parameter,
     Parameters,
-    # SimParameter,
+    SimParameter,
     SimUpdateRule,
     SimVariable,
     Variable,
@@ -27,12 +27,12 @@ class WiringError(Exception):
 
 class Assignment:
     def __init__(self, symbol_wrapper, expression):
-        '''
+        """
         symbol_wrapper: LHS of the assignment (e.g. parameter or variable)
             If input is a string, it is converted to a symbol_wrapper.
         expression: expression on the RHS.
             If input is a string, it is converted to a sympy expression.
-        '''
+        """
         if type(symbol_wrapper) is str:
             symbol_wrapper = SymbolWrapper(sym.Symbol(symbol_wrapper))
         elif type(symbol_wrapper) is sym.Symbol:
@@ -55,9 +55,28 @@ class Assignment:
             self.symbol_wrapper.symbol = new_symbol
         self.expression = self.expression.subs(old_symbol, new_symbol)
 
+    def substitute_parameter_assignments(self, parameter_assignments):
+        substitutions = [
+            (assg.symbol, assg.expression) for assg in parameter_assignments
+        ]
+        self.equation = self.equation.subs(substitutions)
+
     def get_free_symbols(self, global_symbols=set()):
         assignment_symbols = self.expression.free_symbols
         return assignment_symbols - global_symbols - {self.symbol_wrapper.symbol}
+
+    def to_update_rule(self, variables=Variables(), parameters=Parameters()):
+        """
+        Convert to UpdateRules so that it can be used in the Simulation.
+
+        variables/parameters: stuff that may appear on the RHS of the assignment.
+        TODO: This specific implementation is a relic from the System implementation from
+        before and should probably be streamlined.
+        """
+        return UpdateRule(self.symbol_wrapper, self.expression, variables, parameters)
+
+    def __repr__(self):
+        return f"{type(self).__name__} {self.name} = {self.expression}"
 
 
 class DifferentialAssignment(Assignment):
@@ -71,23 +90,8 @@ class DifferentialAssignment(Assignment):
     def variable(self):
         return self.symbol_wrapper
 
-    def to_sim_variable(self, variables=Variables(), parameters=Parameters()):
-        '''
-        Convert to a version of variable that is used in the Simulation.
-
-        variables/parameters: stuff that may appear on the RHS of the assignment.
-        TODO: This specific implementation is a relic from the System implementation from
-        before and should probably be streamlined.
-        '''
-        var = SimVariable(self.variable)
-        var.set_update_rule(
-            SimUpdateRule.from_update_rule(
-                UpdateRule(var, self.expression, variables, parameters),
-                variables,
-                parameters,
-            )
-        )
-        return var
+    def __repr__(self):
+        return f"DifferentialAssignment d({self.name})/dt = {self.expression}"
 
     def combine(self, other):
         # TODO: check description and initial value for consistency
@@ -104,45 +108,54 @@ class DifferentialAssignment(Assignment):
 
         other_expression = other.expression
         if self.variable.symbol != other.variable.symbol:
-            other_expression = other_expression.subs(other.variable.symbol, self.variable.symbol)
+            other_expression = other_expression.subs(
+                other.variable.symbol, self.variable.symbol
+            )
         # TODO: Check if we want to mutate this assignment, or rather produce a new one
         self.expression += other_expression
 
 
 class ParameterAssignment(Assignment):
-    # TODO: Ensure we that the symbol_wrapper is instance of Parameter.
+    def __init__(self, symbol_wrapper, expression):
+        super().__init__(symbol_wrapper, expression)
+        # We ensure we that the symbol_wrapper is instance of Parameter.
+        if type(self.symbol_wrapper) is SymbolWrapper:
+            self.symbol_wrapper = Parameter(
+                self.symbol_wrapper.symbol,
+                self.expression,
+                self.symbol_wrapper.description,
+            )
+
+    # Parameters have this annoying data redundancy in that they also
+    # store their own value. This is already in expression.
+    # So we need to copy that over.
+    def sync_param_value(self):
+        self.parameter.value = self.expression
+
+    def substitute_symbol(self, old_symbol, new_symbol):
+        super().substitute_symbol(old_symbol, new_symbol)
+        self.sync_param_value()
+
+    def substitute_parameter_assignments(self, parameter_assignments):
+        substitute_parameter_assignments(parameter_assignments)
+        self.sync_param_value()
 
     @property
     def parameter(self):
         return self.symbol_wrapper
 
-    def to_sim_parameter(self, variables=Variables(), parameters=Parameters()):
-        '''
-        Convert to a version of variable that is used in the Simulation.
-
-        variables/parameters: stuff that may appear on the RHS of the assignment.
-        TODO: This specific implementation is a relic from the System implementation from
-        before and should probably be streamlined.
-        '''
-        var = SimParameter(self.parameter)
-        var.set_update_rule(
-            SimUpdateRule.from_update_rule(
-                UpdateRule(var, self.expression, variables, parameters),
-                variables,
-                parameters,
-            )
-        )
-        return var
-
 
 class SymbolIdentification:
-    '''
+    """
     Identify two symbols as equal
-    '''
+    """
 
     def __init__(self, new_symbol, old_symbol):
-         self.old_symbol = old_symbol
-         self.new_symbol = new_symbol
+        self.old_symbol = old_symbol
+        self.new_symbol = new_symbol
+
+    def __str__(self):
+        return f"SymbolIdentification {self.new_symbol} = {self.old_symbol}"
 
 
 class Port:
@@ -172,6 +185,9 @@ class Port:
     def symbol(self):
         return sym.Symbol(self.name)
 
+    def __repr__(self):
+        return f"{type(self).__name__} {self.name}"
+
 
 class VariablePort(Port):
     pass
@@ -200,15 +216,16 @@ class CompiledPort(Port):
         # the updated name from there.
         self.name = self.assignment.name
 
+    def __repr__(self):
+        return f"{type(self).__name__} {self.name} with {self.assignment}"
+
 
 class CompiledVariablePort(CompiledPort):
-    def to_sim_variable(self, variables=Variables(), parameters=Parameters()):
-        return self.assignment.to_sim_variable(variables, parameters)
+    pass
 
 
 class CompiledOutputPort(CompiledPort):
-    def to_sim_parameter(self, variables=Variables(), parameters=Parameters()):
-        return self.assignment.to_sim_parameter(variables, parameters)
+    pass
 
 
 class CompiledInputPort(CompiledPort):
@@ -218,6 +235,9 @@ class CompiledInputPort(CompiledPort):
         self.default_value = port.default_value
 
     def substitute_symbol(self, old_symbol, new_symbol):
+        assert isinstance(old_symbol, sym.Symbol)
+        assert isinstance(new_symbol, sym.Symbol)
+        assert isinstance(self.symbol, sym.Symbol)
         if self.symbol == old_symbol:
             self.name = str(new_symbol)
 
@@ -271,8 +291,8 @@ class PortedObject(ABC):
 
 class ODECreatorPortedObject(PortedObject):
     def __init__(self):
-        self.input_ports # expr, variable
-        self.variable_ports # output
+        self.input_ports  # expr, variable
+        self.variable_ports  # output
 
     def compile(self, global_symbols=set()):
         # d var / d t = expression
@@ -284,8 +304,8 @@ class ODECreatorPortedObject(PortedObject):
 class RHSExpressionPortedObject(PortedObject):
     # A variable comes in, an expression comes out
     def __init__(self):
-        self.input_ports # expr, variable
-        self.output_ports # output
+        self.input_ports  # expr, variable
+        self.output_ports  # output
 
     def compile(self, global_symbols=set()):
         # assert that the input is a variable
@@ -300,7 +320,6 @@ class OperatorPortedObject(PortedObject):
 
 
 class PlusOperatorPortedObject(OperatorPortedObject):
-
     def compile(self, global_symbols=set()):
         # Make an assignment that sums up the input
         pass
@@ -319,7 +338,9 @@ class VariablePortedObject(PortedObject):
     TODO: Implement the above.
     """
 
-    def __init__(self, name: str, assignments: List[Assignment] = [], expose_ports=True):
+    def __init__(
+        self, name: str, assignments: List[Assignment] = [], expose_ports=True
+    ):
         super().__init__(name)
         # A dict of assignments indexed by the variable name
         self.assignments = {}
@@ -403,12 +424,12 @@ class FunctionalPortedObject(PortedObject):
     """
 
     def __init__(
-            self,
-            name: str,
-            input_ports: List[InputPort] = [],
-            assignments: List[Assignment] = [],
-            create_input_ports=False,
-        ):
+        self,
+        name: str,
+        input_ports: List[InputPort] = [],
+        assignments: List[Assignment] = [],
+        create_input_ports=False,
+    ):
         super().__init__(name)
         # A dict of assignments indexed by the variable name
         self.assignments = {}
@@ -442,15 +463,11 @@ class FunctionalPortedObject(PortedObject):
 
     def compile(self, prefix_names=False, global_symbols=set()):
         compiled = CompiledPortedObject(self.name)
-        # ParameterAssignment()
-        # self.internal_parameter_assignments = {}
         for name, input_port in self.input_ports.items():
             compiled.input_ports[name] = CompiledInputPort(input_port)
         for name, output_port in self.output_ports.items():
             assignment = self.assignments[name]
-            compiled.output_ports[name] = CompiledOutputPort(
-                output_port, assignment
-            )
+            compiled.output_ports[name] = CompiledOutputPort(output_port, assignment)
         if prefix_names:
             compiled.sub_prefixed_symbols()
         return compiled
@@ -598,47 +615,79 @@ class CompositePortedObject(PortedObject):
         # compute outputs
         compiled = CompiledPortedObject(self.name)
         compiled.children = {
-            name: child.compile(True) for name, child in self.children.items()
+            name: child.compile(prefix_names=True)
+            for name, child in self.children.items()
         }
 
-        # For each child input port, we have to ensure it's connected or has a default value
-
-        # Collect all child input ports
-        child_input_ports = {}
-        for child_name, child in self.children.items():
-            for name, port in child.input_ports.items():
-                new_name = HIERARCHY_SEPARATOR.join([child_name, name])
-                child_input_ports[new_name] = port
-
+        # Compile own input ports. Not much happening for input ports.
         for name, input_port in self.input_ports.items():
             compiled.input_ports[name] = CompiledInputPort(input_port)
 
-        # Process child input ports with incoming wires
+        # For each child input port, we have to ensure it's connected or has a default value
+
+        unconnected_child_input_ports = {}
+        unconnected_child_variable_ports = {}
+        for child_name, child in compiled.children.items():
+            # Collect all child input ports
+            for name, port in child.input_ports.items():
+                new_name = HIERARCHY_SEPARATOR.join([child_name, name])
+                unconnected_child_input_ports[new_name] = port
+            # Collect all child variable ports
+            for name, port in child.variable_ports.items():
+                new_name = HIERARCHY_SEPARATOR.join([child_name, name])
+                unconnected_child_variable_ports[new_name] = port
+            # Pass forward internal variable/parameter assignments
+            compiled.internal_variable_assignments.update(
+                child.internal_variable_assignments
+            )
+            compiled.internal_parameter_assignments.update(
+                child.internal_parameter_assignments
+            )
+            # Pass forward assignments from output ports
+            # TODO: Unconnected output ports are an indication that something may be wrong
+            # If an output port is not connected, we could consider discarding it
+            for name, port in child.output_ports.items():
+                assg = port.assignment
+                compiled.internal_parameter_assignments[assg.name] = assg
+
+        # Process directed wires. In the process, we check which child input
+        # ports don't have an incoming wire using unconnected_child_input_ports.
         for wire in self.directed_wires:
-            if wire.destination_port in child_input_ports:
+            if wire.destination_port in unconnected_child_input_ports:
                 # Goes from own input or child output port to child input port.
-                source = self.get_port_by_name(wire.source_port)
-                destination = self.get_port_by_name(wire.destination_port)
-                assert type(destination) is InputPort
-                assg = SymbolIdentification(destination.symbol, source.symbol)
+                # In all of these cases, the ports have been pre-compiled
+                source = compiled.get_port_by_name(wire.source_port)
+                destination = compiled.get_port_by_name(wire.destination_port)
+                assert type(destination) is CompiledInputPort
+                # We're dropping the destination symbol in favor of the source
+                assg = SymbolIdentification(source.symbol, destination.symbol)
                 compiled.symbol_identifications.append(assg)
-                child_input_ports.pop(wire.destination_port)
+                unconnected_child_input_ports.pop(wire.destination_port)
             elif wire.destination_port in self.output_ports:
-                source = self.get_port_by_name(wire.source_port)
+                source = compiled.get_port_by_name(wire.source_port)
                 destination = self.get_port_by_name(wire.destination_port)
                 assert type(destination) is OutputPort
                 if self.is_own_port(wire.source_port):
                     # Goes from own input port to own output port.
-                    # I don't see a use case for this.
-                    assg_out = ParameterAssignment(destination.symbol_wrapper, source.symbol)
+                    assg_out = ParameterAssignment(
+                        destination.symbol_wrapper,
+                        source.symbol,
+                    )
                     compiled.output_ports[destination.name] = CompiledOutputPort(
                         destination, assg_out
                     )
-                    assert False
+                    # TODO: I don't see a use case for this
+                    # Raising an error because I haven't tested the code above
+                    raise ValueError(
+                        "Why are you connecting an input port directly to an output port?"
+                    )
                 else:
                     # Goes from child output/variable port to own output port.
                     # We create a compiled output port
-                    assg = ParameterAssignment(destination.symbol_wrapper, source.symbol)
+                    assg = ParameterAssignment(
+                        destination.symbol_wrapper,
+                        source.symbol,
+                    )
                     compiled.output_ports.append(CompiledOutputPort(source, assg))
                     compiled.symbol_identifications.append(assg)
             else:
@@ -650,12 +699,12 @@ class CompositePortedObject(PortedObject):
 
         # Find unconnected child input ports and check for default values
         bad_input_ports = []
-        for name, port in child_input_ports.items():
+        for name, port in unconnected_child_input_ports.items():
             if port.default_value is None:
                 bad_input_ports.append(name)
             else:
                 # Initialize their parameters with initial values
-                assg = ParameterAssignment(SymbolWrapper(port.symbol), port.default_value)
+                assg = ParameterAssignment(port.symbol, port.default_value)
                 compiled.internal_parameter_assignments[name] = assg
         if bad_input_ports:
             raise WiringError(
@@ -664,27 +713,39 @@ class CompositePortedObject(PortedObject):
                 f"and have no default value: {bad_input_ports}"
             )
 
+        # Process variable aggregation wiring
         # TODO: Warn if there is a variable port that is not connected to children
         compiled.variable_ports = {}
         for wiring in self.variable_aggregation_wiring:
-            child_ports = [compiled.get_port_by_name(c) for c in wiring.child_ports]
-            values = {c.assignment.variable.initial_value for c in child_ports} - {None}
-            if len(values) > 1:
-                raise ValueError(f"Inconsistent initial values for variable {wiring.parent_port}: {values}.")
-            elif values:
-                value = values.pop()
+            # Collect child ports and their initial values
+            child_ports = []
+            initial_values = set()
+            for port_name in wiring.child_ports:
+                unconnected_child_variable_ports.pop(port_name)
+                port = compiled.get_port_by_name(port_name)
+                child_ports.append(port)
+                initial_values.add(port.assignment.variable.initial_value)
+            # Pass initial value forward to parent port
+            initial_values -= {None}
+            if len(initial_values) > 1:
+                raise ValueError(
+                    f"Inconsistent initial values for variable {wiring.parent_port}: {initial_values}."
+                )
+            elif initial_values:
+                initial_value = initial_values.pop()
             else:
-                value = None
+                initial_value = None
 
             if wiring.parent_port is not None:
-                new_var = Variable(wiring.parent_port, value)
+                new_var = Variable(wiring.parent_port, initial_value)
             elif wiring.output_name is not None:
-                new_var = Variable(wiring.output_name, value)
+                new_var = Variable(wiring.output_name, initial_value)
             else:
                 raise WiringError(
                     f"For VariableAggregationWiring, either parent_port "
                     "or output_name need to be provided"
                 )
+            # Combine RHSs of each child variable, and set child variables equal
             assg = DifferentialAssignment(new_var, "0")
             for child in child_ports:
                 assg.combine(child.assignment)
@@ -697,6 +758,10 @@ class CompositePortedObject(PortedObject):
                 compiled.variable_ports[parent.name] = new_port
             else:
                 compiled.internal_variable_assignments[new_var] = assg
+
+        # Make unconnected child ports into unexposed variables
+        for name, port in unconnected_child_variable_ports.items():
+            compiled.internal_variable_assignments[name] = port.assignment
 
         compiled.sub_symbol_identifications()
         if prefix_names:
@@ -725,7 +790,9 @@ class CompiledPortedObject(CompositePortedObject):
         # Substitute equivalent symbols by a representative
         # TODO: Cycle detection
         for symbol_identification in self.symbol_identifications:
-            self.sub_everywhere(symbol_identification.old_symbol, symbol_identification.new_symbol)
+            self.sub_everywhere(
+                symbol_identification.old_symbol, symbol_identification.new_symbol
+            )
 
     def get_all_symbol_containers(self):
         return itertools.chain(
@@ -737,13 +804,13 @@ class CompiledPortedObject(CompositePortedObject):
         )
 
     def sub_prefixed_symbols(self):
-        '''
+        """
         Replaces all non-global symbols by adding the compiled object's
         name as a prefix.
 
         This is done in both the LHS and RHS of the assignments, however,
         the dictionary keys are NOT affected.
-        '''
+        """
         for name, symbol_container in self.get_all_symbol_containers():
             assert name == symbol_container.name
             old_symbol = symbol_container.symbol
@@ -762,7 +829,7 @@ class CompiledPortedObject(CompositePortedObject):
         assg_dict = {}
         for assg in parameter_assignments:
             # print(str(assg.parameter.symbol))
-            assg_dict[str(assg.parameter.symbol)] = assg
+            assg_dict[str(assg.symbol)] = assg
         for name, port in self.input_ports.items():
             if name in assg_dict:
                 self.internal_parameter_assignments[name] = assg_dict[name]
@@ -773,27 +840,23 @@ class CompiledPortedObject(CompositePortedObject):
                 raise ValueError(f"Undefined input parameter: {name}")
         self.input_ports = {}
 
-    def get_simvariablesparameters(self):
-        variables = []
-        for port in self.variable_ports.values():
-            variables.append(port.assignment.variable)
-        variables = Variables(variables)
-
+    def get_assignments(self):
         self.set_input_parameters()
-        parameters = []
-        for assg in self.internal_parameter_assignments.values():
-            parameters.append(Parameter(assg.parameter, assg.expression))
-        parameters = Parameters(parameters)
 
-        simvariables = []
-        for port in self.variable_ports.values():
-            simvariables.append(port.to_sim_variable(variables))
+        parameter_assignments = list(
+            itertools.chain(
+                (p.assignment for p in self.output_ports.values()),
+                self.internal_parameter_assignments.values(),
+            )
+        )
+        variable_assignments = list(
+            itertools.chain(
+                (p.assignment for p in self.variable_ports.values()),
+                self.internal_variable_assignments.values(),
+            )
+        )
 
-        simparameters = []
-        for assg in self.internal_parameter_assignments.values():
-            simparameters.append(assg.to_sim_parameters(variables, parameters))
-
-        return Variables(simvariables), Parameters(simparameters)
+        return variable_assignments, parameter_assignments
 
 
 class VariableAggregationWiring:
