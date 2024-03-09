@@ -83,6 +83,16 @@ class TestInitialization(unittest.TestCase):
         self.assertIsInstance(rabbit_port, CompiledPort)
         self.assertEqual(rabbit_port.assignment.expression, 0.1 * sym.Symbol("rabbits"))
 
+    def test_unexposed_variable(self):
+        rabbits = Variable("rabbits", 50)
+        assg = DifferentialAssignment(rabbits, 0.1 * sym.Symbol("rabbits"))
+        vpo_growth = VariablePortedObject("rabbit growth", [assg], expose_ports=False)
+
+        compiled = vpo_growth.compile()
+        self.assertIn("rabbits", compiled.internal_variable_assignments)
+        assg = compiled.internal_variable_assignments["rabbits"]
+        self.assertEqual(assg.expression, 0.1 * sym.Symbol("rabbits"))
+
     def test_variable_with_input(self):
         # To test: validation that all free parameters are inputs.
         rabbits = Variable("rabbits", 50)
@@ -133,6 +143,62 @@ class TestInitialization(unittest.TestCase):
         self.assertIsInstance(rabbit_port, CompiledPort)
         self.assertEqual(
             rabbit_port.assignment.expression, 0.05 * sym.Symbol("rabbits")
+        )
+
+    def test_unexposed_renamed_variable_composition(self):
+        inn = Variable("in", 25)
+        out = Variable("out", 50)
+        assg2 = DifferentialAssignment(
+            inn, -0.1 * sym.Symbol("in")
+        )  # 0.1 is the growth rate
+        assg1 = DifferentialAssignment(
+            out, 0.1 * sym.Symbol("in")
+        )  # 0.1 is the growth rate
+        vpo_1 = VariablePortedObject("flow1", [assg1, assg2])
+
+        inn = Variable("in", 50)
+        out = Variable("out", 75)
+        assg2 = DifferentialAssignment(
+            inn, -0.2 * sym.Symbol("in")
+        )  # 0.1 is the growth rate
+        assg1 = DifferentialAssignment(
+            out, 0.2 * sym.Symbol("in")
+        )  # 0.1 is the growth rate
+        vpo_2 = VariablePortedObject("flow2", [assg1, assg2])
+
+        cpo = CompositePortedObject("flow system")
+        cpo.add_child(vpo_1)
+        cpo.add_child(vpo_2)
+        # unexposed flow transition variable
+        cpo.add_variable_aggregation_wiring(
+            ["flow1.out", "flow2.in"], output_name="mass"
+        )
+        # Exposed inflow variable
+        cpo.add_variable_port(VariablePort("inflow"))
+        cpo.add_variable_aggregation_wiring(["flow1.in"], "inflow")
+
+        compiled = cpo.compile()
+
+        self.assertIn("inflow", compiled.variable_ports)
+        inflow_port = compiled.variable_ports["inflow"]
+        self.assertIn("mass", compiled.internal_variable_assignments)
+        mass_assg = compiled.internal_variable_assignments["mass"]
+        self.assertIn("flow2.out", compiled.internal_variable_assignments)
+        out_assg = compiled.internal_variable_assignments["flow2.out"]
+        self.assertEqual(inflow_port.symbol, sym.Symbol("inflow"))
+        self.assertEqual(
+            inflow_port.assignment.expression,
+            -0.1 * sym.Symbol("inflow"),
+        )
+        self.assertEqual(mass_assg.symbol, sym.Symbol("mass"))
+        self.assertEqual(
+            mass_assg.expression,
+            0.1 * sym.Symbol("inflow") - 0.2 * sym.Symbol("mass"),
+        )
+        self.assertEqual(out_assg.symbol, sym.Symbol("flow2.out"))
+        self.assertEqual(
+            out_assg.expression,
+            0.2 * sym.Symbol("mass"),
         )
 
     def test_two_variables(self):
@@ -239,6 +305,83 @@ class TestInitialization(unittest.TestCase):
         growth_port = compiled.input_ports["r_growth"]
         self.assertIsInstance(growth_port, CompiledInputPort)
         self.assertEqual(growth_port.name, "r_growth")
+
+    def test_nested_input_forwarding(self):
+        rabbits = Variable("rabbits", 50)
+        assg = DifferentialAssignment(
+            rabbits, sym.Symbol("r_growth") * sym.Symbol("rabbits")
+        )
+        rabbit_growth = VariablePortedObject("rabbit growth", [assg])
+        rabbit_growth.add_input_port(InputPort("r_growth"))
+
+        cpo_l2 = CompositePortedObject("level2")
+        cpo_l2.add_child(rabbit_growth)
+        cpo_l2.add_variable_port(VariablePort("rabbits_level2"))
+        cpo_l2.add_input_port(InputPort("r_growth_level2"))
+        cpo_l2.add_variable_aggregation_wiring(
+            ["rabbit growth.rabbits"], "rabbits_level2"
+        )
+        cpo_l2.add_directed_wire("r_growth_level2", "rabbit growth.r_growth")
+
+        cpo_l3 = CompositePortedObject("r_growth_level3")
+        cpo_l3.add_child(cpo_l2)
+        cpo_l3.add_variable_port(VariablePort("rabbits_level3"))
+        cpo_l3.add_input_port(InputPort("r_growth_level3"))
+        cpo_l3.add_variable_aggregation_wiring(
+            ["level2.rabbits_level2"], "rabbits_level3"
+        )
+        cpo_l3.add_directed_wire("r_growth_level3", "level2.r_growth_level2")
+
+        compiled = cpo_l3.compile()
+        # This removes the input port and creates an internal assignment instead
+        compiled.set_input_parameters([ParameterAssignment("r_growth_level3", 0.25)])
+
+        self.assertIn("rabbits_level3", compiled.variable_ports)
+        assg = compiled.variable_ports["rabbits_level3"].assignment
+        self.assertEqual(
+            assg.expression,
+            sym.Symbol("r_growth_level3") * sym.Symbol("rabbits_level3"),
+        )
+        self.assertIn("r_growth_level3", compiled.internal_parameter_assignments)
+        assg = compiled.internal_parameter_assignments["r_growth_level3"]
+        self.assertEqual(assg.symbol, sym.Symbol("r_growth_level3"))
+        self.assertEqual(assg.expression, sym.sympify(0.25))
+
+    def test_output_forwarding(self):
+        rabbits = Variable("rabbits", 50)
+        assg = DifferentialAssignment(rabbits, 0.01 * sym.Symbol("rabbits"))
+        rabbit_growth = VariablePortedObject("rabbit growth", [assg])
+
+        fpo = FunctionalPortedObject("double")
+        fpo.add_assignment(ParameterAssignment("new", "2*old"), create_input_ports=True)
+
+        cpo_eco = CompositePortedObject("ecosystem")
+        cpo_eco.add_child(rabbit_growth)
+        cpo_eco.add_child(fpo)
+        cpo_eco.add_variable_port(VariablePort("rabbits"))
+        cpo_eco.add_output_port(OutputPort("doublerab"))
+        cpo_eco.add_variable_aggregation_wiring(["rabbit growth.rabbits"], "rabbits")
+        cpo_eco.add_directed_wire("rabbit growth.rabbits", "double.old")
+        cpo_eco.add_directed_wire("double.new", "doublerab")
+
+        compiled = cpo_eco.compile()
+        self.assertIn("rabbits", compiled.variable_ports)
+        rabbit_port = compiled.variable_ports["rabbits"]
+        self.assertIn("doublerab", compiled.output_ports)
+        doublerab_port = compiled.output_ports["doublerab"]
+        self.assertIn("double.new", compiled.internal_parameter_assignments)
+        double_assg = compiled.internal_parameter_assignments["double.new"]
+        self.assertEqual(rabbit_port.symbol, sym.Symbol("rabbits"))
+        self.assertEqual(doublerab_port.symbol, sym.Symbol("doublerab"))
+        self.assertEqual(
+            doublerab_port.assignment.expression,
+            sym.Symbol("double.new"),
+        )
+        self.assertEqual(double_assg.symbol, sym.Symbol("double.new"))
+        self.assertEqual(
+            double_assg.expression,
+            2 * sym.Symbol("rabbits"),
+        )
 
     def test_parameters(self):
         fpo = FunctionalPortedObject("double")
