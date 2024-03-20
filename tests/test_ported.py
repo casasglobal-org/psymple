@@ -383,6 +383,24 @@ class TestInitialization(unittest.TestCase):
             2 * sym.Symbol("rabbits"),
         )
 
+    def test_output_nesting(self):
+        # TODO: Add checks
+        A_func = FunctionalPortedObject("func")
+        A_func.add_input_port(InputPort("X", default_value = 5))
+        A_func.add_assignment(ParameterAssignment("Y", "X"))
+
+        A = CompositePortedObject("A")
+        A.add_child(A_func)
+        A.add_output_port(OutputPort("Y"))
+        A.add_directed_wire("func.Y", "Y")
+
+        B = CompositePortedObject("B")
+        B.add_output_port(OutputPort("BY"))
+        B.add_child(A)
+        B.add_directed_wire("A.Y", "BY")
+
+        compiled = B.compile()
+
     def test_parameters(self):
         fpo = FunctionalPortedObject("double")
         fpo.add_input_port(InputPort("old"))
@@ -423,6 +441,30 @@ class TestInitialization(unittest.TestCase):
             sym.Symbol("double.new") * sym.Symbol("rabbits"),
         )
 
+    def test_key_remapping(self):
+        # TODO: Add checks
+        func_1 = FunctionalPortedObject("func_1")
+        func_1.add_input_port(InputPort("X", default_value = 5))
+        func_1.add_assignment(ParameterAssignment("Y", "X"))
+
+        A = CompositePortedObject("A")
+        A.add_child(func_1)
+        A.add_input_port(InputPort("X", default_value = 3))
+        A.add_output_port(OutputPort("Y"))
+        A.add_directed_wire("X", "func_1.X")
+        A.add_directed_wire("func_1.Y", "Y")
+
+        B = CompositePortedObject("B")
+        B.add_child(A)
+        B.add_input_port(InputPort("X", default_value = 1))
+        B.add_output_port(OutputPort("Y"))
+        B.add_directed_wire("X", "A.X")
+        B.add_directed_wire("A.Y", "Y")
+
+        C = CompositePortedObject("C")
+        C.add_child(B)
+
+        compiled = C.compile()
 
 class TestSimulation(unittest.TestCase):
     def test_no_params(self):

@@ -627,7 +627,7 @@ class CompositePortedObject(PortedObject):
                     # We create a compiled output port
                     assg = ParameterAssignment(destination.symbol, source.symbol)
                     compiled.output_ports[destination.name] = CompiledOutputPort(
-                        source, assg
+                        destination, assg
                     )
             else:
                 raise WiringError(
@@ -703,8 +703,22 @@ class CompositePortedObject(PortedObject):
             compiled.internal_variable_assignments[name] = port.assignment
 
         compiled.sub_symbol_identifications()
+
+        # Align the dictionary keys with the names of the symbols
+        # whose assignments the dictionary is storing.
+        # This has to happen after all the wiring compilation,
+        # because the wires refer to the child + port name within the child,
+        # so the child name cannot be part of the dictionary key while
+        # the wiring is compiled.
+        compiled.remap_dict_keys()
+
         if prefix_names:
+            # After this, all variables/parameters appearing everywhere
+            # are prefixed by the name of the ported object.
+            # This, however, does not apply to the dictionary keys,
+            # see above for the reasoning
             compiled.sub_prefixed_symbols()
+
         return compiled
 
 
@@ -755,6 +769,19 @@ class CompiledPortedObject(CompositePortedObject):
             old_symbol = symbol_container.symbol
             new_symbol = sym.Symbol(HIERARCHY_SEPARATOR.join([self.name, name]))
             self.sub_everywhere(old_symbol, new_symbol)
+
+    def remap_dict_keys(self):
+        # Remap dictionary keys to add prefix
+        for containers in [
+            self.input_ports,
+            self.output_ports,
+            self.variable_ports,
+            self.internal_variable_assignments,
+            self.internal_parameter_assignments
+        ]:
+            re_keyed = {content.name : content for name, content in containers.items()}
+            containers.clear()
+            containers.update(re_keyed)
 
     def sub_everywhere(self, old_symbol, new_symbol):
         assert isinstance(old_symbol, sym.Symbol)
