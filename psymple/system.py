@@ -79,7 +79,7 @@ class System:
         for variable in variables:
             if variable.initial_value is None:
                 print(f"Warning: Variable {variable.symbol} has no initial value")
-                variable.initial_value = 0
+                variable.initial_value = 0.0
         return Variables([SimVariable(variable) for variable in variables])
 
     def _create_parameters(self, parameters):
@@ -92,6 +92,7 @@ class System:
 
     def _assign_update_rules(self, update_rules):
         combined_update_rules = update_rules._combine_update_rules()
+        print(combined_update_rules)
         for rule in combined_update_rules:
             new_rule = SimUpdateRule.from_update_rule(
                 rule, self.variables + self.time, self.parameters
@@ -165,34 +166,37 @@ class System:
             for v in self.variables
         ]
 
-    def _advance_time(self, time_step):
+    def _advance_time(self, time_step, summaries):
         self.time.update_buffer()
         for variable in self.variables:
             variable.update_buffer()
         for variable in self.variables:
             variable.update_time_series(time_step)
+        for parameter in summaries:
+            parameter.update_value()
         self.time.update_time_series(time_step)
 
-    def _advance_time_unit(self, n_steps):
+    def _advance_time_unit(self, n_steps, summaries):
         if n_steps <= 0 or not isinstance(n_steps, int):
             raise ValueError(
                 "Number of time steps in a day must be a positive integer, "
                 f"not '{n_steps}'."
             )
         for i in range(n_steps):
-            self._advance_time(1 / n_steps)
+            self._advance_time(1 / n_steps, summaries)
 
-    def simulate(self, t_end, n_steps, mode="dscr"):
+    def simulate(self, t_end, n_steps, mode="dscr", summaries = []):
         if t_end <= 0 or not isinstance(t_end, int):
             raise ValueError(
                 "Simulation time must terminate at a positive integer, "
                 f"not '{t_end}'."
             )
         self._compute_substitutions()
+        summaries = [self.parameters[s] for s in summaries]
         if mode == "discrete" or mode == "dscr":
             print("dscr")
             for i in range(t_end):
-                self._advance_time_unit(n_steps)
+                self._advance_time_unit(n_steps, summaries)
         elif mode == "continuous" or mode == "cts":
             print("cts")
             sol = solve_ivp(
@@ -220,7 +224,10 @@ class System:
             variables = {v: {} for v in variables}
         legend = []
         for var_name, options in variables.items():
-            variable = self.variables[var_name]
+            try: 
+                variable = self.variables[var_name]
+            except:
+                variable = self.parameters[var_name]
             if isinstance(options, str):
                 plt.plot(t_series[sl], variable.time_series[sl], options)
             else:

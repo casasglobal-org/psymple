@@ -61,7 +61,7 @@ class Assignment:
     #     ]
     #     self.equation = self.equation.subs(substitutions)
 
-    def get_free_symbols(self, global_symbols=set()):
+    def get_free_symbols(self, global_symbols=set([sym.Symbol('T')])):
         assignment_symbols = self.expression.free_symbols
         return assignment_symbols - global_symbols - {self.symbol_wrapper.symbol}
 

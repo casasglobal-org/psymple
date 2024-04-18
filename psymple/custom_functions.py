@@ -5,6 +5,7 @@ import sympy as sym
 from scipy.optimize import root_scalar
 from sympy.abc import x, a, b
 from sympy import integrate, sympify
+from psymple import read_wx
 
 T = sym.Symbol("T")
 
@@ -26,7 +27,7 @@ test_temps = [
     [19.4, 6.7],
     [19.3, 6.7],
     [20.4, 8.3],
-]
+] 
 
 
 def DegreeDays_fun(
@@ -108,6 +109,7 @@ def FFTemperature_fun(
         return np.max((0.0, 1 - ((temp - temp_min - diff) / diff) ** 2))
 
 
+
 class FFTemperature(sym.Function):
     #TODO: this could have a doit() method
     @classmethod
@@ -117,3 +119,120 @@ class FFTemperature(sym.Function):
 
     def _eval_evalf(self, prec):
         return sym.Float(FFTemperature_fun(*self.args))._eval_evalf(prec)
+    
+
+wx = read_wx.Weather.readwx("c:\\Users\\georg\\OneDrive\\Documents\\IDEMS\\CASAS Global\\Modelling\\Python\\population-modeling-py-3\\examples\\pbdm\\sample_weather.txt","01","01","2000","12","31","2010", [0])[1:]
+wx = np.array(wx)
+
+def temp_max_fun(
+    time: float,
+    temperature_data = wx
+):
+    model_day = math.ceil(time)
+    return temperature_data[model_day][5]
+
+def temp_min_fun(
+    time: float,
+    temperature_data = wx
+):
+    model_day = math.ceil(time)
+    return temperature_data[model_day][6]
+
+def solar_rad_fun(
+    time: float,
+    temperature_data = wx
+):
+    model_day = math.ceil(time)
+    return temperature_data[model_day][7]
+
+def temp_fun(
+    time: float,
+):
+    temp_max = temp_max_fun(time)
+    temp_min = temp_min_fun(time)
+    #return (temp_max - temp_min)/2 * np.sin(np.float64(2*np.pi*(time+1/4))) + (temp_max + temp_min)/2
+    return (temp_max + temp_min)/2
+
+
+class temp_max(sym.Function):
+    #TODO: this could have a doit() method
+    @classmethod
+    def eval(cls, time):
+        if isinstance(time, sym.Float) and time < 0:
+            return 0
+
+    def _eval_evalf(self, prec):
+        return sym.Float(temp_max_fun(*self.args))._eval_evalf(prec)
+
+class temp_min(sym.Function):
+    #TODO: this could have a doit() method
+    @classmethod
+    def eval(cls, time):
+        if isinstance(time, sym.Float) and time < 0:
+            return 0
+
+    def _eval_evalf(self, prec):
+        return sym.Float(temp_min_fun(*self.args))._eval_evalf(prec)
+    
+class solar_rad(sym.Function):
+    #TODO: this could have a doit() method
+    @classmethod
+    def eval(cls, time):
+        if isinstance(time, sym.Float) and time < 0:
+            return 0
+
+    def _eval_evalf(self, prec):
+        return sym.Float(solar_rad_fun(*self.args))._eval_evalf(prec)
+
+class temp(sym.Function):
+    #TODO: this could have a doit() method
+    @classmethod
+    def eval(cls, time):
+        if isinstance(time, sym.Float) and time < 0:
+            return 0
+
+    def _eval_evalf(self, prec):
+        return sym.Float(temp_fun(*self.args))._eval_evalf(prec)
+    
+def DD_fun(time, Del, T_min, T_max = 0, coeff_1 = 0, coeff_2 = 0):
+    T = temp_fun(time)
+    if T_max < T_min:
+        return np.maximum(0.01,T-T_min)
+    else:
+        return np.maximum(0, Del*(coeff_1*(T-T_min)/(1+ coeff_2**(T - T_max))))
+
+class DD(sym.Function):
+    #TODO: this could have a doit() method
+    @classmethod
+    def eval(cls, time, Del, T_min, T_max = None, coeff_1 = None, coeff_2 = None):
+        if isinstance(time, sym.Float) and time < 0:
+            return 0
+
+    def doit(self, deep=False, **hints):
+        time, *args = self.args
+        if deep:
+            time = time.doit(deep=deep, **hints)
+        return sym.Float(DD_fun(time, *args))
+
+    def _eval_evalf(self, prec):
+        return self.doit(deep=False)._eval_evalf(prec)
+        #return sym.Float(DD_fun(*self.args))._eval_evalf(prec) 
+        #T = temp_fun(time)
+        #return sym.Float(DD_fun(time=self.args[0], Del = self.args[1], T_min = self.args[2], T_max = self.args[3], coeff_1 = self.args[4], coeff_2 = self.args[5]))._eval_evalf(prec)
+
+def ind_above_fun(base, comp):
+    return 1 if comp>base else 0
+
+class ind_above(sym.Function):
+    @classmethod
+    def eval(cls, base, comp):
+        return ind_above_fun(base, comp)
+
+def frac0_fun(numerator, denominator, default):
+    return default if denominator == 0 else numerator/denominator
+
+class frac0(sym.Function):
+    @classmethod
+    def eval(cls, numerator, denominator, default):
+        if denominator == 0:
+            return default

@@ -3,6 +3,7 @@ from operator import add
 from typing import List  # Deprecated since Python 3.9
 
 import sympy as sym
+import numpy as np
 
 from psymple.abstract import Container, DependencyError, SymbolWrapper
 from psymple.globals import T, sym_custom_ns
@@ -49,7 +50,7 @@ class SimVariable(Variable):
         self.buffer = self.time_series[-1]
 
     def update_time_series(self, time_step):
-        new_value = self.update_rule.evaluate_update(self.buffer, time_step)
+        new_value = np.maximum(0.0,self.update_rule.evaluate_update(self.buffer, time_step))
         self.time_series.append(new_value)
 
 
@@ -100,6 +101,7 @@ class SimParameter(Parameter):
         # because it's implicit in the UpdateRule.
         self.computed_value = computed_value
         self.update_rule = None
+        self.time_series = [computed_value]
 
     def initialize_update_rule(self, variables, parameters):
         self.update_rule = SimUpdateRule(
@@ -125,6 +127,7 @@ class SimParameter(Parameter):
 
     def update_value(self):
         self.computed_value = self.update_rule.evaluate_expression()
+        self.time_series.append(self.computed_value)
 
 
 class Parameters(Container):
@@ -236,12 +239,13 @@ class UpdateRule:
         self._equation_lambdified = sym.lambdify(
             self.variables.get_symbols() + self.parameters.get_symbols(),
             self.equation,
-            modules=[sym_custom_ns, "scipy", "numpy"],
+            modules=[sym_custom_ns, "scipy", "numpy"], cse=True,
         )
 
     def evaluate_expression(self):
         if self._equation_lambdified is None:
             self._lambdify()
+            print(f"{self.variable.name} lambdified")
         v_args = [v.buffer for v in self.variables]
         p_args = [p.computed_value for p in self.parameters]
         args = v_args + p_args
