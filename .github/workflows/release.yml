@@ -60,7 +60,7 @@ jobs:
 
     environment:
       name: release
-      url: https://test.pypi.org/p/psymple-test
+      url: https://test.pypi.org/p/psymple
 
     permissions:
       id-token: write  # IMPORTANT: mandatory for trusted publishing
