@@ -237,6 +237,7 @@ class UpdateRule:
             self.variables.get_symbols() + self.parameters.get_symbols(),
             self.equation,
             modules=[sym_custom_ns, "scipy", "numpy"],
+            cse=True,
         )
 
     def evaluate_expression(self):
