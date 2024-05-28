@@ -6,7 +6,7 @@ import sympy as sym
 from psymple.abstract import DependencyError
 from psymple.variables import Variable
 
-from psymple.system import PopulationSystemError, System
+from psymple.system import PopulationSystemError, System, Simulation, DiscreteIntegrator
 from psymple.ported_objects import (
     CompiledPort,
     CompiledInputPort,
@@ -513,21 +513,24 @@ class TestInitialization(unittest.TestCase):
 
         compiled = C.compile()
 
+
 class TestSimulation(unittest.TestCase):
     def test_no_params(self):
         rabbits = Variable("rabbits", 2)
         assg = DifferentialAssignment(rabbits, 1 * sym.Symbol("rabbits"))
         vpo_growth = VariablePortedObject("rabbit growth", assignments=[assg])
-        compiled = vpo_growth.compile()
 
-        var, par = compiled.get_assignments()
-        system = System(variable_assignments=var, parameter_assignments=par)
+        system = System(vpo_growth)
 
-        system._compute_substitutions()
-        system._advance_time(1)
-        system._advance_time(1)
-        self.assertEqual(len(system.variables), 1)
-        variable = system.variables[0]
+        sim = Simulation(system)
+        sim._compute_substitutions()
+
+        integrator = DiscreteIntegrator(sim, 2, 1)
+        integrator._advance_time_unit(1)
+        integrator._advance_time_unit(1)
+        self.assertEqual(len(sim.variables), 1)
+        self.assertIn("rabbits", sim.variables.keys())
+        variable = system.variables["rabbits"]
         self.assertEqual(variable.symbol, sym.Symbol("rabbits"))
         self.assertEqual(variable.time_series, [2, 4, 8])
 
@@ -558,16 +561,17 @@ class TestSimulation(unittest.TestCase):
         cpo_eco.add_variable_port(VariablePort("rabbits"))
         cpo_eco.add_variable_aggregation_wiring(["rabbit growth.rabbits"], "rabbits")
 
-        compiled = cpo_eco.compile()
+        system = System(cpo_eco)
 
-        var, par = compiled.get_assignments()
-        system = System(variable_assignments=var, parameter_assignments=par)
-        system._compute_substitutions()
+        sim = Simulation(system)
+        sim._compute_substitutions()
 
-        system._advance_time(1)
-        system._advance_time(1)
+        integrator = DiscreteIntegrator(sim, 2, 1)
+        integrator._advance_time_unit(1)
+        integrator._advance_time_unit(1)
         self.assertEqual(len(system.variables), 1)
-        variable = system.variables[0]
+        self.assertIn("rabbits", system.variables.keys())
+        variable = system.variables["rabbits"]
         self.assertEqual(variable.symbol, sym.Symbol("rabbits"))
         self.assertEqual(variable.time_series, [1, 7, 49])
 

@@ -20,6 +20,7 @@ from psymple.variables import (
 from psymple.ported_objects import (
     ParameterAssignment,
     DifferentialAssignment,
+    PortedObject,
 )
 
 
@@ -28,6 +29,182 @@ class PopulationSystemError(Exception):
 
 
 class System:
+    def __init__(self, ported_object):
+        self.variables = {}
+        self.parameters = {}
+
+        assert isinstance(ported_object, PortedObject)
+        compiled = ported_object.compile()
+
+        self.create_time_variable()
+
+        variable_assignments, parameter_assignments = compiled.get_assignments()
+
+        variables, parameters = self.get_symbol_containers(variable_assignments, parameter_assignments)
+        self.create_simulation_variables(variable_assignments, variables + self.time, parameters)
+        self.create_simulation_parameters(parameter_assignments, variables + self.time, parameters)
+        self.update_update_rules()
+
+    def create_time_variable(self):
+        # At the moment the only global variable is time
+        self.time = SimVariable(Variable(T, 0.0, "system time"))
+        self.time.set_update_rule(
+            SimUpdateRule(
+                #self.time,
+                equation="1",
+                variables=Variables(),
+                parameters=Parameters(),
+                description="system time",
+            )
+        )
+
+    def get_symbol_containers(self, variable_assignments, parameter_assignments):
+        variables = [SimVariable(assg.variable) for assg in variable_assignments]
+        parameters = [SimParameter(assg.parameter) for assg in parameter_assignments]
+        return Variables(variables), Parameters(parameters)
+
+    def create_simulation_variables(self, variable_assignments, variables, parameters):
+        for assg in variable_assignments:
+            update_rule = assg.to_update_rule(variables, parameters)
+            sim_variable = SimVariable(assg.variable)
+            sim_variable.set_update_rule(update_rule)
+            self.variables[str(assg.variable.symbol)] = sim_variable
+
+    def create_simulation_parameters(self, parameter_assignments, variables, parameters):
+        for assg in parameter_assignments:
+            sim_parameter = SimParameter(assg.parameter)
+            sim_parameter.initialize_update_rule(variables, parameters)
+            self.parameters[str(assg.parameter.symbol)] = sim_parameter 
+
+    def update_update_rules(self):
+        variables = Variables(list(self.variables.values()))
+        parameters = Parameters(list(self.parameters.values()))
+        for var in self.variables.values():
+            new_update_rule = SimUpdateRule.from_update_rule(var.update_rule, variables + self.time, parameters)
+            var.set_update_rule(new_update_rule)
+        for par in self.parameters.values():
+            par.initialize_update_rule(variables + self.time, parameters)
+
+    def _compute_parameter_update_order(self):
+        variable_symbols = {v.symbol for v in self.variables.values()} | {T}
+        # print("params")
+        # for par in self.parameters:
+        #     print(type(par), par)
+        parameter_symbols = {p.symbol: p for p in self.parameters.values()}
+        # print("param symbol")
+        # for symbol in parameter_symbols:
+        #     print(type(symbol), symbol)
+        G = nx.DiGraph()
+        G.add_nodes_from(parameter_symbols)
+        for parameter in self.parameters.values():
+            parsym = parameter.symbol
+            for dependency in parameter.dependent_parameters():
+                if dependency.symbol in parameter_symbols:
+                    G.add_edge(dependency.symbol, parsym)
+                elif dependency.symbol not in variable_symbols:
+                    raise PopulationSystemError(
+                        f"Parameter {parsym} references undefined symbol {dependency}"
+                    )
+        try:
+            nodes = nx.topological_sort(G)
+        except nx.exception.NetworkXUnfeasible:
+            raise PopulationSystemError(
+                f"System parameters contain cyclic dependencies"
+            )
+        return list(nodes)
+
+
+
+class Simulation:
+    def __init__(self, system, solver = "discrete_int"):
+        self.system = system
+        self.variables = system.variables
+        self.parameters = system.parameters
+        self.time = system.time
+        self.solver = solver
+
+    def _compute_substitutions(self):
+        update_order = [str(par) for par in self.system._compute_parameter_update_order()]
+        print(update_order)
+        variables = Variables(list(self.variables.values())) + self.time
+        for parameter in update_order:
+            self.parameters[parameter].substitute_parameters(variables)
+        for variable in self.variables.values():
+            variable.substitute_parameters(variables)
+
+    #TODO: Remove variable dependency from update_rule
+
+    def simulate(self, t_end, **options):
+        self._compute_substitutions()
+        if self.solver == "discrete_int":
+            assert "n_steps" in options.keys() 
+            n_steps = options["n_steps"]
+            solver = DiscreteIntegrator(self, t_end, n_steps)
+        solver.run()
+
+    def plot_solution(self, variables, t_range=None):
+        t_series = self.time.time_series
+        if t_range is None:
+            sl = slice(None, None)
+        else:
+            lower = bisect(t_series, t_range[0])
+            upper = bisect(t_series, t_range[1])
+            sl = slice(lower, upper)
+        if isinstance(variables, set):
+            variables = {v: {} for v in variables}
+        legend = []
+        for var_name, options in variables.items():
+            variable = self.variables[var_name]
+            if isinstance(options, str):
+                plt.plot(t_series[sl], variable.time_series[sl], options)
+            else:
+                plt.plot(t_series[sl], variable.time_series[sl], **options)
+            legend.append(variable.symbol.name)
+        plt.legend(legend, loc="best")
+        plt.xlabel("time")
+        plt.grid()
+        plt.show()
+
+
+class Solver:
+    def __init__(self, simulation, t_end):
+        if t_end <= 0 or not isinstance(t_end, int):
+            raise ValueError(
+                "Simulation time must terminate at a positive integer, "
+                f"not '{t_end}'."
+            )
+        self.t_end = t_end
+        self.simulation = simulation
+
+class DiscreteIntegrator(Solver):
+    def __init__(self, simulation, t_end, n_steps):
+        super().__init__(simulation, t_end)
+        self.n_steps = n_steps
+
+    def run(self):
+        for i in range(self.t_end):
+            self._advance_time_unit(self.n_steps)
+
+    def _advance_time(self, time_step):
+        self.simulation.time.update_buffer()
+        for variable in self.simulation.variables.values():
+            variable.update_buffer()
+        for variable in self.simulation.variables.values():
+            variable.update_time_series(time_step)
+        self.simulation.time.update_time_series(time_step)
+
+    def _advance_time_unit(self, n_steps):
+        if n_steps <= 0 or not isinstance(n_steps, int):
+            raise ValueError(
+                "Number of time steps in a day must be a positive integer, "
+                f"not '{n_steps}'."
+            )
+        for i in range(n_steps):
+            self._advance_time(1 / n_steps)
+
+
+'''
+class System_old:
     def __init__(
         self, population=None, variable_assignments=[], parameter_assignments=[]
     ):
@@ -230,3 +407,4 @@ class System:
         plt.xlabel("time")
         plt.grid()
         plt.show()
+'''

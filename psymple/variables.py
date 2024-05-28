@@ -102,7 +102,7 @@ class SimParameter(Parameter):
 
     def initialize_update_rule(self, variables, parameters):
         self.update_rule = SimUpdateRule(
-            parameters[self.symbol],
+            #parameters[self.symbol],
             self.value,
             variables,
             parameters,
@@ -154,7 +154,7 @@ class UpdateRule:
 
     def __init__(
         self,
-        variable: Variable,
+        #variable: Variable,
         equation="0",
         variables: Variables = Variables(),
         parameters: Parameters = Parameters(),
@@ -176,7 +176,7 @@ class UpdateRule:
             description: short description of the rule
         """
 
-        self.variable = variable
+        #self.variable = variable
         self.equation = sym.sympify(equation, locals=sym_custom_ns)
         self._initialize_dependencies(variables, parameters)
         self.description = description
@@ -203,7 +203,7 @@ class UpdateRule:
         """
         variable_symbols = set(variables.get_symbols())
         parameter_symbols = set(parameters.get_symbols())
-        all_symbols = variable_symbols | parameter_symbols | {T}
+        all_symbols = variable_symbols | parameter_symbols
         equation_symbols = sym.sympify(self.equation, locals=sym_custom_ns).free_symbols
         if warn and not equation_symbols.issubset(all_symbols):
             undefined_symbols = equation_symbols - all_symbols
@@ -270,17 +270,17 @@ class SimUpdateRule(UpdateRule):
 
     @classmethod
     def from_update_rule(cls, rule, variables, parameters):
-        if rule.variable.symbol in variables:
-            variable = variables[rule.variable.symbol]
-        elif rule.variable.symbol in parameters:
-            variable = parameters[rule.variable.symbol]
-        else:
-            raise ValueError(
-                f"Symbol {rule.variable.symbol} neither in "
-                f"provided variables {variables} nor parameters {parameters}"
-            )
+        #if rule.variable.symbol in variables:
+        #    variable = variables[rule.variable.symbol]
+        #elif rule.variable.symbol in parameters:
+        #    variable = parameters[rule.variable.symbol]
+        #else:
+        #    raise ValueError(
+        #        f"Symbol {rule.variable.symbol} neither in "
+        #        f"provided variables {variables} nor parameters {parameters}"
+        #    )
         return SimUpdateRule(
-            variable,
+            #variable,
             rule.equation,
             variables,
             parameters,

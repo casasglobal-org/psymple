@@ -78,7 +78,7 @@ class Assignment:
         TODO: This specific implementation is a relic from the System implementation from
         before and should probably be streamlined.
         """
-        return UpdateRule(self.symbol_wrapper, self.expression, variables, parameters)
+        return UpdateRule(self.expression, variables, parameters)
 
     def __repr__(self):
         return f"{type(self).__name__} {self.name} = {self.expression}"
@@ -110,7 +110,6 @@ class DifferentialAssignment(Assignment):
 
     def combine(self, other):
         # TODO: check description and initial value for consistency
-        # print(self.variable.symbol, other.variable.symbol)
         # assert self.variable.symbol == other.variable.symbol
         # TODO: Check if we want to mutate this assignment, or rather produce a new one
         self.expression += other.expression
@@ -346,7 +345,6 @@ class PortedObject(ABC):
         """
         for port_info in ports:
             port = self.parse_port_entry(port_info, VariablePort)
-            print(f"adding port {port.name}")
             self.variable_ports[port.name] = port
 
     def parse_assignment_entry(
@@ -500,7 +498,6 @@ class VariablePortedObject(PortedObject):
             internal_variables = set(self.internals.keys())
             variable_ports = set(self.variable_ports.keys())
             input_ports = set(self.input_ports.keys())
-            print(free_symbols, internal_variables, input_ports)
             undefined_ports = free_symbols - internal_variables - variable_ports - input_ports
             self.add_input_ports(*undefined_ports)
 
@@ -1129,7 +1126,6 @@ class CompiledPortedObject(CompositePortedObject):
         # without full recompilation
         assg_dict = {}
         for assg in parameter_assignments:
-            # print(str(assg.parameter.symbol))
             assg_dict[str(assg.symbol)] = assg
         for name, port in self.input_ports.items():
             if name in assg_dict:

@@ -8,7 +8,7 @@ from psymple.ported_objects import (
     FunctionalPortedObject,
     VariablePortedObject,
 )
-from psymple.system import System
+from psymple.system import System, Simulation
 
 
 ##### Temperature model
@@ -103,28 +103,19 @@ sys = CompositePortedObject(
     children=[temp, pred, prey, pred_prey],
     variable_ports=["pred_n", "prey_n"],
     variable_wires=[
-        (["pred.n", "pred_prey.pred"], "pred_n"),
-        (["prey.n", "pred_prey.prey"], "prey_n"),
+        (["pred.n", "pred_prey.pred"], None, "pred_n"),
+        (["prey.n", "pred_prey.prey"], None, "prey_n"),
     ],
     directed_wires=[("temp.temp", "pred.temp"), ("temp.temp", "prey.temp")],
 )
 
-compiled = sys.compile()
+S = System(sys)
 
-print(compiled.variable_ports, compiled.internal_parameter_assignments)
+sim = Simulation(S, solver="discrete_int")
 
-var, par = compiled.get_assignments()
-sys = System(variable_assignments=var, parameter_assignments=par)
+sim.variables["pred_n"].time_series = [50]
+sim.variables["prey_n"].time_series = [100]
 
-print(var)
+sim.simulate(10, n_steps=400)
 
-sys.variables["pred_n"].time_series = [50]
-sys.variables["prey_n"].time_series = [100]
-
-
-for var in sys.variables:
-    print(f"d({var.symbol})/dT = {var.update_rule.equation}")
-
-sys.simulate(t_end=365, n_steps=1000, mode="discrete")
-
-sys.plot_solution({"pred_n", "prey_n"})
+sim.plot_solution({"pred_n", "prey_n"})
