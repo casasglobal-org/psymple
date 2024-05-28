@@ -32,9 +32,9 @@ class TestAPI(unittest.TestCase):
     def test_ported_object_api_input_ports(self):
         X = CompositePortedObject("X")
         X.add_input_ports(InputPort("A", description="input port A", default_value=4), dict(name="B", default_value=2), "C")
-        names = [port.name for port in A.input_ports.values()]
-        descriptions = [port.description for port in A.input_ports.values()]
-        default_values = [port.default_value for port in A.input_ports.values()]
+        names = [port.name for port in X.input_ports.values()]
+        descriptions = [port.description for port in X.input_ports.values()]
+        default_values = [port.default_value for port in X.input_ports.values()]
         self.assertEqual(names, ["A", "B", "C"])
         self.assertEqual(descriptions, ["input port A", "", ""])
         self.assertEqual(default_values, [4,2,None])
@@ -42,8 +42,8 @@ class TestAPI(unittest.TestCase):
     def test_ported_object_api_output_ports(self):
         X = CompositePortedObject("X")
         X.add_output_ports(OutputPort("A", description="output port A"), dict(name="B", description="output port B"), "C")
-        names = [port.name for port in A.output_ports.values()]
-        descriptions = [port.description for port in A.output_ports.values()]
+        names = [port.name for port in X.output_ports.values()]
+        descriptions = [port.description for port in X.output_ports.values()]
         self.assertEqual(names, ["A", "B", "C"])
         self.assertEqual(descriptions, ["output port A", "output port B", ""])
 
