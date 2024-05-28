@@ -52,7 +52,6 @@ class SimVariable(Variable):
         new_value = self.update_rule.evaluate_update(self.buffer, time_step)
         self.time_series.append(new_value)
 
-
 class Variables(Container):
     def __init__(self, variables: List[Variable] = None):
         super().__init__(variables)

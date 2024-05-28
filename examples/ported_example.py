@@ -3,82 +3,128 @@ import sys
 
 sys.path.insert(0, str(pathlib.Path(__file__).parents[1]))
 
-import sympy as sym
-
 from psymple.ported_objects import (
-    CompiledPort,
     CompositePortedObject,
-    DifferentialAssignment,
-    VariableAggregationWiring,
-    VariablePort,
+    FunctionalPortedObject,
     VariablePortedObject,
-    InputPort,
 )
 from psymple.system import System
-from psymple.variables import (
-    # Parameters,
-    # SimParameter,
-    # SimUpdateRule,
-    SimVariable,
-    Variable,
-    Variables,
+
+
+##### Temperature model
+
+temp = FunctionalPortedObject(
+    name="temp",
+    assignments=[("temp", "20*sin(2*pi*(T-100)/365) + 10")],
 )
 
-rabbits = Variable("rabbits", 10)
-# assg = DifferentialAssignment(rabbits, sym.sympify("r_growth") * sym.sympify("rabbits"))
-assg = DifferentialAssignment(rabbits, 1.1 * sym.sympify("rabbits"))
-rabbit_growth = VariablePortedObject("rabbit growth", [assg])
-# rabbit_growth.add_input_port(InputPort("r_growth", default_value=1.1))
+"""PREDATOR"""
 
-foxes = Variable("foxes", 5)
-assg = DifferentialAssignment(foxes, -0.4 * sym.sympify("foxes"))
-fox_growth = VariablePortedObject("fox growth", [assg])
+##### Predator mortality #####
 
-rabbits = Variable("rabbits", 10)
-foxes = Variable("foxes", 5)
-assg1 = DifferentialAssignment(
-    rabbits, -0.4 * sym.sympify("foxes") * sym.sympify("rabbits")
-)
-assg2 = DifferentialAssignment(
-    foxes, 0.1 * sym.sympify("foxes") * sym.sympify("rabbits")
-)
-predation = VariablePortedObject("predation", [assg1, assg2])
-
-cpo_eco = CompositePortedObject("ecosystem")
-cpo_eco.add_child(rabbit_growth)
-cpo_eco.add_child(fox_growth)
-cpo_eco.add_child(predation)
-cpo_eco.add_variable_port(VariablePort("foxes"))
-cpo_eco.add_variable_port(VariablePort("rabbits"))
-cpo_eco.add_variable_aggregation_wiring(
-    ["rabbit growth.rabbits", "predation.rabbits"], "rabbits"
-)
-cpo_eco.add_variable_aggregation_wiring(
-    ["fox growth.foxes", "predation.foxes"], "foxes"
+mort = FunctionalPortedObject(
+    name="mort",
+    assignments=[("function", "3/10")],  # 0.0001*temp**2 - 0.0005*temp + 0.01
 )
 
-compiled = cpo_eco.compile()
+##### Predator dynamics #####
 
-for s in compiled.symbol_identifications:
-    print(s)
-for sc in compiled.get_all_symbol_containers():
-    print(sc)
+pred_dyn = VariablePortedObject(
+    name="dyn",
+    assignments=[("n", "-mort*n")],
+)
+
+##### Predator functional population #####
+
+pred = CompositePortedObject(
+    name="pred",
+    children=[mort, pred_dyn],
+    variable_ports=["n"],
+    input_ports=["temp"],
+    directed_wires=[
+        #("temp", "mort.temp"), 
+        ("mort.function", "dyn.mort"),
+        ],
+    variable_wires=[(["dyn.n"], "n")],
+)
+
+"""---"""
+
+"""PREY"""
+
+##### Prey birth #####
+
+birth = FunctionalPortedObject(
+    name="birth",
+    assignments=[
+        ("function", "15/100")
+    ],  # max(0,0.2 - (0.0001*temp**2 - 0.0005*temp + 0.005))
+)
+
+##### Prey dynamics #####
+
+prey_dyn = VariablePortedObject(
+    name="dyn",
+    assignments=[("n", "birth*n")],
+)
+
+##### Prey functional population #####
+
+prey = CompositePortedObject(
+    name="prey",
+    children=[birth, prey_dyn],
+    variable_ports=["n"],
+    input_ports=["temp"],
+    directed_wires=[
+        #("temp", "birth.temp"), 
+        ("birth.function", "dyn.birth"),
+        ],
+    variable_wires=[(["dyn.n"], "n")],
+)
+
+"""PREDATOR-PREY DYNAMICS"""
+
+pred_prey = VariablePortedObject(
+    name="pred_prey",
+    input_ports=[
+        dict(name="predation_rate", default_value=1/10 ),
+        dict(name="predator_response_rate", default_value=1/10),
+    ],
+    assignments=[
+        ("pred", "predator_response_rate*pred*prey"),
+        ("prey", "-predation_rate*pred*prey"),
+    ],
+)
+
+"""SYSTEM"""
+
+sys = CompositePortedObject(
+    name="system",
+    children=[temp, pred, prey, pred_prey],
+    variable_ports=["pred_n", "prey_n"],
+    variable_wires=[
+        (["pred.n", "pred_prey.pred"], "pred_n"),
+        (["prey.n", "pred_prey.prey"], "prey_n"),
+    ],
+    directed_wires=[("temp.temp", "pred.temp"), ("temp.temp", "prey.temp")],
+)
+
+compiled = sys.compile()
+
+print(compiled.variable_ports, compiled.internal_parameter_assignments)
 
 var, par = compiled.get_assignments()
 sys = System(variable_assignments=var, parameter_assignments=par)
 
-for var in sys.variables:
-    print(f"d({var.symbol})/dT = {var.update_rule.equation}")
+print(var)
 
-sys.simulate(
-    t_end=50, n_steps=24, mode="cts"
-)  # Simulate for 100 days, 24 steps per day (hourly simulation)
+sys.variables["pred_n"].time_series = [50]
+sys.variables["prey_n"].time_series = [100]
 
-sys.plot_solution({"rabbits", "foxes"})
 
 for var in sys.variables:
     print(f"d({var.symbol})/dT = {var.update_rule.equation}")
 
-print("Final values:")
-for symbol, value in zip(sys.variables.get_symbols(), sys.variables.get_final_values()):
-    print(f"{symbol} = {value}")
+sys.simulate(t_end=365, n_steps=1000, mode="discrete")
+
+sys.plot_solution({"pred_n", "prey_n"})
