@@ -122,7 +122,7 @@ class TestInitialization(unittest.TestCase):
     def test_variable_only(self):
         rabbits = Variable("rabbits", 50)
         assg = DifferentialAssignment(rabbits, 0.1 * sym.Symbol("rabbits"))
-        vpo_growth = VariablePortedObject("rabbit growth", [assg])
+        vpo_growth = VariablePortedObject("rabbit growth", assignments=[assg])
 
         compiled = vpo_growth.compile()
         self.assertIn("rabbits", compiled.variable_ports)
@@ -133,7 +133,7 @@ class TestInitialization(unittest.TestCase):
     def test_unexposed_variable(self):
         rabbits = Variable("rabbits", 50)
         assg = DifferentialAssignment(rabbits, 0.1 * sym.Symbol("rabbits"))
-        vpo_growth = VariablePortedObject("rabbit growth", [assg], expose_ports=False)
+        vpo_growth = VariablePortedObject("rabbit growth", assignments=[assg], create_variable_ports=False)
 
         compiled = vpo_growth.compile()
         self.assertIn("rabbits", compiled.internal_variable_assignments)
@@ -146,7 +146,7 @@ class TestInitialization(unittest.TestCase):
         assg = DifferentialAssignment(
             rabbits, sym.Symbol("r_growth") * sym.Symbol("rabbits")
         )
-        rabbit_growth = VariablePortedObject("rabbit growth", [assg])
+        rabbit_growth = VariablePortedObject("rabbit growth", assignments=[assg], create_input_ports=False)
 
         # r_growth has no corresponding input port yet
         with self.assertRaises(DependencyError):
@@ -168,13 +168,13 @@ class TestInitialization(unittest.TestCase):
         assg = DifferentialAssignment(
             rabbits, 0.1 * sym.Symbol("rabbits")
         )  # 0.1 is the growth rate
-        vpo_growth = VariablePortedObject("rabbit growth", [assg])
+        vpo_growth = VariablePortedObject("rabbit growth", assignments=[assg])
 
         rabbits = Variable("rabbits", 50)
         assg = DifferentialAssignment(
             rabbits, -0.05 * sym.Symbol("rabbits")
         )  # 0.05 is the death rate
-        vpo_death = VariablePortedObject("rabbit death", [assg])
+        vpo_death = VariablePortedObject("rabbit death", assignments=[assg])
 
         cpo_rabbits = CompositePortedObject("rabbit system")
         cpo_rabbits.add_child(vpo_growth)
@@ -201,7 +201,7 @@ class TestInitialization(unittest.TestCase):
         assg1 = DifferentialAssignment(
             out, 0.1 * sym.Symbol("in")
         )  # 0.1 is the growth rate
-        vpo_1 = VariablePortedObject("flow1", [assg1, assg2])
+        vpo_1 = VariablePortedObject("flow1", assignments=[assg1, assg2])
 
         inn = Variable("in", 50)
         out = Variable("out", 75)
@@ -211,7 +211,7 @@ class TestInitialization(unittest.TestCase):
         assg1 = DifferentialAssignment(
             out, 0.2 * sym.Symbol("in")
         )  # 0.1 is the growth rate
-        vpo_2 = VariablePortedObject("flow2", [assg1, assg2])
+        vpo_2 = VariablePortedObject("flow2", assignments=[assg1, assg2])
 
         cpo = CompositePortedObject("flow system")
         cpo.add_child(vpo_1)
@@ -251,11 +251,11 @@ class TestInitialization(unittest.TestCase):
     def test_two_variables(self):
         rabbits = Variable("rabbits", 50)
         assg = DifferentialAssignment(rabbits, 0.1 * sym.Symbol("rabbits"))
-        rabbit_growth = VariablePortedObject("rabbit growth", [assg])
+        rabbit_growth = VariablePortedObject("rabbit growth", assignments=[assg])
 
         foxes = Variable("foxes", 50)
         assg = DifferentialAssignment(foxes, 0.04 * sym.Symbol("foxes"))
-        fox_growth = VariablePortedObject("fox growth", [assg])
+        fox_growth = VariablePortedObject("fox growth", assignments=[assg])
 
         rabbits = Variable("rabbits", 50)
         foxes = Variable("foxes", 50)
@@ -265,7 +265,7 @@ class TestInitialization(unittest.TestCase):
         assg2 = DifferentialAssignment(
             foxes, 0.3 * sym.Symbol("foxes") * sym.Symbol("rabbits")
         )
-        predation = VariablePortedObject("predation", [assg1, assg2])
+        predation = VariablePortedObject("predation", assignments=[assg1, assg2])
 
         cpo_eco = CompositePortedObject("ecosystem")
         cpo_eco.add_child(rabbit_growth)
@@ -303,7 +303,7 @@ class TestInitialization(unittest.TestCase):
         assg = DifferentialAssignment(
             rabbits, sym.Symbol("r_growth") * sym.Symbol("rabbits")
         )
-        rabbit_growth = VariablePortedObject("rabbit growth", [assg])
+        rabbit_growth = VariablePortedObject("rabbit growth", assignments=[assg], create_input_ports=False)
         growth_input_port = InputPort("r_growth", default_value=0.01)
         rabbit_growth.add_input_port(growth_input_port)
 
@@ -358,7 +358,7 @@ class TestInitialization(unittest.TestCase):
         assg = DifferentialAssignment(
             rabbits, sym.Symbol("r_growth") * sym.Symbol("rabbits")
         )
-        rabbit_growth = VariablePortedObject("rabbit growth", [assg])
+        rabbit_growth = VariablePortedObject("rabbit growth", assignments=[assg], create_input_ports=False)
         rabbit_growth.add_input_port(InputPort("r_growth"))
 
         cpo_l2 = CompositePortedObject("level2")
@@ -397,7 +397,7 @@ class TestInitialization(unittest.TestCase):
     def test_output_forwarding(self):
         rabbits = Variable("rabbits", 50)
         assg = DifferentialAssignment(rabbits, 0.01 * sym.Symbol("rabbits"))
-        rabbit_growth = VariablePortedObject("rabbit growth", [assg])
+        rabbit_growth = VariablePortedObject("rabbit growth", assignments=[assg])
 
         fpo = FunctionalPortedObject("double")
         fpo.add_assignment(ParameterAssignment("new", "2*old"), create_input_ports=True)
@@ -457,7 +457,7 @@ class TestInitialization(unittest.TestCase):
         assg = DifferentialAssignment(
             rabbits, sym.Symbol("r_growth") * sym.Symbol("rabbits")
         )
-        rabbit_growth = VariablePortedObject("rabbit growth", [assg])
+        rabbit_growth = VariablePortedObject("rabbit growth", assignments=[assg], create_input_ports=False)
         rabbit_growth.add_input_port(InputPort("r_growth"))
 
         cpo_eco = CompositePortedObject("ecosystem")
@@ -517,7 +517,7 @@ class TestSimulation(unittest.TestCase):
     def test_no_params(self):
         rabbits = Variable("rabbits", 2)
         assg = DifferentialAssignment(rabbits, 1 * sym.Symbol("rabbits"))
-        vpo_growth = VariablePortedObject("rabbit growth", [assg])
+        vpo_growth = VariablePortedObject("rabbit growth", assignments=[assg])
         compiled = vpo_growth.compile()
 
         var, par = compiled.get_assignments()
@@ -544,7 +544,7 @@ class TestSimulation(unittest.TestCase):
         assg = DifferentialAssignment(
             rabbits, sym.Symbol("r_growth") * sym.Symbol("rabbits")
         )
-        rabbit_growth = VariablePortedObject("rabbit growth", [assg])
+        rabbit_growth = VariablePortedObject("rabbit growth", assignments=[assg], create_input_ports=False)
         rabbit_growth.add_input_port(InputPort("r_growth"))
 
         cpo_eco = CompositePortedObject("ecosystem")
