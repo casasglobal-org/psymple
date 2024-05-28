@@ -13,7 +13,7 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     - name: Set up Python
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@v5
       with:
         python-version: "3.x"
     - name: Install pypa/build
@@ -25,10 +25,32 @@ jobs:
     - name: Build a binary wheel and a source tarball
       run: python3 -m build
     - name: Store the distribution packages
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: python-package-distributions
         path: dist/
+
+  publish-to-pypi:
+      name: Publish Python distribution to PyPI
+      needs:
+      - build
+      runs-on: ubuntu-latest
+  
+      environment:
+        name: release
+        url: https://pypi.org/p/psymple
+  
+      permissions:
+        id-token: write  # IMPORTANT: mandatory for trusted publishing
+  
+      steps:
+      - name: Download all the dists
+        uses: actions/download-artifact@v4
+        with:
+          name: python-package-distributions
+          path: dist/
+      - name: Publish distribution to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
  
   publish-to-testpypi:
     name: Publish Python distribution to TestPyPI
@@ -38,14 +60,14 @@ jobs:
 
     environment:
       name: release
-      url: https://test.pypi.org/p/psymple-test
+      url: https://test.pypi.org/p/psymple
 
     permissions:
       id-token: write  # IMPORTANT: mandatory for trusted publishing
 
     steps:
     - name: Download all the dists
-      uses: actions/download-artifact@v3
+      uses: actions/download-artifact@v4
       with:
         name: python-package-distributions
         path: dist/
@@ -60,7 +82,7 @@ jobs:
       Sign the Python distribution with Sigstore
       and upload them to GitHub Release
     needs:
-    - publish-to-testpypi
+    - publish-to-pypi
     runs-on: ubuntu-latest
 
     permissions:
@@ -69,7 +91,7 @@ jobs:
 
     steps:
     - name: Download all the dists
-      uses: actions/download-artifact@v3
+      uses: actions/download-artifact@v4
       with:
         name: python-package-distributions
         path: dist/
