@@ -17,7 +17,7 @@ dependencies = [
     "sympy>=1.9",
     "scipy>=1.11",
 ]
-requires-python = ">=3.9"
+requires-python = ">=3.10"
 #keywords = ["one", "two"]
 #license = {text = "BSD-3-Clause"}
 classifiers = [
