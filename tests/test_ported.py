@@ -529,7 +529,7 @@ class TestSimulation(unittest.TestCase):
         integrator._advance_time_unit(1)
         integrator._advance_time_unit(1)
         self.assertEqual(len(sim.variables), 1)
-        self.assertIn("rabbits", sim.variables.keys())
+        self.assertIn(sym.Symbol("rabbits"), sim.variables.keys())
         variable = system.variables["rabbits"]
         self.assertEqual(variable.symbol, sym.Symbol("rabbits"))
         self.assertEqual(variable.time_series, [2, 4, 8])
@@ -570,7 +570,7 @@ class TestSimulation(unittest.TestCase):
         integrator._advance_time_unit(1)
         integrator._advance_time_unit(1)
         self.assertEqual(len(system.variables), 1)
-        self.assertIn("rabbits", system.variables.keys())
+        self.assertIn(sym.Symbol("rabbits"), system.variables.keys())
         variable = system.variables["rabbits"]
         self.assertEqual(variable.symbol, sym.Symbol("rabbits"))
         self.assertEqual(variable.time_series, [1, 7, 49])

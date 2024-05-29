@@ -113,9 +113,8 @@ S = System(sys)
 
 sim = Simulation(S, solver="discrete_int")
 
-sim.variables["pred_n"].time_series = [50]
-sim.variables["prey_n"].time_series = [100]
 
+sim.set_initial_values({"pred_n": 50, "prey_n": 100})
 sim.simulate(10, n_steps=400)
 
 sim.plot_solution({"pred_n", "prey_n"})

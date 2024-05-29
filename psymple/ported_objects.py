@@ -10,12 +10,10 @@ from copy import deepcopy
 from psymple.abstract import DependencyError, SymbolWrapper
 from psymple.variables import (
     Parameter,
-    Parameters,
     SimParameter,
     SimUpdateRule,
     SimVariable,
     Variable,
-    Variables,
     UpdateRule,
 )
 
@@ -70,7 +68,7 @@ class Assignment:
         assignment_symbols = self.expression.free_symbols
         return assignment_symbols - global_symbols - {self.symbol_wrapper.symbol}
 
-    def to_update_rule(self, variables=Variables(), parameters=Parameters()):
+    def to_update_rule(self, variables, parameters):
         """
         Convert to UpdateRules so that it can be used in the Simulation.
 
@@ -85,11 +83,6 @@ class Assignment:
 
 
 class DifferentialAssignment(Assignment):
-    # TODO: Ensure we that the symbol_wrapper is instance of Variable.
-    # def __init__(self, variable, expression):
-    #     super().__init__(variable, expression)
-    # self.variable = variable    # has a symbol, description, initial value
-    # self.expression = expression
     def __init__(self, symbol_wrapper, expression):
         super().__init__(symbol_wrapper, expression)
         # Coerce self.symbol_wrapper into instance of Variable. Variables 
