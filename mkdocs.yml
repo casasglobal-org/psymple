@@ -1,0 +1,5 @@
+# mkdocs.yml
+site_name: Psymple Docs
+
+theme:
+  name: "material"
