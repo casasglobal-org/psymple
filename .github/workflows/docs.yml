@@ -1,6 +1,7 @@
-name: ci 
+name: build docs
 on:
-  push
+  push:
+  workflow_dispatch:
 #    branches:
 #      - main
 permissions:
