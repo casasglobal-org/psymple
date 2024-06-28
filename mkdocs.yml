@@ -9,5 +9,5 @@ plugins:
   - mkdocstrings
 
 nav:
-  Introduction: index.md
-  Tutorials: tutorials.md
+  - Introduction: index.md
+  - Tutorials: tutorials.md
