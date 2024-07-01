@@ -42,31 +42,17 @@ class SimVariable(Variable):
     def set_update_rule(self, update_rule):
         self.update_rule = update_rule
 
-    def substitute_parameters(self, variables):
-        self.update_rule.substitute_parameters(variables)
+    def __str__(self):
+        return f"d/dt {self.symbol} = {self.update_rule.equation}"
 
-    def update_buffer(self):
-        self.buffer = self.time_series[-1]
-
-    def update_time_series(self, time_step):
-        new_value = self.update_rule.evaluate_update(self.buffer, time_step)
-        self.time_series.append(new_value)
-
-class Variables(Container):
-    def __init__(self, variables: List[Variable] = None):
-        super().__init__(variables)
-        self.variables = self.objects
-        self.contains_type = Variable
-        self.check_duplicates = True
-
-    def get_symbols(self):
-        return [obj.symbol for obj in self.objects]
-
-    def get_time_series(self):
-        return [obj.time_series for obj in self.objects]
-
-    def get_final_values(self):
-        return [obj.time_series[-1] for obj in self.objects]
+    def get_readout(self, print_vars_dict = {}, print_pars_dict = {}):
+        print_symbol = print_vars_dict[self.symbol]
+        try:
+            time_symbol = print_vars_dict[T]
+        except:
+            time_symbol = T
+        print_equation = self.update_rule.equation.subs(print_vars_dict | print_pars_dict)
+        return sym.latex(sym.Eq(sym.Derivative(print_symbol, time_symbol), print_equation), mul_symbol="dot")
 
 
 class Parameter(SymbolWrapper):
@@ -119,25 +105,10 @@ class SimParameter(Parameter):
     def expression(self):
         return self.update_rule.equation
 
-    def substitute_parameters(self, variables):
-        self.update_rule.substitute_parameters(variables)
-
-    def update_value(self):
-        self.computed_value = self.update_rule.evaluate_expression()
-
-
-class Parameters(Container):
-    def __init__(self, parameters: List[Parameter] = None):
-        super().__init__(parameters)
-        self.parameters = self.objects
-        self.contains_type = (Parameter, Variable)
-        self.check_duplicates = True
-
-    def get_symbols(self):
-        return [obj.symbol for obj in self.objects]
-
-    def get_values(self):
-        return [obj.value for obj in self.objects]
+    def get_readout(self, print_vars_dict = {}, print_pars_dict = {}):
+        print_symbol = print_pars_dict[self.symbol]
+        print_equation = self.expression.subs(print_vars_dict | print_pars_dict)
+        return sym.latex(sym.Eq(print_symbol, print_equation), mul_symbol = "dot")
 
 
 class UpdateRule:
