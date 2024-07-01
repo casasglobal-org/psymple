@@ -25,6 +25,7 @@ class SymbolWrapper:
 
 
 class Container(ABC):
+    # TODO: Deprecated
     @abstractmethod
     def __init__(self, objects):
         if objects is None:
