@@ -4,6 +4,7 @@ from numpy import linspace
 
 import matplotlib.pyplot as plt
 import networkx as nx
+import sympy as sym
 
 from psymple.globals import T
 from psymple.variables import (
@@ -38,9 +39,17 @@ class System:
 
         variable_assignments, parameter_assignments = compiled.get_assignments()
 
+        from psymple.ported_objects import DefaultParameterAssignment
+        print([p for p in parameter_assignments if isinstance(p,DefaultParameterAssignment)])
+
+        self.required_input_ports = compiled.input_ports
+        print(self.required_input_ports)
+
         variables, parameters = self.get_symbols(variable_assignments, parameter_assignments)
         self.create_simulation_variables(variable_assignments, variables | {T}, parameters)
         self.create_simulation_parameters(parameter_assignments, variables | {T}, parameters)
+        
+        self.variables.update({T: self.time})
 
     def create_time_variable(self):
         # At the moment the only global variable is time
@@ -73,7 +82,7 @@ class System:
             self.parameters[assg.parameter.symbol] = sim_parameter 
 
     def _compute_parameter_update_order(self):
-        variable_symbols = set(self.variables.keys()) | {T}
+        variable_symbols = set(self.variables.keys())
         parameter_symbols = self.parameters
         G = nx.DiGraph()
         G.add_nodes_from(parameter_symbols)
@@ -93,6 +102,27 @@ class System:
                 f"System parameters contain cyclic dependencies"
             )
         return nodes
+
+    def get_readout(self):
+        print_vars_dict = {v: sym.Symbol(f"x_{i}") for i, v in enumerate(self.variables) if v is not T} | {T: sym.Symbol("t")}
+        print_pars_dict = {p: sym.Symbol(f"a_{i}") for i, p in enumerate(self.parameters)}
+        odes = [var.get_readout(print_vars_dict, print_pars_dict) for var in self.variables.values()]
+        functions = [par.get_readout(print_vars_dict, print_pars_dict) for par in self.parameters.values()]
+        print(f"system ODEs: \[{self.combine_latex(*odes)}\]")
+        print(f"system functions: \[{self.combine_latex(*functions)}\]")
+        print(f"variable mappings: {print_vars_dict}")
+        print(f"parameter mappings: {print_pars_dict}")
+
+    def combine_latex(self, *equations):
+        n = len(equations)
+        if n == 0:
+            return ""
+        l1 = r"\left\{\begin{matrix}%s\end{matrix}\right."
+        l2 = r" \\ ".join(eq for eq in equations)
+        return l1 % l2
+            
+
+
 
 
 
@@ -117,7 +147,7 @@ class Simulation:
         update_rule.equation = update_rule.equation.subs(
             ((p, self.parameters[p].expression) for p in update_rule.parameters) 
         )
-        update_rule._initialize_dependencies(set(self.variables.keys()) | {T}, set())
+        update_rule._initialize_dependencies(set(self.variables.keys()), set())
         update_rule._equation_lambdified = None
 
     def set_initial_values(self, values: dict):
@@ -180,12 +210,12 @@ class DiscreteIntegrator(Solver):
             self._advance_time_unit(self.n_steps)
 
     def _advance_time(self, time_step):
-        self._update_buffer(self.simulation.time)
+        #self._update_buffer(self.simulation.time)
         for variable in self.simulation.variables.values():
             self._update_buffer(variable)
         for variable in self.simulation.variables.values():
             self._update_time_series(variable, time_step)
-        self._update_time_series(self.simulation.time, time_step)
+        #self._update_time_series(self.simulation.time, time_step)
 
     def _update_buffer(self, variable):
         variable.buffer = variable.time_series[-1]

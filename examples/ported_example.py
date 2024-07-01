@@ -24,7 +24,7 @@ temp = FunctionalPortedObject(
 
 mort = FunctionalPortedObject(
     name="mort",
-    assignments=[("function", "3/10")],  # 0.0001*temp**2 - 0.0005*temp + 0.01
+    assignments=[("function", "0.0001*temp**2 - 0.0005*temp + 0.01")],  # 3/10
 )
 
 ##### Predator dynamics #####
@@ -42,8 +42,8 @@ pred = CompositePortedObject(
     variable_ports=["n"],
     input_ports=["temp"],
     directed_wires=[
-        #("temp", "mort.temp"), 
-        ("mort.function", "dyn.mort"),
+        ("temp", ["mort.temp"]), 
+        ("mort.function", ["dyn.mort"]),
         ],
     variable_wires=[(["dyn.n"], "n")],
 )
@@ -56,9 +56,23 @@ pred = CompositePortedObject(
 
 birth = FunctionalPortedObject(
     name="birth",
+    input_ports=[
+        {"name": "min_birth_rate", "default_value": 0},
+        {"name": "max_birth_rate", "default_value": 0.3},
+        {"name": "birth_rate_coeff_1", "default_value": -0.0001},
+        {"name": "birth_rate_coeff_2", "default_value": 0.0005},
+        {"name": "birth_rate_coeff_3", "default_value": 0.295},
+    ],
     assignments=[
-        ("function", "15/100")
-    ],  # max(0,0.2 - (0.0001*temp**2 - 0.0005*temp + 0.005))
+        ("function", "max(min_birth_rate,max_birth_rate - (birth_rate_coeff_1*temp**2 - birth_rate_coeff_2*temp + birth_rate_coeff_3))"),
+    ],  # 15/100
+)
+
+##### Birth #####
+
+birth = FunctionalPortedObject(
+    name="birth_rate",
+    assignments=[("function", "1 - temp**2")]
 )
 
 ##### Prey dynamics #####
@@ -76,8 +90,8 @@ prey = CompositePortedObject(
     variable_ports=["n"],
     input_ports=["temp"],
     directed_wires=[
-        #("temp", "birth.temp"), 
-        ("birth.function", "dyn.birth"),
+        ("temp", ["birth_rate.temp"]), 
+        ("birth_rate.function", ["dyn.birth"]),
         ],
     variable_wires=[(["dyn.n"], "n")],
 )
@@ -87,13 +101,14 @@ prey = CompositePortedObject(
 pred_prey = VariablePortedObject(
     name="pred_prey",
     input_ports=[
-        dict(name="predation_rate", default_value=1/10 ),
-        dict(name="predator_response_rate", default_value=1/10),
+        dict(name="predation_rate"),
+        dict(name="predator_response_rate", default_value=1/100000),
     ],
     assignments=[
         ("pred", "predator_response_rate*pred*prey"),
         ("prey", "-predation_rate*pred*prey"),
     ],
+    
 )
 
 """SYSTEM"""
@@ -101,20 +116,26 @@ pred_prey = VariablePortedObject(
 sys = CompositePortedObject(
     name="system",
     children=[temp, pred, prey, pred_prey],
+    input_ports=[{"name": "predation_rate", "default_value": 1/10}],
     variable_ports=["pred_n", "prey_n"],
     variable_wires=[
-        (["pred.n", "pred_prey.pred"], None, "pred_n"),
-        (["prey.n", "pred_prey.prey"], None, "prey_n"),
+        (["pred.n", "pred_prey.pred"], "pred_n"),
+        (["prey.n", "pred_prey.prey"], "prey_n"),
     ],
-    directed_wires=[("temp.temp", "pred.temp"), ("temp.temp", "prey.temp")],
+    directed_wires=[("temp.temp", ["pred.temp", "prey.temp"]), ("predation_rate", ["pred_prey.predation_rate"])],
 )
 
 S = System(sys)
 
+#S.get_readout()
+
 sim = Simulation(S, solver="discrete_int")
 
 
-sim.set_initial_values({"pred_n": 50, "prey_n": 100})
-sim.simulate(10, n_steps=400)
+sim.set_initial_values({"pred_n": 5, "prey_n": 1000})
+sim.simulate(50, n_steps=400)
 
 sim.plot_solution({"pred_n", "prey_n"})
+
+
+
