@@ -20,6 +20,7 @@ from psymple.ported_objects import (
     InputPort,
     OutputPort,
     ParameterAssignment,
+    FunctionalAssignment,
     Port,
     PortedObject,
     VariableAggregationWiring,
@@ -28,20 +29,29 @@ from psymple.ported_objects import (
     WiringError,
 )
 
+
 class TestAPI(unittest.TestCase):
     def test_ported_object_api_input_ports(self):
         X = CompositePortedObject("X")
-        X.add_input_ports(InputPort("A", description="input port A", default_value=4), dict(name="B", default_value=2), "C")
+        X.add_input_ports(
+            InputPort("A", description="input port A", default_value=4),
+            dict(name="B", default_value=2),
+            "C",
+        )
         names = [port.name for port in X.input_ports.values()]
         descriptions = [port.description for port in X.input_ports.values()]
         default_values = [port.default_value for port in X.input_ports.values()]
         self.assertEqual(names, ["A", "B", "C"])
         self.assertEqual(descriptions, ["input port A", "", ""])
-        self.assertEqual(default_values, [4,2,None])
+        self.assertEqual(default_values, [4, 2, None])
 
     def test_ported_object_api_output_ports(self):
         X = CompositePortedObject("X")
-        X.add_output_ports(OutputPort("A", description="output port A"), dict(name="B", description="output port B"), "C")
+        X.add_output_ports(
+            OutputPort("A", description="output port A"),
+            dict(name="B", description="output port B"),
+            "C",
+        )
         names = [port.name for port in X.output_ports.values()]
         descriptions = [port.description for port in X.output_ports.values()]
         self.assertEqual(names, ["A", "B", "C"])
@@ -49,7 +59,11 @@ class TestAPI(unittest.TestCase):
 
     def test_ported_object_api_variable_ports(self):
         X = CompositePortedObject("X")
-        X.add_variable_ports(VariablePort("A", description="variable port A"), dict(name="B", description="variable port B"), "C")
+        X.add_variable_ports(
+            VariablePort("A", description="variable port A"),
+            dict(name="B", description="variable port B"),
+            "C",
+        )
         names = [port.name for port in X.variable_ports.values()]
         descriptions = [port.description for port in X.variable_ports.values()]
         self.assertEqual(names, ["A", "B", "C"])
@@ -57,10 +71,10 @@ class TestAPI(unittest.TestCase):
 
     def test_ported_object_api_all_ports(self):
         X = CompositePortedObject(
-            name = "X",
-            input_ports = [dict(name="A", description="input port A", default_value=4)],
-            output_ports = [OutputPort("B", description = "output port B")],
-            variable_ports = ["C"],
+            name="X",
+            input_ports=[dict(name="A", description="input port A", default_value=4)],
+            output_ports=[OutputPort("B", description="output port B")],
+            variable_ports=["C"],
         )
 
         self.assertEqual(list(X.input_ports.keys()), ["A"])
@@ -76,10 +90,13 @@ class TestAPI(unittest.TestCase):
         self.assertEqual(X.variable_ports["C"].name, "C")
         self.assertEqual(X.variable_ports["C"].description, "")
 
+
 class TestInitialization(unittest.TestCase):
     def test_functional(self):
         fpo = FunctionalPortedObject(
-            "double", [InputPort("old")], [ParameterAssignment("new", "2*old")]
+            name="double",
+            input_ports=[InputPort("old")],
+            assignments=[FunctionalAssignment("new", "2*old")],
         )
 
         # Test prefixing of symbols with PO name
@@ -104,11 +121,11 @@ class TestInitialization(unittest.TestCase):
 
     def test_functional2x2(self):
         fpo = FunctionalPortedObject(
-            "operations",
-            [InputPort("in1"), InputPort("in2")],
-            [
-                ParameterAssignment("sum", "in1+in2"),
-                ParameterAssignment("prod", "in1*in2"),
+            name="operations",
+            input_ports=[InputPort("in1"), InputPort("in2")],
+            assignments=[
+                FunctionalAssignment("sum", "in1+in2"),
+                FunctionalAssignment("prod", "in1*in2"),
             ],
         )
         compiled = fpo.compile()
@@ -133,7 +150,9 @@ class TestInitialization(unittest.TestCase):
     def test_unexposed_variable(self):
         rabbits = Variable("rabbits", 50)
         assg = DifferentialAssignment(rabbits, 0.1 * sym.Symbol("rabbits"))
-        vpo_growth = VariablePortedObject("rabbit growth", assignments=[assg], create_variable_ports=False)
+        vpo_growth = VariablePortedObject(
+            "rabbit growth", assignments=[assg], create_variable_ports=False
+        )
 
         compiled = vpo_growth.compile()
         self.assertIn("rabbits", compiled.internal_variable_assignments)
@@ -146,7 +165,9 @@ class TestInitialization(unittest.TestCase):
         assg = DifferentialAssignment(
             rabbits, sym.Symbol("r_growth") * sym.Symbol("rabbits")
         )
-        rabbit_growth = VariablePortedObject("rabbit growth", assignments=[assg], create_input_ports=False)
+        rabbit_growth = VariablePortedObject(
+            "rabbit growth", assignments=[assg], create_input_ports=False
+        )
 
         # r_growth has no corresponding input port yet
         with self.assertRaises(DependencyError):
@@ -303,7 +324,9 @@ class TestInitialization(unittest.TestCase):
         assg = DifferentialAssignment(
             rabbits, sym.Symbol("r_growth") * sym.Symbol("rabbits")
         )
-        rabbit_growth = VariablePortedObject("rabbit growth", assignments=[assg], create_input_ports=False)
+        rabbit_growth = VariablePortedObject(
+            "rabbit growth", assignments=[assg], create_input_ports=False
+        )
         growth_input_port = InputPort("r_growth", default_value=0.01)
         rabbit_growth.add_input_port(growth_input_port)
 
@@ -400,34 +423,36 @@ class TestInitialization(unittest.TestCase):
     def test_output_forwarding(self):
         rabbits = Variable("rabbits", 50)
         assg = DifferentialAssignment(rabbits, 0.01 * sym.Symbol("rabbits"))
-        rabbit_growth = VariablePortedObject("rabbit growth", assignments=[assg])
+        rabbit_growth = VariablePortedObject(name="rabbit growth", assignments=[assg])
 
-        fpo = FunctionalPortedObject("double")
-        fpo.add_assignment(ParameterAssignment("new", "2*old"), create_input_ports=True)
+        fpo = FunctionalPortedObject(
+            name="double",
+            assignments=[FunctionalAssignment("new", "2*old")],
+            create_input_ports=True,
+        )
 
-        cpo_eco = CompositePortedObject("ecosystem")
-        cpo_eco.add_child(rabbit_growth)
-        cpo_eco.add_child(fpo)
-        cpo_eco.add_variable_port(VariablePort("rabbits"))
-        cpo_eco.add_output_port(OutputPort("doublerab"))
-        cpo_eco.add_variable_aggregation_wiring(["rabbit growth.rabbits"], "rabbits")
-        cpo_eco.add_directed_wire("rabbit growth.rabbits", ["double.old"])
-        cpo_eco.add_directed_wire("double.new", ["doublerab"])
+
+        cpo_eco = CompositePortedObject(
+            name="ecosystem",
+            children=[rabbit_growth, fpo],
+            variable_ports=[VariablePort("rabbits")],
+            output_ports=[OutputPort("doublerab")],
+            variable_wires=[(["rabbit growth.rabbits"], "rabbits")],
+            directed_wires=[
+                ("rabbit growth.rabbits", "double.old"),
+                ("double.new", "doublerab")
+            ]
+        )
 
         compiled = cpo_eco.compile()
         self.assertIn("rabbits", compiled.variable_ports)
         rabbit_port = compiled.variable_ports["rabbits"]
         self.assertIn("doublerab", compiled.output_ports)
         doublerab_port = compiled.output_ports["doublerab"]
-        self.assertIn("double.new", compiled.internal_parameter_assignments)
-        double_assg = compiled.internal_parameter_assignments["double.new"]
+        double_assg = doublerab_port.assignment
         self.assertEqual(rabbit_port.symbol, sym.Symbol("rabbits"))
         self.assertEqual(doublerab_port.symbol, sym.Symbol("doublerab"))
-        self.assertEqual(
-            doublerab_port.assignment.expression,
-            sym.Symbol("double.new"),
-        )
-        self.assertEqual(double_assg.symbol, sym.Symbol("double.new"))
+        self.assertEqual(double_assg.symbol, sym.Symbol("doublerab"))
         self.assertEqual(
             double_assg.expression,
             2 * sym.Symbol("rabbits"),
@@ -435,32 +460,40 @@ class TestInitialization(unittest.TestCase):
 
     def test_output_nesting(self):
         # TODO: Add checks
-        A_func = FunctionalPortedObject("func")
-        A_func.add_input_port(InputPort("X", default_value = 5))
-        A_func.add_assignment(ParameterAssignment("Y", "X"))
+        A_func = FunctionalPortedObject(
+            name="func",
+            input_ports=[InputPort("X", default_value=5)],
+            assignments=[FunctionalAssignment("Y", "X")]
+        )
 
-        A = CompositePortedObject("A")
-        A.add_child(A_func)
-        A.add_output_port(OutputPort("Y"))
-        A.add_directed_wire("func.Y", ["Y"])
+        A = CompositePortedObject(
+            name="A",
+            children=[A_func],
+            output_ports=[OutputPort("Y")],
+            directed_wires=[("func.Y", "Y")]
+        )
 
-        B = CompositePortedObject("B")
-        B.add_output_port(OutputPort("BY"))
-        B.add_child(A)
-        B.add_directed_wire("A.Y", ["BY"])
+        B = CompositePortedObject(
+            name="B",
+            children=[A],
+            output_ports=[OutputPort("BY")],
+            directed_wires=[("A.Y", "BY")]
+        )
 
         compiled = B.compile()
 
     def test_parameters(self):
         fpo = FunctionalPortedObject("double")
         fpo.add_input_port(InputPort("old"))
-        fpo.add_assignment(ParameterAssignment("new", "2*old"))
+        fpo.add_assignment(FunctionalAssignment("new", "2*old"))
 
         rabbits = Variable("rabbits", 50)
         assg = DifferentialAssignment(
             rabbits, sym.Symbol("r_growth") * sym.Symbol("rabbits")
         )
-        rabbit_growth = VariablePortedObject("rabbit growth", assignments=[assg], create_input_ports=False)
+        rabbit_growth = VariablePortedObject(
+            "rabbit growth", assignments=[assg], create_input_ports=False
+        )
         rabbit_growth.add_input_port(InputPort("r_growth"))
 
         cpo_eco = CompositePortedObject("ecosystem")
@@ -494,19 +527,19 @@ class TestInitialization(unittest.TestCase):
     def test_key_remapping(self):
         # TODO: Add checks
         func_1 = FunctionalPortedObject("func_1")
-        func_1.add_input_port(InputPort("X", default_value = 5))
-        func_1.add_assignment(ParameterAssignment("Y", "X"))
+        func_1.add_input_port(InputPort("X", default_value=5))
+        func_1.add_assignment(FunctionalAssignment("Y", "X"))
 
         A = CompositePortedObject("A")
         A.add_child(func_1)
-        A.add_input_port(InputPort("X", default_value = 3))
+        A.add_input_port(InputPort("X", default_value=3))
         A.add_output_port(OutputPort("Y"))
         A.add_directed_wire("X", ["func_1.X"])
         A.add_directed_wire("func_1.Y", ["Y"])
 
         B = CompositePortedObject("B")
         B.add_child(A)
-        B.add_input_port(InputPort("X", default_value = 1))
+        B.add_input_port(InputPort("X", default_value=1))
         B.add_output_port(OutputPort("Y"))
         B.add_directed_wire("X", ["A.X"])
         B.add_directed_wire("A.Y", ["Y"])
@@ -515,6 +548,7 @@ class TestInitialization(unittest.TestCase):
         C.add_child(B)
 
         compiled = C.compile()
+
 
 """
 Tests deprecated due to changes in Simulation class.
