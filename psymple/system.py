@@ -20,6 +20,9 @@ from psymple.ported_objects import (
     ParameterAssignment,
     DifferentialAssignment,
     PortedObject,
+    DefaultParameterAssignment,
+    FunctionalAssignment,
+    HIERARCHY_SEPARATOR,
 )
 
 
@@ -39,12 +42,12 @@ class System:
 
         variable_assignments, parameter_assignments = compiled.get_assignments()
 
-        from psymple.ported_objects import DefaultParameterAssignment
-        print([p for p in parameter_assignments if isinstance(p,DefaultParameterAssignment)])
+        self.process_parameter_assignments(parameter_assignments, compiled.input_ports)
 
-        self.required_input_ports = compiled.input_ports
-        print(self.required_input_ports)
+        print(variable_assignments, parameter_assignments)
 
+
+        # Should these get created only when Simulation is called?
         variables, parameters = self.get_symbols(variable_assignments, parameter_assignments)
         self.create_simulation_variables(variable_assignments, variables | {T}, parameters)
         self.create_simulation_parameters(parameter_assignments, variables | {T}, parameters)
@@ -67,6 +70,31 @@ class System:
         variables = {assg.variable.symbol for assg in variable_assignments}
         parameters = {assg.parameter.symbol for assg in parameter_assignments}
         return variables, parameters
+    
+    def process_parameter_assignments(self, parameter_assignments, input_ports):
+        parameters = {
+            "functional": [], 
+            "composite": [], 
+            "default exposable": [], 
+            "default optional": [], 
+            "required": [],
+            }
+        
+        for assg in parameter_assignments:
+            if isinstance(assg, FunctionalAssignment):
+                parameters["functional"].append(assg.name)
+            elif isinstance(assg, DefaultParameterAssignment):
+                if HIERARCHY_SEPARATOR in assg.name:
+                    parameters["default exposable"].append(assg.name)
+                else:
+                    parameters["default optional"].append(assg.name)
+            else:
+                parameters["composite"].append(assg.name)
+        
+        parameters["required"] = [name for name in input_ports.keys()]
+
+        print(parameters)
+
 
     def create_simulation_variables(self, variable_assignments, variables, parameters):
         for assg in variable_assignments:
