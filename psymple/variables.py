@@ -47,23 +47,27 @@ class SimVariable(Variable):
     def set_update_rule(self, update_rule):
         self.update_rule = update_rule
 
-    def __str__(self):
+    def __repr__(self):
         return f"d/dt {self.symbol} = {self.update_rule.equation}"
 
-    def get_readout(self, print_vars_dict = {}, print_pars_dict = {}):
+    def get_readout(self, time_symbol, print_vars_dict = {}, print_pars_dict = {}, type="default"):
         print_symbol = print_vars_dict[self.symbol]
         try:
-            time_symbol = print_vars_dict[T]
+            time_symbol = print_vars_dict[time_symbol]
         except:
             time_symbol = T
         print_equation = self.update_rule.equation.subs(print_vars_dict | print_pars_dict)
-        return sym.latex(sym.Eq(sym.Derivative(print_symbol, time_symbol), print_equation), mul_symbol="dot")
+        if type == "latex":
+            return sym.latex(sym.Eq(sym.Derivative(print_symbol, time_symbol), print_equation), mul_symbol="dot")
+        else:
+            return f"d{print_symbol}/d{time_symbol} = {print_equation}"
+        
 
 
 class Parameter(SymbolWrapper):
     def __init__(self, symbol, value, description=""):
         super().__init__(symbol, description)
-        self.value = sym.sympify(value, locals=sym_custom_ns)
+        self.value = value
 
     @classmethod
     def basic(cls, symbol_name, symbol_letter, value, description=None):
@@ -110,10 +114,13 @@ class SimParameter(Parameter):
     def expression(self):
         return self.update_rule.equation
 
-    def get_readout(self, print_vars_dict = {}, print_pars_dict = {}):
+    def get_readout(self, print_vars_dict = {}, print_pars_dict = {}, type="default"):
         print_symbol = print_pars_dict[self.symbol]
         print_equation = self.expression.subs(print_vars_dict | print_pars_dict)
-        return sym.latex(sym.Eq(print_symbol, print_equation), mul_symbol = "dot")
+        if type == "latex":
+            return sym.latex(sym.Eq(print_symbol, print_equation), mul_symbol = "dot")
+        else:
+            return f"{print_symbol} = {print_equation}"
 
 
 class UpdateRule:
@@ -169,7 +176,7 @@ class UpdateRule:
             warn (bool): raise an error if there are symbols not accounted for
         """
         all_symbols = variables | parameters
-        equation_symbols = sym.sympify(self.equation, locals=sym_custom_ns).free_symbols
+        equation_symbols = self.equation.free_symbols
         if warn and not equation_symbols.issubset(all_symbols):
             undefined_symbols = equation_symbols - all_symbols
             raise DependencyError(
@@ -182,19 +189,25 @@ class UpdateRule:
         self.variables = equation_variables
         self.parameters = equation_parameters
 
-    def _lambdify(self):
+    def _lambdify(self, modules):
         self._equation_lambdified = sym.lambdify(
             tuple(self.variables | self.parameters),
             self.equation,
-            modules=[sym_custom_ns, "scipy", "numpy"],
+            modules=modules,
             cse=True,
         )
 
-    def get_variables(self):
-        return [v.symbol for v in self.variables]
+    #def get_variables(self):
+    #    return [v.symbol for v in self.variables]
 
-    def get_parameters(self):
-        return [p.symbol for p in self.parameters]
+    #def get_parameters(self):
+    #    return [p.symbol for p in self.parameters]
+    
+    def sub_symbols(self, vars_dict, pars_dict):
+        self.variables = {v.subs(vars_dict) for v in self.variables}
+        self.parameters = {p.subs(pars_dict) for p in self.parameters}
+        self.equation = self.equation.subs(vars_dict | pars_dict)
+
 
 
 class SimUpdateRule(UpdateRule):

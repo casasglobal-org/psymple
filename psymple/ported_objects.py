@@ -29,21 +29,21 @@ class ValidationError(Exception):
 
 
 class Assignment:
-    def __init__(self, symbol_wrapper, expression):
+    def __init__(self, symbol_wrapper, expression, sympify_locals={}):
         """
         symbol_wrapper: LHS of the assignment (e.g. parameter or variable)
             If input is a string, it is converted to a symbol_wrapper.
         expression: expression on the RHS.
             If input is a string, it is converted to a sympy expression.
         """
-        #TODO: Does sympify need the custom local namespace here?
+        # TODO: Does sympify need the custom local namespace here?
         if type(symbol_wrapper) is str:
             symbol_wrapper = SymbolWrapper(sym.Symbol(symbol_wrapper))
         elif type(symbol_wrapper) is sym.Symbol:
             symbol_wrapper = SymbolWrapper(symbol_wrapper)
         self.symbol_wrapper = symbol_wrapper
         if type(expression) in [str, float, int]:
-            expression = sym.sympify(expression)
+            expression = sym.sympify(expression, locals=sympify_locals)
         self.expression = expression
 
     @property
@@ -73,9 +73,9 @@ class Assignment:
         """
         Convert to UpdateRules so that it can be used in the Simulation.
 
-        variables/parameters: stuff that may appear on the RHS of the assignment.
-        TODO: This specific implementation is a relic from the System implementation from
-        before and should probably be streamlined.
+        variables/parameters: sympbols that may appear on the RHS of the assignment.
+        TODO: This specific implementation is a relic from and old implementation
+        and should probably be streamlined.
         """
         return UpdateRule(self.expression, variables, parameters)
 
@@ -84,9 +84,9 @@ class Assignment:
 
 
 class DifferentialAssignment(Assignment):
-    def __init__(self, symbol_wrapper, expression):
-        super().__init__(symbol_wrapper, expression)
-        # Coerce self.symbol_wrapper into instance of Variable. Variables 
+    def __init__(self, symbol_wrapper, expression, sympify_locals={}):
+        super().__init__(symbol_wrapper, expression, sympify_locals)
+        # Coerce self.symbol_wrapper into instance of Variable. Variables
         # defined directly via DifferentialAssignment get initial value 0.
         if type(self.symbol_wrapper) is SymbolWrapper:
             self.symbol_wrapper = Variable(
@@ -110,8 +110,8 @@ class DifferentialAssignment(Assignment):
 
 
 class ParameterAssignment(Assignment):
-    def __init__(self, symbol_wrapper, expression):
-        super().__init__(symbol_wrapper, expression)
+    def __init__(self, symbol_wrapper, expression, sympify_locals={}):
+        super().__init__(symbol_wrapper, expression, sympify_locals)
         # We ensure we that the symbol_wrapper is instance of Parameter.
         if type(self.symbol_wrapper) is SymbolWrapper:
             self.symbol_wrapper = Parameter(
@@ -144,17 +144,20 @@ class ParameterAssignment(Assignment):
     def parameter(self):
         return self.symbol_wrapper
 
+
 class DefaultParameterAssignment(ParameterAssignment):
     """
     A convenience class to identify parameters which have been constructed from default values.
     These represent those system parameters which are changeable.
     """
+
     pass
+
 
 class FunctionalAssignment(ParameterAssignment):
     """
     A convenience class to identify parameters which have been constructed from the OutputPort
-    of a FunctionalPortedObject. These represent the core functional building blocks of a 
+    of a FunctionalPortedObject. These represent the core functional building blocks of a
     System."""
 
 
@@ -167,7 +170,7 @@ class SymbolIdentification:
         self.old_symbol = old_symbol
         self.new_symbol = new_symbol
 
-    def __str__(self):
+    def __repr__(self):
         return f"SymbolIdentification {self.new_symbol} = {self.old_symbol}"
 
 
@@ -234,7 +237,7 @@ class CompiledPort(Port):
             assert isinstance(new_symbol, sym.Symbol)
             assert isinstance(self.symbol, sym.Symbol)
             if self.symbol == old_symbol:
-                self.name = str(new_symbol)
+                self.name = new_symbol.name
 
     def __repr__(self):
         return f"{type(self).__name__} {self.name} with {self.assignment}"
@@ -248,7 +251,6 @@ class CompiledOutputPort(CompiledPort):
     pass
 
 
-
 class CompiledInputPort(CompiledPort):
     def __init__(self, port):
         assert isinstance(port, InputPort)
@@ -257,12 +259,22 @@ class CompiledInputPort(CompiledPort):
 
 
 class PortedObject(ABC):
+    """
+    Base class implementing ported objects: objects which have ports exposing internal information.
+
+    Methods:
+        add_input_ports
+        add_output_ports
+        add_variable_ports
+    """
+
     def __init__(
         self,
         name: str,
         input_ports: list = [],
         output_ports: list = [],
         variable_ports: list = [],
+        sympify_locals: dict = {},
     ):
         self.name = name
         # Ports exposed to the outside, indexed by their name (str)
@@ -273,6 +285,7 @@ class PortedObject(ABC):
         self.add_input_ports(*input_ports)
         self.add_output_ports(*output_ports)
         self.add_variable_ports(*variable_ports)
+        self.sympify_locals = sympify_locals
 
     def check_existing_port_names(self, port: Port):
         if (
@@ -301,12 +314,12 @@ class PortedObject(ABC):
                 port = port_type(
                     name=name,
                     default_value=port_info[1] if len(port_info) >= 2 else None,
-                    description=port_info[2] if len(port_info) >=3 else None
+                    description=port_info[2] if len(port_info) >= 3 else None,
                 )
             else:
                 port = port_type(
                     name=name,
-                    description=port_info[1] if len(port_info) >=2 else None,
+                    description=port_info[1] if len(port_info) >= 2 else None,
                 )
         elif isinstance(port_info, str):
             port = port_type(name=port_info)
@@ -322,10 +335,10 @@ class PortedObject(ABC):
         Create input ports for the PortedObject.
 
         Args:
-            *ports: Information specifying input ports, in the form of: 
+            *ports: Information specifying input ports, in the form of:
                 - an InputPort object;
                 - a dictionary specifying "name", and optionally "description" and "default_value";
-                - a string, specifying the name of the port. 
+                - a string, specifying the name of the port.
 
         Examples:
             add_input_ports(dict(name = "A", default_value=6), dict(name="B", description="input port B"), dict(name="C"))
@@ -371,7 +384,9 @@ class PortedObject(ABC):
             self.variable_ports[port.name] = port
 
     def parse_assignment_entry(
-        self, assignment_info: Assignment | dict | tuple, assignment_type: Assignment
+        self,
+        assignment_info: Assignment | dict | tuple,
+        assignment_type: Assignment,
     ):
         if isinstance(assignment_info, assignment_type):
             return assignment_info
@@ -380,18 +395,24 @@ class PortedObject(ABC):
             if "expression" in keys:
                 if issubclass(assignment_type, DifferentialAssignment):
                     if "variable" in keys:
-                        return assignment_type(
-                            assignment_info["variable"], assignment_info["expression"]
+                        assg = assignment_type(
+                            assignment_info["variable"],
+                            assignment_info["expression"],
+                            self.sympify_locals,
                         )
+                        return assg
                     else:
                         raise ValidationError(
                             f'The dictionary {assignment_info} must contain a key "variable" to define a differential assignment'
                         )
                 if issubclass(assignment_type, ParameterAssignment):
                     if "parameter" in keys:
-                        return assignment_type(
-                            assignment_info["parameter"], assignment_info["expression"]
+                        assg = assignment_type(
+                            assignment_info["parameter"],
+                            assignment_info["expression"],
+                            self.sympify_locals,
                         )
+                        return assg
                     else:
                         raise ValidationError(
                             f'The dictionary {assignment_info} must contain a key "parameter" to define a parameter assignment'
@@ -401,12 +422,15 @@ class PortedObject(ABC):
                     f'The dictionary {assignment_info} must contain a key "expression" to define an assignment'
                 )
         elif isinstance(assignment_info, tuple):
-            return assignment_type(assignment_info[0], assignment_info[1])
+            return assignment_type(
+                assignment_info[0], assignment_info[1], self.sympify_locals
+            )
         else:
             raise ValidationError(
                 f"The entry {assignment_info} does not have type {assignment_type}, dictionary or tuple."
             )
 
+    """
     def add_input_port(self, port: InputPort):
         # DEPRECATE?
         # assert isinstance(port, InputPort)
@@ -424,8 +448,9 @@ class PortedObject(ABC):
         # assert isinstance(port, VariablePort)
         self.check_existing_port_names(port)
         self.variable_ports[port.name] = port
+    """
 
-    def get_port_by_name(self, port: str):
+    def _get_port_by_name(self, port: str):
         if port in self.variable_ports:
             return self.variable_ports[port]
         if port in self.input_ports:
@@ -441,7 +466,7 @@ class PortedObject(ABC):
 
 class VariablePortedObject(PortedObject):
     """
-    A PortedObject containing a collection of ODEs (DifferentialAssignments).
+    A PortedObject containing a collection of ODEs (DifferentialAssignment instances).
 
     Each ODE is associated to a variable, which may or may not be exposed as a variable port.
     Symbols on the RHS of the ODE should be either:
@@ -451,61 +476,70 @@ class VariablePortedObject(PortedObject):
 
     Methods:
         add_variable_assignments
+        compile
     """
+
     def __init__(
         self,
         name: str,
         input_ports: list = [],
         variable_ports: list = [],
         assignments: list = [],
-        create_variable_ports=True, # Is there any use for this bool?
         create_input_ports=True,
+        sympify_locals: dict = {},
     ):
         """
-        Construct a VariablePortedObject from a list of assignments specifying a set of ODES. 
-        
+        Construct a VariablePortedObject from a list of assignments specifying a set of ODES.
+
         Note:
-            If create_variable_ports=True (default), then each variable (dependent variable of each ODE) is
-            automatically exposed as a variable port (VariablePort). Alternatively, chosen variables can 
-            be exposed by specifying them in the list variable_ports. Specifying a non-empty list of
-            variable_ports overrides the value of create_variable_ports.
+            By default, each variable (dependent variable of each ODE) is automatically exposed as a
+            variable port (VariablePort). Alternatively, chosen variables can be exposed by specifying
+            them in the list variable_ports.
 
             Parameters listed in input_ports are exposed and can be used in ODE expressions.
 
             If create_input_ports=True (default), then each symbol appearing in an ODE which is not a
-            variable or parameter defined in input_ports is also exposed as a paramter input port 
+            variable or parameter defined in input_ports is also exposed as a paramter input port
             (InputPort). The created parameter will have no default value, and must be otherwise
             specified or linked by a wire in a parent CompositePortedObject.
 
         Args:
             name (str): a string which must be unique for each VariablePortedObject inside a common
                 CompositePortedObject.
-            input_ports (list): list of input ports to expose. Elements should be of type InputPort, 
+            input_ports (list): list of input ports to expose. Elements should be of type InputPort,
                 dict or str.
-            variable_ports (list): list of variable ports to expose. Elements should be of type VariablePort, 
+            variable_ports (list): list of variable ports to expose. Elements should be of type VariablePort,
                 dict or str.
             assignments (list): list of differential assignments (ODEs). Elements should be of type
                 DifferentialAssignment, dict or tuple.
-            create_variable_ports (bool): automatically expose all variables (see below). Overridden by non-empty
-                variable_ports list.
-            create_input_ports (bool): automatically expose all parameters as input ports (see below). 
+            create_input_ports (bool): automatically expose all parameters as input ports (see below).
         """
-        super().__init__(name, input_ports=input_ports, variable_ports=variable_ports)
+        super().__init__(
+            name,
+            input_ports=input_ports,
+            variable_ports=variable_ports,
+            sympify_locals=sympify_locals,
+        )
         # A dict of assignments indexed by the variable name
         self.assignments = {}
-        if variable_ports:
-            create_variable_ports = False
-        self.add_variable_assignments(*assignments, create_variable_ports=create_variable_ports, create_input_ports=create_input_ports)
-
+        create_variable_ports = False if variable_ports else True
+        self.add_variable_assignments(
+            *assignments,
+            create_variable_ports=create_variable_ports,
+            create_input_ports=create_input_ports,
+        )
 
     def add_variable_assignments(
-        self, *assignments: DifferentialAssignment | dict | tuple, create_variable_ports=True, create_input_ports=True,
+        self,
+        *assignments: DifferentialAssignment | dict | tuple,
+        create_variable_ports=True,
+        create_input_ports=True,
     ):
         for assignment_info in assignments:
             assignment = self.parse_assignment_entry(
                 assignment_info, DifferentialAssignment
             )
-            variable_name = str(assignment.variable.symbol)
+            variable_name = assignment.variable.symbol.name
             if variable_name in self.assignments:
                 raise ValueError(
                     f"Variable '{variable_name}' in VariablePortedObject '{self.name}' doubly defined."
@@ -516,15 +550,22 @@ class VariablePortedObject(PortedObject):
             elif variable_name not in self.variable_ports:
                 self.internals[variable_name] = assignment.variable
         if create_input_ports:
-            # Create input ports for all symbols that are not variables (exposed or internal) or already 
+            # Create input ports for all symbols that are not variables (exposed or internal) or already
             # specified as input ports.
-            free_symbols = {str(symb) for a in self.assignments.values() for symb in a.get_free_symbols()}
+            free_symbols = {
+                symb.name
+                for a in self.assignments.values()
+                for symb in a.get_free_symbols()
+            }
             internal_variables = set(self.internals.keys())
             variable_ports = set(self.variable_ports.keys())
             input_ports = set(self.input_ports.keys())
-            undefined_ports = free_symbols - internal_variables - variable_ports - input_ports
+            undefined_ports = (
+                free_symbols - internal_variables - variable_ports - input_ports
+            )
             self.add_input_ports(*undefined_ports)
 
+    """
     def add_variable_assignment(
         self, assignment_info: DifferentialAssignment | dict | tuple, expose_port=True
     ):
@@ -532,7 +573,7 @@ class VariablePortedObject(PortedObject):
         assignment = self.parse_assignment_entry(
             assignment_info, DifferentialAssignment
         )
-        variable_name = str(assignment.variable.symbol)
+        variable_name = assignment.variable.symbol.name
         if variable_name in self.assignments:
             raise ValueError(
                 f"Variable '{variable_name}' in VariablePortedObject '{self.name}' doubly defined."
@@ -541,8 +582,9 @@ class VariablePortedObject(PortedObject):
         if expose_port:
             # TODO: Is there a use case where the variable name is different from the port name?
             self.variable_ports[variable_name] = VariablePort(variable_name)
+    """
 
-    def assert_no_undefined_symbols(self, global_symbols=set()):
+    def _assert_no_undefined_symbols(self, global_symbols=set()):
         variable_symbols = set()
         all_assignment_symbols = set()
         parameter_symbols = set()
@@ -562,12 +604,16 @@ class VariablePortedObject(PortedObject):
             )
 
     def compile(self, prefix_names=False, global_symbols=set()):
-        self.assert_no_undefined_symbols(global_symbols)
+        self._assert_no_undefined_symbols(global_symbols)
         compiled = CompiledPortedObject(self.name)
         for variable_name, assignment in self.assignments.items():
             if variable_name in self.variable_ports:
-                compiled.variable_ports[variable_name] = CompiledVariablePort(
+                #compiled.variable_ports[variable_name] = CompiledVariablePort(
+                #    self.variable_ports[variable_name], self.assignments[variable_name]
+                #)
+                compiled.add_variable_port(CompiledVariablePort(
                     self.variable_ports[variable_name], self.assignments[variable_name]
+                    )
                 )
             elif variable_name in self.internals:
                 compiled.internal_variable_assignments[variable_name] = assignment
@@ -594,47 +640,52 @@ class FunctionalPortedObject(PortedObject):
     the function value of another expression are not allowed.
 
     Methods:
-        add_assignments
+        add_parameter_assignments
         compile
     """
 
-    #TODO: In the future, this should be a composite ported object that
-    #decomposes its assignments into a sequence of OperatorPortedObjects.
+    # TODO: In the future, this should be a composite ported object that
+    # decomposes its assignments into a sequence of OperatorPortedObjects.
 
-    #TODO: Any nuances to this?
+    # TODO: Any nuances to this?
 
-    #TODO: Implement this.
+    # TODO: Implement this.
 
-    #TODO: Should behaviour of FPO instead assert no undefined symbols at compile, so that the
-    #order of adding ports and assignments doesn't matter?
+    # TODO: Should behaviour of FPO instead assert no undefined symbols at compile, so that the
+    # order of adding ports and assignments doesn't matter?
 
     def __init__(
         self,
         name: str,
         input_ports: list = [],
-        assignments: list[ParameterAssignment|tuple|dict] = [],
-        create_input_ports: bool=True,
+        assignments: list[ParameterAssignment | tuple | dict] = [],
+        create_input_ports: bool = True,
+        sympify_locals: dict = {},
     ):
         """
-        Construct a FunctionalPortedObject from a list of assignments specifying functions. 
+        Construct a FunctionalPortedObject from a list of assignments specifying functions.
 
         Args:
             name: a unique identifier for each VariablePortedObject inside a common
                 CompositePortedObject.
-            input_ports: input ports to expose. Elements should be of type InputPort, 
+            input_ports: input ports to expose. Elements should be of type InputPort,
                 dict or str.
             assignments: functional assignments. Elements should be of type
                 ParameterAssignment, dict or tuple.
             create_input_ports: automatically expose all function arguments which aren't specified
                 in the list input_ports as input ports.
         """
-        #TODO: Functional ported objects should take lists of assignments to a list of output port
-        super().__init__(name, input_ports=input_ports)
+        # TODO: Functional ported objects should take lists of assignments to a list of output port
+        super().__init__(name, input_ports=input_ports, sympify_locals=sympify_locals)
         # A dict of assignments indexed by the variable name
         self.assignments = {}
-        self.add_assignments(*assignments, create_input_ports=create_input_ports)
+        self.add_parameter_assignments(*assignments, create_input_ports=create_input_ports)
 
-    def add_assignments(self, *assignments: list[ParameterAssignment|dict|tuple], create_input_ports: bool=True):
+    def add_parameter_assignments(
+        self,
+        *assignments: list[ParameterAssignment | dict | tuple],
+        create_input_ports: bool = True,
+    ):
         """
         Add a list of assignments to a FunctionalPortedObject.
 
@@ -646,15 +697,17 @@ class FunctionalPortedObject(PortedObject):
 
         """
         for assignment_info in assignments:
-            assignment = self.parse_assignment_entry(assignment_info, FunctionalAssignment)
-            parameter_name = str(assignment.parameter.symbol)
+            assignment = self.parse_assignment_entry(
+                assignment_info, FunctionalAssignment
+            )
+            parameter_name = assignment.parameter.symbol.name
             if parameter_name in self.assignments:
                 raise ValueError(
                     f"Variable '{parameter_name}' in FunctionalPortedObject '{self.name}' doubly defined."
                 )
             free_symbols = assignment.get_free_symbols()
             for symbol in free_symbols:
-                name = str(symbol)
+                name = symbol.name
                 if name not in self.input_ports:
                     if create_input_ports:
                         self.input_ports[name] = InputPort(name)
@@ -664,19 +717,23 @@ class FunctionalPortedObject(PortedObject):
                             "corresponding input port."
                         )
             self.assignments[parameter_name] = assignment
-            self.output_ports[parameter_name] = OutputPort(parameter_name)           
-
-    def add_assignment(self, assignment_info: ParameterAssignment|dict|tuple, create_input_ports=True):
+            self.output_ports[parameter_name] = OutputPort(parameter_name)
+    """
+    def add_assignment(
+        self,
+        assignment_info: ParameterAssignment | dict | tuple,
+        create_input_ports=True,
+    ):
         # DEPRECATE?
         assignment = self.parse_assignment_entry(assignment_info, FunctionalAssignment)
-        parameter_name = str(assignment.parameter.symbol)
+        parameter_name = assignment.parameter.symbol.name
         if parameter_name in self.assignments:
             raise ValueError(
                 f"Variable '{parameter_name}' in VariablePortedObject '{self.name}' doubly defined."
             )
         free_symbols = assignment.get_free_symbols()
         for symbol in free_symbols:
-            name = str(symbol)
+            name = symbol.name
             if name not in self.input_ports:
                 if create_input_ports:
                     self.input_ports[name] = InputPort(name)
@@ -687,14 +744,16 @@ class FunctionalPortedObject(PortedObject):
                     )
         self.assignments[parameter_name] = assignment
         self.output_ports[parameter_name] = OutputPort(parameter_name)
-
+    """
     def compile(self, prefix_names=False, global_symbols=set()):
         compiled = CompiledPortedObject(self.name)
         for name, input_port in self.input_ports.items():
-            compiled.input_ports[name] = CompiledInputPort(input_port)
+            #compiled.input_ports[name] = CompiledInputPort(input_port)
+            compiled.add_input_port(CompiledInputPort(input_port))
         for name, output_port in self.output_ports.items():
             assignment = self.assignments[name]
-            compiled.output_ports[name] = CompiledOutputPort(output_port, assignment)
+            #compiled.output_ports[name] = CompiledOutputPort(output_port, assignment)
+            compiled.add_output_port(CompiledOutputPort(output_port, assignment))
         if prefix_names:
             compiled.sub_prefixed_symbols()
         return compiled
@@ -702,10 +761,35 @@ class FunctionalPortedObject(PortedObject):
 
 class CompositePortedObject(PortedObject):
     """
+    A PortedObject composed of child ported objects whose ports are connected by wires.
 
-    A PortedObject composed of child ported objects that are wired together.
+    Directed wires connect: 
+        - an input port of self to input ports of children, or,
+        - an output port of a child to input ports of children and/or upto one output port of self
+        - a variable port of a child to input ports of children
+
+    These wires capture functional composition. For example if FunctionalPortedObject A contains an
+    assignment x = f(y) and FunctionalPortedObject B contains an assignment r = g(u,v), then
+    connecting OutputPort x of A ("A.x") to InputPort u of B ("B.u") with a directed wire produces 
+    a compiled assignment r = g(f(y), v) at OutputPort r of B. See method add_wires for syntax.
+
+    Variable wires connect variable ports of children to upto one variable port of self.
+
+    These wires capture ODE aggregation: the aggregation of the ODEs dx/dt = f(x,t,a) and dy/dt = g(y,t,b)
+    identifying (x,y) -> z is the ODE dz/dt = f(z,t,a) + g(z,t,b). If VariablePortedObject A contains
+    differential assignment dx/dt = f(x,t,a) and VariablePortedObject B contains differential assignment
+    dy/dt = g(y,t,a), connecting VariablePort x of A and VariablePort y of B to VariablePort z of self
+    produces a compiled differential assignment dz/dt = f(z,t,a) + g(z,t,b) at port z. See method add_wires
+    for syntax.
 
     Validation (TODO)
+
+    Methods:
+        add_children
+        add_wires
+        add_directed_wire
+        add_variable_wire
+        compile
 
     Errors:
         Every input port of a child must have at most one edge into it
@@ -738,40 +822,40 @@ class CompositePortedObject(PortedObject):
         self.add_children(*children)
         self.add_wires(variable_wires=variable_wires, directed_wires=directed_wires)
 
-    def is_own_port(self, name: str):
-        if HIERARCHY_SEPARATOR in name:
-            return False
-        return True
+    def _is_own_port(self, name: str):
+        return not (HIERARCHY_SEPARATOR in name)
 
     def add_children(self, *children: str):
         for child in children:
-            self.add_child(child)
+            self._add_child(child)
 
-    def add_child(self, child):
+    def _add_child(self, child):
         self.children[child.name] = child
 
     def add_wires(self, variable_wires: list = [], directed_wires: list = []):
         """
-        Add wires to self. 
-        
+        Add wires to self.
+
         Variable wires connect a set of child variable ports together, exposed as a
         variable port of self (optional), or given an internal name (optional). Either a parent
-        port or internal name must be provided. Specifying a parent port will override the 
+        port or internal name must be provided. Specifying a parent port will override the
         internal name.
-
-        Directed wires connect either a variable port or an output port of a child to an
-        input port of another.
+    
+        Directed wires connect: 
+            - an input port of self to input ports of children, or,
+            - an output port of a child to input ports of children and/or upto one output port of self
+            - a variable port of a child to input ports of children
 
         Args:
 
-        - variable_wires: a list of either:
+        variable_wires: a list of either:
             - a dictionary specifying child_ports (list[str]), parent_port (str) (optional),
                 and output_name (str) (optional);
-            - a tuple, with the first entry (required) specifying child ports (list[str]), the 
-                second entry specifying the parent port (str), or if None, the third 
-                entry specifying the output_name (str). Signature must be either 
+            - a tuple, with the first entry (required) specifying child ports (list[str]), the
+                second entry specifying the parent port (str), or if None, the third
+                entry specifying the output_name (str). Signature must be either
                 (child_ports, parent_port) or (child_ports, None, output_name).
-        - directed_wires: a list of either:
+        directed_wires: a list of either:
             - a dictionary specifying source (str) and destination (str);
             - a tuple, with the first entry specifying the source (str) and the second the
                 destination (str).
@@ -779,26 +863,33 @@ class CompositePortedObject(PortedObject):
         for wire_info in variable_wires:
             if isinstance(wire_info, dict):
                 keys = wire_info.keys()
-                if "child_ports" in keys and ("parent_port" in keys or "output_name" in keys):
-                    self.add_variable_aggregation_wiring(**wire_info)
+                if "child_ports" in keys and (
+                    "parent_port" in keys or "output_name" in keys
+                ):
+                    self.add_variable_wire(**wire_info)
                 else:
                     raise ValidationError(
-                        f'The dictionary {wire_info} must at least specify keys '
+                        f"The dictionary {wire_info} must at least specify keys "
                         f'"child_ports" and either "parent_port" or "output_name.'
                     )
             elif isinstance(wire_info, tuple):
-                self.add_variable_aggregation_wiring(
+                self.add_variable_wire(
                     child_ports=wire_info[0],
-                    parent_port=wire_info[1] if len(wire_info)>=2 else None,
-                    output_name=wire_info[2] if len(wire_info)==3 else None,
+                    parent_port=wire_info[1] if len(wire_info) >= 2 else None,
+                    output_name=wire_info[2] if len(wire_info) == 3 else None,
                 )
             else:
-                raise ValidationError(f"The information {wire_info} is not a dictionary or tuple")
+                raise ValidationError(
+                    f"The information {wire_info} is not a dictionary or tuple"
+                )
 
         for wire_info in directed_wires:
             if isinstance(wire_info, dict):
                 keys = wire_info.keys()
-                if keys == {"source", "destinations"} or keys == {"source", "destination"}:
+                if keys == {"source", "destinations"} or keys == {
+                    "source",
+                    "destination",
+                }:
                     self.add_directed_wire(*wire_info.values())
                 else:
                     raise ValidationError(
@@ -807,11 +898,12 @@ class CompositePortedObject(PortedObject):
             elif isinstance(wire_info, tuple):
                 self.add_directed_wire(*wire_info)
             else:
-                raise ValidationError(f"The element {wire_info} is not a dictionary or tuple")
-
+                raise ValidationError(
+                    f"The element {wire_info} is not a dictionary or tuple"
+                )
 
     def add_directed_wire(self, source_name: str, destination_names: str | list[str]):
-        source_port = self.get_port_by_name(source_name)
+        source_port = self._get_port_by_name(source_name)
         if source_port is None:
             raise WiringError(
                 f"Incorrect wiring in '{self.name}'. "
@@ -830,8 +922,8 @@ class CompositePortedObject(PortedObject):
         # If a singular destination is specified, coerce it into a list
         if isinstance(destination_names, str):
             destination_names = [destination_names]
-        for destination_name in destination_names: 
-            destination_port = self.get_port_by_name(destination_name)
+        for destination_name in destination_names:
+            destination_port = self._get_port_by_name(destination_name)
             if destination_port is None:
                 raise WiringError(
                     f"Incorrect wiring in '{self.name}'. "
@@ -855,7 +947,7 @@ class CompositePortedObject(PortedObject):
         wire = DirectedWire(source_name, destination_names)
         self.directed_wires.append(wire)
 
-    def add_variable_aggregation_wiring(
+    def add_variable_wire(
         self,
         child_ports: list[str],
         parent_port: str = None,
@@ -864,11 +956,11 @@ class CompositePortedObject(PortedObject):
         # All ports must be variable ports.
         # Parent port (if provided) should be port of the object itself
         if parent_port is not None:
-            port = self.get_port_by_name(parent_port)
+            port = self._get_port_by_name(parent_port)
             if (
                 port is None
                 or not type(port) is VariablePort
-                or not self.is_own_port(parent_port)
+                or not self._is_own_port(parent_port)
             ):
                 WiringError(
                     f"Incorrect wiring in '{self.name}'. "
@@ -877,11 +969,11 @@ class CompositePortedObject(PortedObject):
                 )
         # Child ports should be ports of children
         for child_port in child_ports:
-            port = self.get_port_by_name(child_port)
+            port = self._get_port_by_name(child_port)
             if (
                 port is None
                 or not type(port) is VariablePort
-                or self.is_own_port(child_port)
+                or self._is_own_port(child_port)
             ):
                 WiringError(
                     f"Incorrect wiring in '{self.name}'. "
@@ -890,8 +982,8 @@ class CompositePortedObject(PortedObject):
         wiring = VariableAggregationWiring(child_ports, parent_port, output_name)
         self.variable_aggregation_wiring.append(wiring)
 
-    def get_port_by_name(self, port_name: str):
-        port = super().get_port_by_name(port_name)
+    def _get_port_by_name(self, port_name: str):
+        port = super()._get_port_by_name(port_name)
         if port is not None:
             return port
         parts = port_name.split(HIERARCHY_SEPARATOR, 1)
@@ -905,7 +997,7 @@ class CompositePortedObject(PortedObject):
                 f"Port parent '{parent}' of '{port_name}' not found "
                 f"in ported object '{self.name}'."
             )
-        return self.children[parent].get_port_by_name(name)
+        return self.children[parent]._get_port_by_name(name)
 
     def compile(self, prefix_names=False):
         # Approach 1:
@@ -923,9 +1015,10 @@ class CompositePortedObject(PortedObject):
 
         # Compile own input ports. Not much happening for input ports.
         for name, input_port in self.input_ports.items():
-            compiled.input_ports[name] = CompiledInputPort(input_port)
+            #compiled.input_ports[name] = CompiledInputPort(input_port)
+            compiled.add_input_port(CompiledInputPort(input_port))
 
-        # For each child input port, we have to ensure it's 
+        # For each child input port, we have to ensure it's
         # connected or has a default value
 
         unconnected_child_input_ports = {}
@@ -942,7 +1035,7 @@ class CompositePortedObject(PortedObject):
             # Pass forward internal variable/parameter assignments
             compiled.internal_variable_assignments.update(
                 child.internal_variable_assignments
-            ) 
+            )
             compiled.internal_parameter_assignments.update(
                 child.internal_parameter_assignments
             )
@@ -957,13 +1050,15 @@ class CompositePortedObject(PortedObject):
         # Process directed wires. We first determine the port which produces the wire symbol,
         # which depends on if the wire connects to output ports or not.
         for wire in self.directed_wires:
-            
-            # Directed wires connect: 
+
+            # Directed wires connect:
             # - an input port to child input ports, or;
             # - a child output port to child input ports and at most one output port, or;
             # - a child variable port to child input ports.
             # We take cases on the number of output ports a directed wire connects to.
-            outputs = [port for port in self.output_ports if port in wire.destination_ports]
+            outputs = [
+                port for port in self.output_ports if port in wire.destination_ports
+            ]
             num_outputs = len(outputs)
             if num_outputs > 1:
                 # No wire can point to more than one output port
@@ -974,9 +1069,9 @@ class CompositePortedObject(PortedObject):
                 )
             elif num_outputs == 1:
                 # A wire ending at an output port can only start at a child output port.
-                source = compiled.get_port_by_name(wire.source_port)
+                source = compiled._get_port_by_name(wire.source_port)
                 if type(source) is CompiledOutputPort:
-                    wire_root = self.get_port_by_name(outputs[0])
+                    wire_root = self._get_port_by_name(outputs[0])
                 else:
                     raise WiringError(
                         f"Incorrect wiring in '{self.name}'. "
@@ -985,15 +1080,15 @@ class CompositePortedObject(PortedObject):
                     )
             else:
                 # The wire has only internal destinations.
-                wire_root = compiled.get_port_by_name(wire.source_port)
+                wire_root = compiled._get_port_by_name(wire.source_port)
 
-            # Now we perform the identifications. In the process we check which child ports 
+            # Now we perform the identifications. In the process we check which child ports
             # don't have an incoming wire using unconnected_child_input_ports.
             for destination_port in wire.destination_ports:
                 if destination_port in unconnected_child_input_ports:
                     # Goes from own input or child output port to child input port.
                     # In all of these cases, the ports have been pre-compiled
-                    destination = compiled.get_port_by_name(destination_port)
+                    destination = compiled._get_port_by_name(destination_port)
                     assert type(destination) is CompiledInputPort
                     # Substitute the destination symbol for the wire symbol
                     symb_id = SymbolIdentification(wire_root.symbol, destination.symbol)
@@ -1002,19 +1097,25 @@ class CompositePortedObject(PortedObject):
                 elif destination_port in self.output_ports:
                     # We can only be in this case if the source is a child output port,
                     # which has already been compiled
-                    source = compiled.get_port_by_name(wire.source_port)
-                    destination = self.get_port_by_name(destination_port)
+                    source = compiled._get_port_by_name(wire.source_port)
+                    destination = self._get_port_by_name(destination_port)
                     assert type(destination) is OutputPort
                     # Substitute the source symbol for the output port symbol
                     symb_id = SymbolIdentification(wire_root.symbol, source.symbol)
                     compiled.symbol_identifications.append(symb_id)
                     # Pass forward the assignment at source, currently stored as an
                     # internal parameter assignment, to the output port.
-                    source_assg = compiled.internal_parameter_assignments.pop(source.name)
-                    compiled.output_ports[destination.name] = CompiledOutputPort(
-                        destination, 
-                        source_assg,
+                    source_assg = compiled.internal_parameter_assignments.pop(
+                        source.name
                     )
+                    #compiled.output_ports[destination.name] = CompiledOutputPort(
+                    #    destination,
+                    #    source_assg,
+                    #)
+                    compiled.add_output_port(CompiledOutputPort(
+                        destination,
+                        source_assg,
+                    ))
                 else:
                     raise WiringError(
                         f"Incorrect wiring in '{self.name}'. "
@@ -1029,7 +1130,6 @@ class CompositePortedObject(PortedObject):
                 bad_input_ports.append(name)
             else:
                 # Initialize their parameters with initial values
-                # This assignment should change to be a DefaultParameterAssignment
                 assg = DefaultParameterAssignment(port.symbol, port.default_value)
                 compiled.internal_parameter_assignments[name] = assg
         if bad_input_ports:
@@ -1048,7 +1148,7 @@ class CompositePortedObject(PortedObject):
             initial_values = set()
             for port_name in wiring.child_ports:
                 unconnected_child_variable_ports.pop(port_name)
-                port = compiled.get_port_by_name(port_name)
+                port = compiled._get_port_by_name(port_name)
                 child_ports.append(port)
                 initial_values.add(port.assignment.variable.initial_value)
             # Pass initial value forward to parent port
@@ -1057,7 +1157,7 @@ class CompositePortedObject(PortedObject):
                 raise ValueError(
                     f"Inconsistent initial values for variable {wiring.parent_port}: {initial_values}."
                 )
-            elif initial_values: 
+            elif initial_values:
                 initial_value = initial_values.pop()
             else:
                 initial_value = None
@@ -1079,9 +1179,10 @@ class CompositePortedObject(PortedObject):
                     SymbolIdentification(new_var.symbol, child.assignment.symbol)
                 )
             if wiring.parent_port is not None:
-                parent = self.get_port_by_name(wiring.parent_port)
+                parent = self._get_port_by_name(wiring.parent_port)
                 new_port = CompiledVariablePort(parent, assg)
-                compiled.variable_ports[parent.name] = new_port
+                compiled.add_variable_port(new_port)
+                #compiled.variable_ports[parent.name] = new_port
             else:
                 compiled.internal_variable_assignments[new_var.name] = assg
 
@@ -1110,6 +1211,12 @@ class CompositePortedObject(PortedObject):
 
 
 class CompiledPortedObject(CompositePortedObject):
+    """
+    A ported object storing compiled ports which store system assignments.
+
+    This class should not be instantiated on its own. It is formed from the compile methods
+    of PortedObject subclasses. 
+    """
     def __init__(self, name):
         super().__init__(name)
         # free input parameters and (possibly) their default values
@@ -1189,9 +1296,6 @@ class CompiledPortedObject(CompositePortedObject):
             symbol_container.substitute_symbol(old_symbol, new_symbol)
 
     def set_input_parameters(self, parameter_assignments=[]):
-        # TODO: Make this non-destructive so we can run a simulation with different inputs
-        # without full recompilation
-        # New flow:
         #   - Process those ports with default values to DefaultParameterAssignments
         #   - Those input ports with no default should carry to the system, but not simulation
         #   - The ability to set or change parameters should move to a system property
@@ -1203,22 +1307,6 @@ class CompiledPortedObject(CompositePortedObject):
                 default_input_ports.append(name)
         for port_name in default_input_ports:
             self.input_ports.pop(port_name)
-
-        """
-        assg_dict = {}
-        for assg in parameter_assignments:
-            assg_dict[str(assg.symbol)] = assg
-        for name, port in self.input_ports.items():
-            if name in assg_dict:
-                self.internal_parameter_assignments[name] = assg_dict[name]
-            elif port.default_value is not None:
-                new_assg = DefaultParameterAssignment(name, port.default_value)
-                self.internal_parameter_assignments[name] = new_assg
-            else:
-                raise ValueError(f"Undefined input parameter: {name}")
-
-        self.input_ports = {}
-        """
 
     def get_free_inputs(self):
         return self.input_ports.values()
@@ -1244,8 +1332,14 @@ class CompiledPortedObject(CompositePortedObject):
 
 
 class VariableAggregationWiring:
-    # TODO: This should become obsolete. Instead, we will have a composite
-    # ported object that contains building blocks modeling this behavior
+    """
+    Stores the connection of child variable ports in a composite ported object to
+    a specified parent port or internal variable.
+
+    It is not recommended to instantiate this class on its own. Instead, use
+    CompositePortedObject.add_wires() or CompositePortedObject.add_variable_wire().
+    """
+
     def __init__(self, child_ports: list[str], parent_port: str, output_name: str):
         self.child_ports = child_ports
         self.parent_port = parent_port
@@ -1253,17 +1347,15 @@ class VariableAggregationWiring:
 
 
 class DirectedWire:
+    """
+    Stores the connection of an input port or child output port in a composite ported
+    object to a child input ports and/or an output port.
+
+    It is not recommended to instantiate this class on its own. Instead, use
+    CompositePortedObject.add_wires() or CompositePortedObject.add_directed_wire().
+    """
+
     def __init__(self, source_port: str, destination_ports: list[str]):
         self.source_port = source_port
         self.destination_ports = destination_ports
         # needs to indicate whether own port or child port
-
-
-# from input port to output port
-# from variable port to output port
-# LinearAggregatorWiring: from set of variable ports to variable
-
-# VariablePort
-# incoming connection
-# outgoing connection
-# IOPort

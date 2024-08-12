@@ -3,6 +3,12 @@ site_name: Psymple Docs
 
 theme:
   name: "material"
+  icon:
+    annotation: material/arrow-right-circle
+  features:
+    - content.tooltips
+    - content.code.copy
+    - content.code.annotate
 
 markdown_extensions:
   - admonition
@@ -10,6 +16,18 @@ markdown_extensions:
   - pymdownx.superfences
   - pymdownx.arithmatex:
       generic: true
+  - attr_list
+  - md_in_html
+  - abbr
+  - pymdownx.snippets
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.tabbed:
+      alternate_style: true
+
 
 extra_javascript:
   - javascripts/mathjax.js
@@ -32,5 +50,6 @@ nav:
   - Tutorials: tutorials.md
   - Modelling Components:
     - Differential Equations: components/differential_equations.md
+    - Systems of ODEs: components/ODE_systems.md
   - Reference:
     - Assignments: assignments.md
