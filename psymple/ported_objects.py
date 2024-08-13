@@ -36,7 +36,6 @@ class Assignment:
         expression: expression on the RHS.
             If input is a string, it is converted to a sympy expression.
         """
-        # TODO: Does sympify need the custom local namespace here?
         if type(symbol_wrapper) is str:
             symbol_wrapper = SymbolWrapper(sym.Symbol(symbol_wrapper))
         elif type(symbol_wrapper) is sym.Symbol:
@@ -81,6 +80,12 @@ class Assignment:
 
     def __repr__(self):
         return f"{type(self).__name__} {self.name} = {self.expression}"
+    
+    def _dumps(self):
+        data = {
+            "expression": str(self.expression)
+        }
+        return data
 
 
 class DifferentialAssignment(Assignment):
@@ -107,6 +112,15 @@ class DifferentialAssignment(Assignment):
         # assert self.variable.symbol == other.variable.symbol
         # TODO: Check if we want to mutate this assignment, or rather produce a new one
         self.expression += other.expression
+
+    def _dumps(self):
+        data = super()._dumps()
+        data.update(
+            {
+                "variable": self.name
+            }
+        )
+        return data
 
 
 class ParameterAssignment(Assignment):
@@ -143,6 +157,15 @@ class ParameterAssignment(Assignment):
     @property
     def parameter(self):
         return self.symbol_wrapper
+    
+    def _dumps(self):
+        data = super()._dumps()
+        data.update(
+            {
+                "parameter": self.name
+            }
+        )
+        return data
 
 
 class DefaultParameterAssignment(ParameterAssignment):
@@ -203,6 +226,13 @@ class Port:
 
     def __repr__(self):
         return f"{type(self).__name__} {self.name}"
+    
+    def _dumps(self):
+        data = {
+            "name": self.name,
+            "description": self.description
+        }
+        return data
 
 
 class VariablePort(Port):
@@ -213,6 +243,15 @@ class InputPort(Port):
     def __init__(self, name, description="", default_value=None):
         super().__init__(name, description)
         self.default_value = default_value
+
+    def _dumps(self):
+        data = super()._dumps()
+        data.update(
+            {
+                "default_value": self.default_value
+            }
+        )
+        return data
 
 
 class OutputPort(Port):
@@ -281,7 +320,6 @@ class PortedObject(ABC):
         self.variable_ports = {}
         self.input_ports = {}
         self.output_ports = {}
-        self.internals = {}
         self.add_input_ports(*input_ports)
         self.add_output_ports(*output_ports)
         self.add_variable_ports(*variable_ports)
@@ -383,6 +421,90 @@ class PortedObject(ABC):
             port = self.parse_port_entry(port_info, VariablePort)
             self.variable_ports[port.name] = port
 
+
+    """
+    def add_input_port(self, port: InputPort):
+        # DEPRECATE?
+        # assert isinstance(port, InputPort)
+        self.check_existing_port_names(port)
+        self.input_ports[port.name] = port
+
+    def add_output_port(self, port: OutputPort):
+        # DEPRECATE?
+        # assert isinstance(port, OutputPort)
+        self.check_existing_port_names(port)
+        self.output_ports[port.name] = port
+
+    def add_variable_port(self, port: VariablePort):
+        # DEPRECATE?
+        # assert isinstance(port, VariablePort)
+        self.check_existing_port_names(port)
+        self.variable_ports[port.name] = port
+    """
+
+    def _get_port_by_name(self, port: str):
+        if port in self.variable_ports:
+            return self.variable_ports[port]
+        if port in self.input_ports:
+            return self.input_ports[port]
+        if port in self.output_ports:
+            return self.output_ports[port]
+        return None
+
+    @abstractmethod
+    def compile(self, prefix_names=False):
+        pass
+
+    @abstractmethod
+    def dumps(self):
+        """
+        Every subclass foo of PortedObject must implement a dismantler method dumps such that 
+        every instance bar of foo can be recreated by calling foo(**bar.dumps())
+        """
+        pass
+
+    def _dump_input_ports(self):
+        """
+        Return the list of input port data of self.
+        """
+        input_ports = [
+            port._dumps() for port in self.input_ports.values()
+        ]
+        return input_ports
+
+    def _dump_output_ports(self):
+        """
+        Return the list of output port data of self.
+        """
+        output_ports = [
+            port._dumps() for port in self.output_ports.values()
+        ]
+        return output_ports
+
+    def _dump_variable_ports(self):
+        """
+        Return the list of variable port data of self.
+        """
+        variable_ports = [
+            port._dumps() for port in self.variable_ports.values()
+        ]
+        return variable_ports
+    
+class PortedObjectWithAssignment(PortedObject):
+    """
+    Abstract class to hold common functionality of VariablePortedObject and FunctionalPortedObject.
+    """
+    def __init__(
+        self,
+        name: str,
+        input_ports: list = [],
+        output_ports: list = [],
+        variable_ports: list = [],
+        sympify_locals: dict = {},
+    ):
+        super().__init__(name, input_ports, output_ports, variable_ports, sympify_locals)
+        self.assignments = {}
+
     def parse_assignment_entry(
         self,
         assignment_info: Assignment | dict | tuple,
@@ -429,42 +551,19 @@ class PortedObject(ABC):
             raise ValidationError(
                 f"The entry {assignment_info} does not have type {assignment_type}, dictionary or tuple."
             )
-
-    """
-    def add_input_port(self, port: InputPort):
-        # DEPRECATE?
-        # assert isinstance(port, InputPort)
-        self.check_existing_port_names(port)
-        self.input_ports[port.name] = port
-
-    def add_output_port(self, port: OutputPort):
-        # DEPRECATE?
-        # assert isinstance(port, OutputPort)
-        self.check_existing_port_names(port)
-        self.output_ports[port.name] = port
-
-    def add_variable_port(self, port: VariablePort):
-        # DEPRECATE?
-        # assert isinstance(port, VariablePort)
-        self.check_existing_port_names(port)
-        self.variable_ports[port.name] = port
-    """
-
-    def _get_port_by_name(self, port: str):
-        if port in self.variable_ports:
-            return self.variable_ports[port]
-        if port in self.input_ports:
-            return self.input_ports[port]
-        if port in self.output_ports:
-            return self.output_ports[port]
-        return None
-
-    @abstractmethod
-    def compile(self, prefix_names=False):
-        pass
+        
+    def _dump_assignments(self):
+        if self.assignments:
+            assignments = [
+                assg._dumps() for assg in self.assignments.values()
+            ]
+            return assignments
+        else:
+            return None
 
 
-class VariablePortedObject(PortedObject):
+
+class VariablePortedObject(PortedObjectWithAssignment):
     """
     A PortedObject containing a collection of ODEs (DifferentialAssignment instances).
 
@@ -521,13 +620,14 @@ class VariablePortedObject(PortedObject):
             sympify_locals=sympify_locals,
         )
         # A dict of assignments indexed by the variable name
-        self.assignments = {}
+        self.internals = {}
         create_variable_ports = False if variable_ports else True
         self.add_variable_assignments(
             *assignments,
             create_variable_ports=create_variable_ports,
             create_input_ports=create_input_ports,
         )
+        self.create_input_ports = create_input_ports
 
     def add_variable_assignments(
         self,
@@ -624,9 +724,23 @@ class VariablePortedObject(PortedObject):
         if prefix_names:
             compiled.sub_prefixed_symbols()
         return compiled
+    
+    def dumps(self, as_child = False):
+        data = {
+            "input_ports": self._dump_input_ports(),
+            "variable_ports": self._dump_variable_ports(),
+            "assignments": self._dump_assignments(),
+            "create_input_ports": self.create_input_ports,
+        }
+        if as_child:
+            id_data = {"type": "vpo"}
+        else:
+            id_data = {"name": self.name}
+        id_data.update(data)
+        return id_data
 
 
-class FunctionalPortedObject(PortedObject):
+class FunctionalPortedObject(PortedObjectWithAssignment):
     """
     A PortedObject modeling a function.
 
@@ -678,8 +792,8 @@ class FunctionalPortedObject(PortedObject):
         # TODO: Functional ported objects should take lists of assignments to a list of output port
         super().__init__(name, input_ports=input_ports, sympify_locals=sympify_locals)
         # A dict of assignments indexed by the variable name
-        self.assignments = {}
         self.add_parameter_assignments(*assignments, create_input_ports=create_input_ports)
+        self.create_input_ports = create_input_ports
 
     def add_parameter_assignments(
         self,
@@ -757,6 +871,19 @@ class FunctionalPortedObject(PortedObject):
         if prefix_names:
             compiled.sub_prefixed_symbols()
         return compiled
+    
+    def dumps(self, as_child = False):
+        data = {
+            "input_ports": self._dump_input_ports(),
+            "assignments": self._dump_assignments(),
+            "create_input_ports": self.create_input_ports,
+        }
+        if as_child:
+            id_data = {"type": "fpo"}
+        else:
+            id_data = {"name": self.name}
+        id_data.update(data)
+        return id_data
 
 
 class CompositePortedObject(PortedObject):
@@ -804,7 +931,7 @@ class CompositePortedObject(PortedObject):
         Every output port of a child should have an edge going out of it
         Every output port of a child should have a VariableAggregationWiring going out of it
     """
-
+    # TODO: Decide data entry format of children
     def __init__(
         self,
         name: str,
@@ -814,8 +941,9 @@ class CompositePortedObject(PortedObject):
         variable_ports: list = [],
         variable_wires: list = [],
         directed_wires: list = [],
+        sympify_locals = {},
     ):
-        super().__init__(name, input_ports, output_ports, variable_ports)
+        super().__init__(name, input_ports, output_ports, variable_ports, sympify_locals)
         self.children = {}
         self.variable_aggregation_wiring = []
         self.directed_wires = []
@@ -825,8 +953,22 @@ class CompositePortedObject(PortedObject):
     def _is_own_port(self, name: str):
         return not (HIERARCHY_SEPARATOR in name)
 
-    def add_children(self, *children: str):
+    def add_children(self, *children):
         for child in children:
+            if isinstance(child, dict):
+                self._parse_child(child)
+            elif isinstance(child, PortedObject):
+                self._add_child(child)
+
+    def _parse_child(self, child_data):
+        for name, data in child_data.items():
+            child_type = data.pop("type")
+            if child_type == "fpo":
+                child = FunctionalPortedObject(name=name, sympify_locals=self.sympify_locals, **data)
+            elif child_type == "vpo":
+                child = VariablePortedObject(name=name, sympify_locals=self.sympify_locals, **data)
+            elif child_type == "cpo":
+                child = CompositePortedObject(name=name, sympify_locals=self.sympify_locals, **data)
             self._add_child(child)
 
     def _add_child(self, child):
@@ -856,9 +998,9 @@ class CompositePortedObject(PortedObject):
                 entry specifying the output_name (str). Signature must be either
                 (child_ports, parent_port) or (child_ports, None, output_name).
         directed_wires: a list of either:
-            - a dictionary specifying source (str) and destination (str);
+            - a dictionary specifying source (str) and destinations (list[str]);
             - a tuple, with the first entry specifying the source (str) and the second the
-                destination (str).
+                destinations (list[str]).
         """
         for wire_info in variable_wires:
             if isinstance(wire_info, dict):
@@ -1208,6 +1350,40 @@ class CompositePortedObject(PortedObject):
             compiled.sub_prefixed_symbols()
 
         return compiled
+    
+    def _dump_children(self):
+        data = {
+            name: child.dumps(as_child=True) for name, child in self.children.items()
+        }
+        return data
+    
+    def _dump_variable_wires(self):
+        variable_wires = [
+            wire._dumps() for wire in self.variable_aggregation_wiring
+        ]
+        return variable_wires
+
+    def _dump_directed_wires(self):
+        directed_wires = [
+            wire._dumps() for wire in self.directed_wires
+        ]
+        return directed_wires
+    
+    def dumps(self, as_child = False):
+        data = {
+            "children": [self._dump_children()],
+            "input_ports": self._dump_input_ports(),
+            "output_ports": self._dump_output_ports(),
+            "variable_ports": self._dump_variable_ports(),
+            "directed_wires": self._dump_directed_wires(),
+            "variable_wires": self._dump_variable_wires(),
+        }
+        if as_child:
+            id_data = {"type": "cpo"}
+        else:
+            id_data = {"name": self.name}
+        id_data.update(data)
+        return id_data
 
 
 class CompiledPortedObject(CompositePortedObject):
@@ -1345,6 +1521,14 @@ class VariableAggregationWiring:
         self.parent_port = parent_port
         self.output_name = output_name
 
+    def _dumps(self):
+        data = {
+            "child_ports": self.child_ports,
+            "parent_port": self.parent_port,
+            "output_name": self.output_name,
+        }
+        return data
+
 
 class DirectedWire:
     """
@@ -1358,4 +1542,12 @@ class DirectedWire:
     def __init__(self, source_port: str, destination_ports: list[str]):
         self.source_port = source_port
         self.destination_ports = destination_ports
-        # needs to indicate whether own port or child port
+
+    def _dumps(self):
+        data = {
+            "source": self.source_port,
+            "destinations": self.destination_ports,
+        }
+        return data
+
+    

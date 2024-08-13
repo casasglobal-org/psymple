@@ -27,9 +27,7 @@ share/python-wheels/
 MANIFEST
 
 # Examples
-examples/pbdm
-examples/bugs
-examples/test.ipynb
+examples/
 
 # Development
 api.py
