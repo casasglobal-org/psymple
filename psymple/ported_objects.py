@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 import itertools
+import warnings
 
 # from typing import List
 from operator import attrgetter
@@ -385,7 +386,7 @@ class PortedObject(ABC):
         """
         for port_info in ports:
             port = self.parse_port_entry(port_info, InputPort)
-            self.input_ports[port.name] = port
+            self._add_input_port(port)
 
     def add_output_ports(self, *ports: OutputPort | dict | str):
         """
@@ -402,7 +403,7 @@ class PortedObject(ABC):
         """
         for port_info in ports:
             port = self.parse_port_entry(port_info, OutputPort)
-            self.output_ports[port.name] = port
+            self._add_output_port(port)
 
     def add_variable_ports(self, *ports: VariablePort | dict | str):
         """
@@ -419,28 +420,20 @@ class PortedObject(ABC):
         """
         for port_info in ports:
             port = self.parse_port_entry(port_info, VariablePort)
-            self.variable_ports[port.name] = port
+            self._add_variable_port(port)
 
 
-    """
-    def add_input_port(self, port: InputPort):
-        # DEPRECATE?
-        # assert isinstance(port, InputPort)
+    def _add_input_port(self, port: InputPort):
         self.check_existing_port_names(port)
         self.input_ports[port.name] = port
 
-    def add_output_port(self, port: OutputPort):
-        # DEPRECATE?
-        # assert isinstance(port, OutputPort)
+    def _add_output_port(self, port: OutputPort):
         self.check_existing_port_names(port)
         self.output_ports[port.name] = port
 
-    def add_variable_port(self, port: VariablePort):
-        # DEPRECATE?
-        # assert isinstance(port, VariablePort)
+    def _add_variable_port(self, port: VariablePort):
         self.check_existing_port_names(port)
         self.variable_ports[port.name] = port
-    """
 
     def _get_port_by_name(self, port: str):
         if port in self.variable_ports:
@@ -450,6 +443,51 @@ class PortedObject(ABC):
         if port in self.output_ports:
             return self.output_ports[port]
         return None
+    
+    @property
+    def input(self):
+        """
+        Convenience method returning the name of the first input port of self. Intended to be used
+        if it is known the ported object has only a single input port.
+        """
+        if len(self.input_ports) > 1:
+            warnings.warn(
+                f"Ported object {self.name} has more than one input port. The property .input "
+                f"will only return the first one stored, which may not behave as expected.")
+        try:
+            return next(iter(self.input_ports))    
+        except:
+            return None
+
+    @property
+    def output(self):
+        """
+        Convenience method returning the name of the first output port of self. Intended to be used
+        if it is known the ported object has only a single output port.
+        """
+        if len(self.output_ports) > 1:
+            warnings.warn(
+                f"Ported object {self.name} has more than one output port. The property .output "
+                f"will only return the first one stored, which may not behave as expected.")
+        try:
+            return next(iter(self.output_ports))
+        except:
+            return None
+            
+    @property
+    def variable(self):
+        """
+        Convenience method returning the name of the first variable port of self. Intended to be used
+        if it is known the ported object has only a single variable port.
+        """
+        if len(self.variable_ports) > 1:
+            warnings.warn(
+                f"Ported object {self.name} has more than one variable port. The property .variable "
+                f"will only return the first one stored, which may not behave as expected.")
+        try:
+            return next(iter(self.variable_ports))
+        except:
+            return None
 
     @abstractmethod
     def compile(self, prefix_names=False):
@@ -972,6 +1010,8 @@ class CompositePortedObject(PortedObject):
             self._add_child(child)
 
     def _add_child(self, child):
+        if child.name in self.children:
+            raise ValueError(f"Child {child.name} already exists in ported object {self.name}")
         self.children[child.name] = child
 
     def add_wires(self, variable_wires: list = [], directed_wires: list = []):
