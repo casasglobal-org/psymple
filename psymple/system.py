@@ -272,7 +272,7 @@ class System(System_Creator):
             self.system_parameters | parameters | self.utility_functions | utilities
         )
         if isinstance(data, PortedObject):
-            self.ported_objects.update({data.name: data})
+            self._process(data.dumps(), sympify_locals)
         elif isinstance(data, dict):
             self._process(data, sympify_locals)
         else:

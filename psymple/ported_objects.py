@@ -444,6 +444,7 @@ class PortedObject(ABC):
             return self.output_ports[port]
         return None
     
+
     @property
     def input(self):
         """
