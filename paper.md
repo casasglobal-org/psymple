@@ -20,11 +20,13 @@ authors:
 affiliations:
  - name: IDEMS International CIC, Reading, United Kingdom
    index: 1
- - name: Agenzia nazionale per le nuove tecnologie, l’energia e lo sviluppo economico sostenibile (ENEA),
-Centro Ricerche Casaccia, Via Anguillarese 301, 00123 Rome, Italy
+ - name: 
+    Agenzia nazionale per le nuove tecnologie, l’energia e lo sviluppo economico sostenibile (ENEA),
+    Centro Ricerche Casaccia, Via Anguillarese 301, 00123 Rome, Italy
    index: 2
-  - name: Center for the Analysis of Sustainable Agricultural Systems, 37 Arlington Ave, Kensington,
-CA 94707-1035, USA
+ - name: 
+    Center for the Analysis of Sustainable Agricultural Systems, 37 Arlington Ave, Kensington,
+    CA 94707-1035, USA
    index: 3
 date: 04 September 2024
 bibliography: paper.bib
