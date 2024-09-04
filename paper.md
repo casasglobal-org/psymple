@@ -33,86 +33,36 @@ The platform `psymple` is designed to facilitate the development of hybrid compl
 
 # Statement of need
 
-The development of `psymple` emerged from the complex system modelling requirements of ecological systems. Ecological niche models, also called species distribution models (SDMs) are designed to predict the distribution in response to geographic and climatic features [@el-fr:2017; @el-le:2009]. These models are classically formed using correlative approaches which match observational data to a set of environmental variables to produce favorability ranges for each species.
+The development of `psymple` emerged from the complex system modelling requirements of ecological systems. Ecological niche models, also called species distribution models (SDMs) predict species distributions in response to geographic and climatic features [@el-fr:2017; @el-le:2009]. These models are classically formed using correlative or statistical approaches which match observational data to a set of environmental variables to produce favorability ranges for each species.
 
-An alternative approach to SDM is known as mechanistic modelling, which uses physiological species data to parametrise population dynamics models which respond to environmental inputs [@ke-po:2009]. Mechanistic SDMs decouple the physiology of a species from their geographic and climatic environment, and allow species distribution models which respond to environmental change to be created in the absence of observational data [@joh+:2019].
+An alternative approach to SDM is known as mechanistic modelling, which uses physiological species data to parametrise population dynamics models which respond to environmental inputs [@ke-po:2009]. Mechanistic SDMs decouple the physiology of a species from their geographic and climatic environment, and allow species distribution models which respond to environmental or climatic change to be created in the absence of observational data [@joh+:2019].
 
-More generally, these approaches can be summarised as statistical or correlative, against mechanistic or dynamic approaches to complex systems modelling. Classically, the choice between these approaches is often decided based on resource or expertise constraints. More recently, the development of models which use components and ideas from both approaches has been considered [@to-va:2023]. Sitting between the two extremes, these approaches are referred to as hybrid or spectrum models.
+More generally, these approaches can be respectively summarised as correlative and mechanistic approaches to complex systems modelling. Classically, the choice between these approaches is often decided based on resource, expertise, or data constraints. More recently, the development of models sitting between the extremes the of correlative and mechanistic approaches, which use components and ideas from both, has been considered [@buck+:2010; @to-va:2023]. These approaches are referred to as hybrid or spectrum models.
 
-An example in ecological modelling is physiologically-based demographic modeling (PBDM), which uses physiological data to parametrise functions capturing biophysical or biochemical mechanisms, for example, the development, mortality and fecundity rates of a species in response to environmental variables (see [@po-gu:2023] for an overview and references).  The PBDM approach highlights the considerable advantages of mechanistic SDMs, such as being able to consider the effects of tritrophic ecosystem interactions [@g-y-n-e:1999], while retaining the comparable ease of parametrisation as status-quo correlative models. 
+An example hybrid framework in ecological modelling is physiologically-based demographic modeling (PBDM), which uses physiological data to parametrise functions capturing biophysical or biochemical mechanisms, for example, the development, mortality and fecundity rates of a species in response to environmental variables (see [@po-gu:2023] for an overview and references).  The PBDM approach highlights the considerable advantages of mechanistic SDMs, such as being able to consider the effects of tritrophic ecosystem interactions [@g-y-n-e:1999], while retaining the comparable ease of parametrisation as status-quo correlative models. 
 
-The barrier to produce widespread mechanistic or hybrid complex system models is often cited as the lack of available frameworks [Buckley et al., 2023] or the lack of modelling platforms to implement these frameworks, as in the case of PBDM [@po-gu:2023]. It is built to a specification shared by next-generation dynamical systems modelling frameworks [@l-b-p-f:2022; @baez+:2023], including being open-source, modular and data-first to drive clear, adaptable and accessible modelling practices. 
+The barrier to produce widespread mechanistic or hybrid complex system models is often cited as the lack of available modelling frameworks [@bu-c-j:2018], the lack of flexibility in existing models [@buck+:2010], or the lack of modelling platforms to implement existing ideas [@po-gu:2023]. 
 
-These ideas allow for legibility of even highly complex, specialised systems, allow for low- or no-code interfaces to improve utilisation amongst non-specialist audiences. Modular structures pave the way for cross-platform integrations, and abstracts the data structure from modelling objects to promote reuse and adaptability. 
+The package `psymple` is a general modelling platform designed to facilitate the creation of hybrid complex systems models. It is built to a specification shared by "next-generation" dynamical systems modelling frameworks, see [@baez+:2023], including being open-source, modular and data-first to drive clear, adaptable and accessible modelling practices. These ideas allow for legible modelling of highly complex, specialised systems, and allow for low- or no-code interfaces to improve utilisation amongst non-specialist users. Modular structures pave the way for cross-platform integrations, and a data structure abstracted from modelling objects promotes reuse and flexibility. 
 
-Psymple is a general modelling platform designed to facilitate the creation of hybrid complex systems models. Models are built from arbitrary combinations of modular mechanistic, dynamic components and correlative, functional components which naturally interact with each other. In doing so, it allows for other modelling systems to be captured whose laws of interaction cannot be captured purely mechanistically, such as biological, economic and social systems, in contrast to those systems of a physical, chemical or epidemiological nature. Examples include agroecological, bioeconomic and Earth systems modelling, and the development of `psymple` is a necessary first step in the development and release of these tools.
+Models are built from arbitrary combinations of modular mechanistic, dynamic components and correlative, functional components which naturally interact with each other. In doing so, it allows for other modelling systems to be captured whose laws of interaction cannot be captured purely mechanistically, such as biological, economic and social systems, in contrast to those systems of a physical, chemical or epidemiological nature. Examples include agroecological, bioeconomic and Earth systems modelling, and the development of `psymple` is a necessary first step in the development and release of these tools.
 
 # Description
 
-The workings of psymple are based on the ideas of category-theoretic package `AlgebraicJulia.jl` [@l-b-p-f:2024], where modular ‘ported’ objects, called resource sharers, containing ordinary differential equations expose internal variable states at different ports. Ports are linked by wires which automatically collect the dynamics equations of state variables across the system to create complex interacting dynamical systems.
+The workings of `psymple` are based on the ideas of category-theoretic dynamic systems modelling package `AlgebraicJulia.jl` [@l-b-p-f:2024], in which modular ‘ported’ objects, called resource sharers, containing ordinary differential equations expose internal variable states at different ports. Ports are linked by wires which represent the sharing of state variables accross the dynamics equations of the system to create complex interacting dynamical systems. Mathematically, ported objects form algebras over the operad of undirected wiring diagrams, see [@l-b-p-f:2022]. 
 
-A *ported object* $O = O(I, P)$ stores *information* $I = \{ I_1, \dots, I_m \}$, and *ports* $P = \{P_1, \dots, P_n \}$ with $P_i = \{ I_{i_1}, \dots, I_{i_{k_i}} \}$ such that $P_i \cap P_j = \emptyset$ for all $i \ne j$ and
+In `psymple`, the ideas implemented in [@l-b-p-f:2024] are extended to realise functions as ported objects, called functional ported objects (FPOs) alongside dynamic resource shares, which in `psymple` are called variable ported objects (VPOs) and whose ports are called variable ports. FPOs contain systems of multivariate functions, whose values are exposed at output ports, and whose arguments can read in information from other FPO outputs or VPO variable ports. The structure of input ports is also introduced to VPOs by allowing functions defining differential equations to read information from input ports in the same way as FPOs.
 
-$$
-\bigcup_{i=1}^n P_i = \bigcup_{i=1}^n \{ I_{i_1}, \dots, I_{i_{k_i}} \} \subseteq I.
-$$
+Arbitrary combinations of FPOs and VPOs can be combined in composite ported objects (CPOs) which introduce directed wires, capturing the partial substitution of functional information, and variable wires which implement the functionality of resource sharing. CPOs can themselves read and expose information from input, output and variable ports to create fully modular and arbitrarily complex hybrid systems of both functional and dynamic components whose nested hierarchy can reflect model structure. 
 
-Any $I_{i_j} \in P_i$ is called *exposed information* and any $I_k \in I \setminus (P_1 \cup \cdots \cup P_n$ is called *internal information*. 
+`psymple` implements a string-based authoring interface which enables no-code authoring from Python dictionary objects or `JSON` file formats. Inputs are internally processed using the Python symbolic mathematics package `sympy` [@meur+:2017] to allow for automatic collection and simplification of equations, the elimination of errors from manually combining complex system equations, and clear inspection of a whole system or some of its parts with automatic outputs including \LaTeX format. 
 
-We extend these ideas to realise functions as ported objects, called functional ported objects (FPOs) alongside dynamic resource shares, which in `psymple` are called variable ported objects (VPOs). Instances of the FunctionalPortedObject class contain:
-Assignment instances, which store multivariate functions;
-OutputPort instances, which expose the value of the function elsewhere in the system;
-InputPort instances, which read in information from other FPO outputs or VPO state variables.
+# Research
 
-We introduce the structure of input ports to VPOs by allowing dynamic equations to read information from InputPort instances in the same way as FPOs. We align the structures of VPOs and FPOs by storing differential equations as Assignment instances and ports exposing variable states as VariablePort instances.
-
-Arbitrary combinations of FPOs and VPOs can be combined in composite ported objects (CPOs) which introduce directed wires capturing the composition of functional information and variable wires which implement the functionality of resource sharing. CPOs can themselves read and expose information from input, output and variable ports to create fully modular and arbitrarily complex hybrid systems of both functional and dynamic components. 
-
-Psymple implements a string-based authoring interface which allows for complete no-code authoring from JSON file formats. Inputs are internally processed using the symbolic mathematics package sympy to allow for automatic collection and simplification of equations, the elimination of mistakes from manually combining complex system equations, and clear inspection of a whole system or some of its parts with automatic outputs including in LaTeX format. 
-
-# Mathematics
-
-Single dollars ($) are required for inline mathematics e.g. $f(x) = e^{\pi/x}$
-
-Double dollars make self-standing equations:
-
-$$\Theta(x) = \left\{\begin{array}{l}
-0\textrm{ if } x < 0\cr
-1\textrm{ else}
-\end{array}\right.$$
-
-You can also use plain \LaTeX for equations
-\begin{equation}\label{eq:fourier}
-\hat f(\omega) = \int_{-\infty}^{\infty} f(x) e^{i\omega x} dx
-\end{equation}
-and refer to \autoref{eq:fourier} from text.
-
-# Citations
-
-Citations to entries in paper.bib should be in
-[rMarkdown](http://rmarkdown.rstudio.com/authoring_bibliographies_and_citations.html)
-format.
-
-If you want to cite a software repository URL (e.g. something on GitHub without a preferred
-citation) then you can do it with the example BibTeX entry below for @fidgit.
-
-For a quick reference, the following citation commands can be used:
-- `@author:2001`  ->  "Author et al. (2001)"
-- `[@author:2001]` -> "(Author et al., 2001)"
-- `[@author1:2001; @author2:2001]` -> "(Author1 et al., 2001; Author2 et al., 2002)"
-
-# Figures
-
-Figures can be included like this:
-![Caption for example figure.\label{fig:example}](figure.png)
-and referenced from text using \autoref{fig:example}.
-
-Figure sizes can be customized by adding an optional second parameter:
-![Caption for example figure.](figure.png){ width=20% }
+The development of `psymple` emerged as part of a collaborative effort between [IDEMS International](https://www.idems.international/) and [CASAS Global](https://casasglobal.org/) to increase the uptake, accessibility and impact of the physiologically-based demographic modelling (PBDM) framework. The development of `psymple` is a neccesary first step to capture PBDM in sufficient generality to enable modular and flexible implementations of existing and new models into the framework to drive future research and social impact potential.
 
 # Acknowledgements
 
-We acknowledge contributions from Brigitta Sipocz, Syrtis Major, and Semyeong
-Oh, and support from Kathryn Johnston during the genesis of this project.
+The collaboration between IDEMS International and CASAS Global enabled by a grant from the McKnight Foundations [Global Collaboration for Resilient Food Systems](https://www.ccrp.org/), grant number $23-149$. The authors would like to thank Prof. Andrew Guitierrez of CASAS Global for his incredibly deep insights and many helpful conversations, and to the researchers of the [Topos Institute](https://topos.institute/) for their helpful comments and support in developing on their work.
 
 # References
