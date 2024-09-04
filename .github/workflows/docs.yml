@@ -31,3 +31,4 @@ jobs:
       - name: Build Docs
         run: |
           mike deploy --push  ${{ github.event.release.tag_name }}
+          mike set-default --push  ${{ github.event.release.tag_name }}
