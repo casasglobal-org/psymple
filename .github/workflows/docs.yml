@@ -27,4 +27,4 @@ jobs:
             mkdocs-material-
       - run: pip install mkdocs-material "mkdocstrings[python]" mike
       - name: Build Docs
-        run: mike deploy --force main
+        run: mike deploy --push latest
