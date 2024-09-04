@@ -169,3 +169,5 @@ cython_debug/
 psymple/api.py
 examples/test.ipynb
 psymple/functions.py
+doctest_runner.py
+test_json.json

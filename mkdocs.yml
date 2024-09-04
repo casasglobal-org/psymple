@@ -1,7 +1,8 @@
 # mkdocs.yml
 site_name: Psymple Docs
+site_url: https://casasglobal-org.github.io/psymple/
 
-repo_url: https://github.com/casasglobal-org/psymple
+repo_url: https://github.com/casasglobal-org/psymple/
 repo_name: casasglobal-org/psymple
 
 theme:
