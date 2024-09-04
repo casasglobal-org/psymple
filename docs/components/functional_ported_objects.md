@@ -1,12 +1,12 @@
 # Defining functions
 
-Functions in `psymple` are captured by [functional ported objects](../mathematics/ported_objects/#functional-ported-objects). A system of multivariate functions of the form 
+Functions in `psymple` are captured by [functional ported objects](../mathematics/ported_objects.md/#functional-ported-objects). A system of multivariate functions of the form 
 
 $$
 \underline{y} = \underline{f}(t, \underline{d})
 $$
 
-is captured by a functional ported object with a set of [parameter assignments](../mathematics/variables_parameters/#parameter-assignments) modelling $y_i = f_i(t,\underline{d}_i)$ for each $i$, where $\underline{d}_i \subseteq \underline{d}$.
+is captured by a functional ported object with a set of [parameter assignments](../mathematics/variables_parameters.md/#parameter-assignments) modelling $y_i = f_i(t,\underline{d}_i)$ for each $i$, where $\underline{d}_i \subseteq \underline{d}$.
 
 ## Example
 

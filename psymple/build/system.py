@@ -399,7 +399,7 @@ class System(FunctionHandler, SetterObject):
             ported_object: instance of `PortedObject` or `PortedObjectData defining the system model.
             utility_functions: list of the utility functions available in the system. See documentation
                 for [`add_utility_function`][psymple.build.System.add_utility_function] for acceptable values.
-            system_paramters: list of the system parameters available in the system. See documentation
+            system_parameters: list of the system parameters available in the system. See documentation
                 for [`add_system_paramter`][psymple.build.System.add_system_parameter] for acceptable values.
             time_symbol: The symbol used for the independent variable time in the system.
             compile: If `True` and `ported_object` is provided, then system will be compiled automatically.
@@ -525,7 +525,7 @@ class System(FunctionHandler, SetterObject):
         Initial values must be `int` or `float` instances only.
 
         Args:
-            initial_values: a dictionary of `variable: value` pairs where `variable` is the string
+            values: a dictionary of `variable: value` pairs where `variable` is the string
                 identifier of a variable in `self.variables` and `value` is `int` or `float`.
         """
         if not self.compiled:
@@ -584,8 +584,8 @@ class System(FunctionHandler, SetterObject):
 
     def create_simulation(
         self,
-        name=None,
-        solver="continuous",
+        name: str = None,
+        solver: str = "continuous",
         initial_values: dict = {},
         input_parameters: dict = {},
     ) -> Simulation:

@@ -44,13 +44,13 @@ class PortedObject(ABC):
 
         Args:
             name: a string which must be unique for each `PortedObject` inside a common
-                [`CompositePortedObject`][psymple.ported_objects.CompositePortedObject].
+                [`CompositePortedObject`][psymple.build.CompositePortedObject].
             input_ports: list of input ports to expose. 
-                See [add_input_ports][psymple.ported_objects.abstract.PortedObject.add_input_ports].
+                See [add_input_ports][psymple.build.abstract.PortedObject.add_input_ports].
             output_ports: list of output ports to expose. 
-                See [add_output_ports][psymple.ported_objects.abstract.PortedObject.add_input_ports].
+                See [add_output_ports][psymple.build.abstract.PortedObject.add_input_ports].
             variable_ports: list of variable ports to expose. 
-                See [add_variable_ports][psymple.ported_objects.abstract.PortedObject.add_variable_ports].
+                See [add_variable_ports][psymple.build.abstract.PortedObject.add_variable_ports].
             parsing_locals: a dictionary mapping strings to `sympy` objects.
         """
         self.name = name

@@ -210,8 +210,8 @@ class VariablePortedObject(PortedObjectWithAssignments):
     def add_variable_assignments(
         self,
         *assignments: DifferentialAssignment | dict | tuple,
-        create_variable_ports=True,
-        create_input_ports=True,
+        create_variable_ports: bool = True,
+        create_input_ports: bool = True,
     ):
         """
         Add variable assignments to self.
@@ -456,7 +456,7 @@ class FunctionalPortedObject(PortedObjectWithAssignments):
             self.assignments[parameter_name] = assignment
             self.output_ports[parameter_name] = OutputPort(parameter_name)
 
-    def compile(self, prefix_names=False):
+    def compile(self, prefix_names: bool = False):
         """
         Generate a [`CompiledPortedObject`][psymple.build.ported_objects.CompiledPortedObject] with:
 
@@ -587,7 +587,7 @@ class CompositePortedObject(PortedObject):
         variable_ports: list[VariablePort | dict | str] = [],
         variable_wires: list[dict | tuple] = [],
         directed_wires: list[dict | tuple] = [],
-        parsing_locals = {},
+        parsing_locals: dict = {},
     ):
         """
         Construct a CompositePortedObject.
@@ -799,7 +799,7 @@ class CompositePortedObject(PortedObject):
         Add a variable wire to self.
 
         Args:
-            source_ports: a list of strings identifying variable ports to aggregate 
+            child_ports: a list of strings identifying variable ports to aggregate 
             parent_port: a string identifying the parent variable port of self to identify with
             output_name: a string identifying the aggregation internally if a parent port 
                 is not specified.
@@ -880,7 +880,7 @@ class CompositePortedObject(PortedObject):
                 raise KeyError(f"{name} is not a child of {self.name}")
 
 
-    def compile(self, prefix_names=False):
+    def compile(self, prefix_names: bool = False):
         """
         Generate a [`CompiledPortedObject`][psymple.build.ported_objects.CompiledPortedObject] with:
 
@@ -1117,7 +1117,7 @@ class CompositePortedObject(PortedObject):
         ]
         return directed_wires
     
-    def to_data(self):
+    def to_data(self) -> PortedObjectData:
         """
         A dismantler method such that every instance X of `CompositePortedObject`
         can be recreated by calling `X.to_data().to_ported_object()`

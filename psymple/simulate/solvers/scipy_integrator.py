@@ -23,7 +23,7 @@ class ContinuousIntegrator(Solver):
         The attribute `_callable` created on instantiation is a function with signature `(t,y)` which 
         is a form accepted by, or easily coerced into, many other python-implemented ODE solvers.
     """
-    def __init__(self, simulation, t_end):
+    def __init__(self, simulation: Simulation, t_end: int):
         """
         Create a `ContinuousIntegrator` instance.
 

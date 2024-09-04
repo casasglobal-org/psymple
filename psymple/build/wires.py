@@ -29,8 +29,8 @@ class VariableAggregationWiring:
 
     warning: Warning
         This class should not be instantiated on its own. Instead, use
-        [`psymple.ported_objects.CompositePortedObject.add_variable_wire`][] or 
-        [`psymple.ported_objects.CompositePortedObject.add_wires`][].
+        [`psymple.build.CompositePortedObject.add_variable_wire`][] or 
+        [`psymple.build.CompositePortedObject.add_wires`][].
     """
 
     def __init__(self, child_ports: list[str], parent_port: str, output_name: str):
@@ -63,8 +63,8 @@ class DirectedWire:
 
     warning: Warning
         This class should not be instantiated on its own. Instead, use
-        [`psymple.ported_objects.CompositePortedObject.add_directed_wire`][] or 
-        [`psymple.ported_objects.CompositePortedObject.add_wires`][].
+        [`psymple.build.CompositePortedObject.add_directed_wire`][] or 
+        [`psymple.build.CompositePortedObject.add_wires`][].
     """
 
     def __init__(self, source_port: str, destination_ports: list[str]):

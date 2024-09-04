@@ -54,7 +54,7 @@ class UpdateRule(ExpressionWrapper):
     fully aware of its system dependencies.
 
     Methods:
-        sub_symbols
+        sub_symbols: substitute the symbols contained inside `self`.
     """
     def __init__(
         self,
@@ -124,7 +124,7 @@ class UpdateRule(ExpressionWrapper):
             cse=True,
         )
     
-    def sub_symbols(self, vars_dict, pars_dict):
+    def sub_symbols(self, vars_dict: dict, pars_dict: dict):
         """
         Substitute the variables and parameters of `self` according to dictionary mappings.
 
@@ -144,8 +144,8 @@ class SimVariable(Variable):
     a time series of simulation values and an [`UpdateRule`][psymple.variables.UpdateRule] instance.
 
     Methods:
-        set_update_rule
-        get_readout
+        set_update_rule: set the update rule of `self` with an `UpdateRule` instance.
+        get_readout: get user-readable information about `self`.
     """
     def __init__(self, variable, initial_value = 0):
         """

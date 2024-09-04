@@ -1,6 +1,6 @@
 # Defining composite models
 
-A composite model consists of collections of functions and differential equations composed together by [functional substitution](functional_substitution.md) and [variable aggregation](variable_aggregation.md). Composite models in `psymple` are captured by [composite ported objects](../mathematics/ported_objects/#composite-ported-objects).
+A composite model consists of collections of functions and differential equations composed together by [functional substitution](../mathematics/functional_substitution.md) and [variable aggregation](../mathematics/variable_aggregation.md). Composite models in `psymple` are captured by [composite ported objects](../mathematics/ported_objects.md/#composite-ported-objects).
 
 The functions and differential equations to be composed come from ported objects added as children. The ports of these child objects are then connected to the ports of the parent ported object by [directed wires](../mathematics/functional_substitution.md/#implementation-detail) to capture functional substitution, and [variable wires](../mathematics/variable_aggregation.md/#implementation-detail) to capture variable aggregation.
 

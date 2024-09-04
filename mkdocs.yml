@@ -1,6 +1,9 @@
 # mkdocs.yml
 site_name: Psymple Docs
 
+repo_url: https://github.com/casasglobal-org/psymple
+repo_name: casasglobal-org/psymple
+
 theme:
   name: "material"
   icon:
@@ -12,6 +15,8 @@ theme:
     - navigation.tabs
     - navigation.tabs.sticky
     - navigation.sections
+    - search.suggest
+    - search.highlight
 
 markdown_extensions:
   - admonition
@@ -31,12 +36,13 @@ markdown_extensions:
   - pymdownx.tabbed:
       alternate_style: true
 
-
 extra_javascript:
   - javascripts/mathjax.js
   - https://unpkg.com/mathjax@3/es5/tex-mml-chtml.js
 
 plugins:
+- autorefs:
+    resolve_closest: true
 - mkdocstrings:
     handlers:
       python:
@@ -47,6 +53,11 @@ plugins:
           show_root_heading: true
           show_root_full_path: false
           docstring_section_style: spacy
+- search
+
+extra:
+  version:
+    provider: mike
 
 nav:
   - Introduction: index.md

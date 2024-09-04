@@ -1,12 +1,12 @@
 # Defining ODEs
 
-Differential equations in `psymple` are captured by [variable ported objects](../mathematics/ported_objects/#variable-ported-objects). A system of differential equations of the form 
+Differential equations in `psymple` are captured by [variable ported objects](../mathematics/ported_objects.md/#variable-ported-objects). A system of differential equations of the form 
 
 $$ 
 \frac{d \underline{x}}{dt} = \underline{f}(\underline{x}, t, \underline{b})
 $$
 
-is captured by a variable ported object with a set of [differential assignments](../mathematics/variables_parameters/#differential-assignments) modelling $\frac{dx_i}{dt} = f_i (\underline{x}, t, \underline{b}_i)$ for each $i$, where $\underline{b}_i \subseteq \underline{b}$. 
+is captured by a variable ported object with a set of [differential assignments](../mathematics/variables_parameters.md/#differential-assignments) modelling $\frac{dx_i}{dt} = f_i (\underline{x}, t, \underline{b}_i)$ for each $i$, where $\underline{b}_i \subseteq \underline{b}$. 
 
 ## Example
 
