@@ -59,6 +59,7 @@ plugins:
 extra:
   version:
     provider: mike
+    default: latest
 
 nav:
   - Introduction: index.md
