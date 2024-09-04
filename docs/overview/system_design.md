@@ -6,7 +6,7 @@
 
 Systems of any complexity can be modelled by versatile building blocks called "ported objects" which can be nested into arbitrary hierarchies to capture the structure of the system being modelled.
 
-hese objects can be linked by "wires" which formally represent the flow of resource or information around the system. This provides a degree of separation from the modeller to the dynamically-created system equations, which provides:
+These objects can be linked by "wires" which formally represent the flow of resource or information around the system. This provides a degree of separation from the modeller to the dynamically-created system equations, which provides:
 
 1. **Faceted approach**: each component can be conceived, built and tested in isolation from the system.
 2. **Diagramatic interface**: complex systems are often visualised through diagrams representing the interconnectivity. The interface to `psymple` is a codified approach to building these diagrams.

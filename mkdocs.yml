@@ -68,6 +68,7 @@ nav:
     - Mechanistic vs. correlative models: overview/modelling_types.md
     - System desgin: overview/system_design.md
   - User guide:
+    - user_guide/getting_started.md
     - Building a model:
       - Defining functions: components/functional_ported_objects.md
       - Defining ODEs: components/variable_ported_objects.md
