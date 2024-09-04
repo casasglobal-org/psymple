@@ -2,12 +2,14 @@ import unittest
 
 import sympy as sym
 
-from psymple.ported_objects import (
-    Assignment,
+from psymple.abstract import Assignment
+
+from psymple.build.assignments import (
     ParameterAssignment,
     DifferentialAssignment,
-    DependencyError,
 )
+
+from psymple.build.ported_objects import DependencyError
 
 from psymple.variables import (
     Parameter,
@@ -54,7 +56,6 @@ class TestCreation(unittest.TestCase):
         self.assertIsInstance(symbol_wrapper, Variable)
 
         self.assertEqual(symbol_wrapper.symbol, sym.Symbol("x"))
-        self.assertEqual(symbol_wrapper.initial_value, 0)
 
     def test_parameter_assignment_error(self):
         # Parameter assignments cannot have their symbol appearing in expressions

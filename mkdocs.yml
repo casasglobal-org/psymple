@@ -4,11 +4,14 @@ site_name: Psymple Docs
 theme:
   name: "material"
   icon:
-    annotation: material/arrow-right-circle
+    annotation: material/plus-circle
   features:
     - content.tooltips
     - content.code.copy
     - content.code.annotate
+    - navigation.tabs
+    - navigation.tabs.sticky
+    - navigation.sections
 
 markdown_extensions:
   - admonition
@@ -40,16 +43,49 @@ plugins:
         options:
           docstring_options:
             ignore_init_summary: true
-          merge_init_into_class: false
+          merge_init_into_class: true
+          show_root_heading: true
+          show_root_full_path: false
+          docstring_section_style: spacy
 
 nav:
   - Introduction: index.md
   - Overview:
-    - systems.md
-    - symbolic_systems.md
-  - Tutorials: tutorials.md
-  - Modelling Components:
-    - Differential Equations: components/differential_equations.md
-    - Systems of ODEs: components/ODE_systems.md
+    - Hybrid systems modelling: overview/modelling_systems.md
+    - Mechanistic vs. correlative models: overview/modelling_types.md
+    - System desgin: overview/system_design.md
+  - User guide:
+    - Building a model:
+      - Defining functions: components/functional_ported_objects.md
+      - Defining ODEs: components/variable_ported_objects.md
+      - Defining composite models: components/composite_ported_objects.md
+    - Building a simulable system:
+      - Compilation: user_guide/compilation.md
+      - Building a system: user_guide/system.md
+    - Running a simulation: 
+      - Simulations: user_guide/simulation.md
+    - Examples:
+      - examples/tutorials.md
+      - Mixing problems: 
+        - Single tank: examples/mixing_problems/single_tank.md
+        - Multiple tanks: examples/mixing_problems/multiple_tanks.md
+  - Mathematical components:
+    - Ported objects: mathematics/ported_objects.md
+    - Variables and parameters: mathematics/variables_parameters.md
+    - Functional substitution: mathematics/functional_substitution.md
+    - Variable aggregation: mathematics/variable_aggregation.md
   - Reference:
-    - Assignments: assignments.md
+    - psymple.build:
+      - Assignments: reference/build/assignments.md
+      - Compilation: reference/build/compilation.md
+      - Data: reference/build/data.md
+      - Ported objects: reference/build/ported_objects.md
+      - Ports: reference/build/ports.md
+      - Wires: reference/build/wires.md
+      - System: reference/build/system.md
+    - psymple.simulate:
+      - Simulation: reference/simulate/simulation.md
+      - Solvers: reference/simulate/solvers.md
+    - psymple.core:
+      - Variables: reference/variables.md
+  

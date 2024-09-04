@@ -4,7 +4,7 @@ import sys
 
 sys.path.insert(0, str(pathlib.Path(__file__).parents[2]))
 
-from psymple.ported_objects import (
+from psymple.build import (
     FunctionalPortedObject,
     VariablePortedObject,
     CompositePortedObject,
