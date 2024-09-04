@@ -33,7 +33,7 @@ The platform `psymple` is designed to facilitate the development of hybrid compl
 
 # Statement of need
 
-The development of `psymple` emerged from the complex system modelling requirements of ecological systems. Ecological niche models, also called species distribution models (SDMs) are designed to predict the distribution in response to geographic and climatic features [Elith, 2017; Elith & Leathwick, 2009]. These models are classically formed using correlative approaches which match observational data to a set of environmental variables to produce favorability ranges for each species.
+The development of `psymple` emerged from the complex system modelling requirements of ecological systems. Ecological niche models, also called species distribution models (SDMs) are designed to predict the distribution in response to geographic and climatic features [@el-fr:2017; @el-le:2009]. These models are classically formed using correlative approaches which match observational data to a set of environmental variables to produce favorability ranges for each species.
 
 An alternative approach to SDM is known as mechanistic modelling, which uses physiological species data to parametrise population dynamics models which respond to environmental inputs [Kearney & Porter, 2009]. Mechanistic SDMs decouple the physiology of a species from their geographic and climatic environment, and allow species distribution models which respond to environmental change to be created in the absence of observational data [Johnston et al. 2019].
 
