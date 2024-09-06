@@ -25,7 +25,7 @@ affiliations:
     Centro Ricerche Casaccia, Via Anguillarese 301, 00123 Rome, Italy
    index: 2
  - name: 
-    Center for the Analysis of Sustainable Agricultural Systems ([CASAS Global](https://casasglobal.org/)), 37 Arlington Ave, Kensington,
+    Center for the Analysis of Sustainable Agricultural Systems (casasglobal.org), 37 Arlington Ave, Kensington,
     CA 94707-1035, USA
    index: 3
 date: 06 September 2024
