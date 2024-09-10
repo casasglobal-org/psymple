@@ -13,6 +13,9 @@ authors:
   - name: Luigi Ponti
     orcid: 0000-0003-4972-8265
     affiliation: "2, 3"
+  - name: Andrew Paul Gutierrez
+    orcid: 0000-0001-7773-1715
+    affiliation: "3, 4"
   - name: Chiara Facciolà
     orcid: 0000-0001-8359-9300
     affiliation: 1
@@ -28,7 +31,11 @@ affiliations:
     Center for the Analysis of Sustainable Agricultural Systems (casasglobal.org), 37 Arlington Ave, Kensington,
     CA 94707-1035, USA
    index: 3
-date: 06 September 2024
+ - name:
+    Division of Ecosystem Science, College of Natural Resources, University of California, Berkeley,
+    CA 94720-3114, USA
+   index: 4
+date: 10 September 2024
 bibliography: paper.bib
 ---
 
@@ -46,13 +53,15 @@ The development of `psymple` emerged from the complex system modelling requireme
 
 An alternative approach is mechanistic modelling, which instead of observational data use physiological data to capture the underlying mechanisms which drive species distribution, such as energy balance, population dynamics or response to climate [@ke-po:2009]. Mechanistic SDMs decouple the physiology of a species from their native geography or climate, and allow SDMs in new geographic or climatic regimes to be created in the absence of observational data [@john:2019].
 
-While the schools of thought around correlative and mechanistic SDM are largely disjoint [@dorm:2012], there has more recently been development of models composed of both correlative and mechanistic components [@buck:2010; @to-va:2023], combining the expertise and benefits of both areas. In the wider context of complex systems modelling, the approach of building composite models out of different techniques is called hybrid, or spectrum, modelling.  
+An example mechanistic framework is physiologically-based demographic modelling (PBDM), which creates holistic ecosystem models based on the weather-driven biology of component species, allowing for predictive phenology, dynamics and distribution assessments, see [@gu-po:2022a; @gu-po:2022b] for an overview and further references. In contrast to correlative approaches, mechanistic modelling such as PBDM can account for tritrophic ecosystem interactions [@g-y-n-e:1999], or model the effects of climate change [@guti:2023].
 
-An example hybrid framework in ecological modelling that arose from SDM is physiologically-based demographic modelling (PBDM), which uses physiological data to parametrise functions capturing biophysical or biochemical mechanisms, such as the development, mortality and fecundity rates of a species in response to environmental variables, see [@po-gu:2023] for an overview and references. The PBDM approach combines the considerable advantages of mechanistic SDMs, such as being able to consider the effects of tritrophic ecosystem interactions [@g-y-n-e:1999], or modelling the effects of climate change [@guti:2023], while retaining the comparable ease of parametrisation as status-quo correlative models due to its functional components.
+The schools of thought around correlative SDMs and mechanistic frameworks such as PBDM are seen as largely disjoint [@dorm:2012], but their development can be traced back to early common roots [@fi-ni:1970; @guti:1974; @dw-go:1978]. A component of the PBDM framework is the use of physiological data to parametrise "biodemographic" functions capturing biophysical or biochemical mechanisms, such as the development, mortality and fecundity rates of a species in response to environmental variables [@po-gu:2023].
+
+The use of biodemographic functions in PBDM combines the considerable holistic advantages of mechanistic SDMs, while retaining the comparable ease of parametrisation as status-quo correlative models. More widely, there has been growing interest and development of ecological models explicitly composed of both correlative and mechanistic components [@buck:2010; @to-va:2023], combining the benefits of both areas. In the wider context of complex systems modelling, the approach of building composite models out of different techniques is called hybrid, or spectrum, modelling.  
 
 While PBDM is a highly-developed framework, it shares the same barriers to widespread introduction as general hybrid complex system models. These barriers include the lack of available modelling frameworks [@bu-c-j:2018], the lack of flexibility in existing models [@buck:2010], or the lack of modelling platforms to implement existing ideas [@po-gu:2023]. The package `psymple` is a general platform designed to facilitate the creation of hybrid complex systems models and modelling frameworks. 
 
-Models in `psymple` are built from arbitrary combinations of modular mechanistic, dynamic components and correlative, functional components which naturally interact with each other. This structure allows for the creation of modelling frameworks such as PBDM, and, more widely, those capturing biological, economic and social systems, for which it is not feasible to capture the laws of interaction purely mechanistically. Examples include agroecological, bioeconomic and Earth systems modelling, and the development of `psymple` is a necessary first step in the development and release of accessible and impactful tools in these areas. 
+Models in `psymple` are built from arbitrary combinations of modular mechanistic, dynamic components and correlative, functional components which naturally interact with each other. This structure allows for the systematic implementation of modelling frameworks such as PBDM, and, more widely, those capturing biological, economic and social systems, for which it is not feasible to capture the laws of interaction purely mechanistically. Examples include agroecological, bioeconomic and Earth systems modelling, and the development of `psymple` is a necessary first step in the development and release of accessible and impactful tools in these areas. 
 
 # Description
 
@@ -76,6 +85,6 @@ This specification, coupled with the generality and flexibility of `psymple`, en
 
 # Acknowledgements
 
-The collaboration between IDEMS International and CASAS Global is enabled by the McKnight Foundation's [Global Collaboration for Resilient Food Systems](https://www.ccrp.org/), grant number $23-149$. The authors would like to thank Prof. Andrew Gutierrez of CASAS Global for his incredibly deep insights and many helpful conversations, and to the researchers of the Topos Institute for their helpful comments and support in developing their work.
+The collaboration between IDEMS International and CASAS Global is enabled by the McKnight Foundation's [Global Collaboration for Resilient Food Systems](https://www.ccrp.org/), grant number $23-149$. The authors would like to thank the members of CASAS Global for their insights in developing the vision for a modern implementation of PBDM, Tim Hosgood of the Topos Institute for his comments helping put together this paper, and Brendan Fong and the rest of the Topos team in Berkeley for hosting a seminar that kick-started much of the shared vision of this work.
 
 # References
