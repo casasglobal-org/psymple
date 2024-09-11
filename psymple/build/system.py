@@ -726,12 +726,17 @@ class System(FunctionHandler, SetterObject):
             raise SystemError(f"System parameters contain cyclic dependencies")
         return nodes
 
-    def get_readable_symbols(self) -> tuple[dict, dict]:
+    def get_readable_symbols(self, keep_surface_symbols: bool = True, hash_symbols: bool = False) -> tuple[dict, dict]:
         """
         Generates short symbols for the variables and parameters in the system.
 
-        - Variables are mapped to `x_i`, where `i` is incremented for each variable.
-        - Parameters are mapped to `a_i`, where `i` is incremented for each parameter.
+        Args:
+            keep_surface_symbols: if True, any symbol exposed at the surface ported object is preserved.
+            hash_symbols: if True, any non-preserved symbol is replaced with a hashable version by
+                replacing `HIERARCHY_SEPARATOR` with `"_"`, e.g. `x.y.z -> x_y_z`. Otherwise:
+
+                    - Variables are mapped to `x_i`, where `i` is incremented for each variable.
+                    - Parameters are mapped to `a_i`, where `i` is incremented for each parameter.
 
         warning: Warning
             This is currently a very crude implementation. In the future, a lot more
@@ -741,11 +746,28 @@ class System(FunctionHandler, SetterObject):
             vars_dict: a mapping of variable symbols to readable variable symbols
             pars_dict: a mapping of parameter symbols to readable parameter symbols
         """
-        vars_dict = {v: Symbol(f"x_{i}") for i, v in enumerate(self.variables)} | {
-            self.time.symbol: Symbol("t")
-        }
-        pars_dict = {p: Symbol(f"a_{i}") for i, p in enumerate(self.parameters)}
+        vars_symbols = self.variables.keys()
+        pars_symbols = self.parameters.keys()
+        if keep_surface_symbols:
+            surface_vars_symbols = {v for v in vars_symbols if HIERARCHY_SEPARATOR not in v.name}
+            edit_vars_symbols = vars_symbols - surface_vars_symbols
+            surface_pars_symbols = {p for p in pars_symbols if HIERARCHY_SEPARATOR not in p.name}
+            edit_pars_symbols = pars_symbols - surface_pars_symbols
+        else:
+            edit_vars_symbols = vars_symbols
+            edit_pars_symbols = pars_symbols
+        if hash_symbols:
+            vars_dict = {v: Symbol(v.name.replace(HIERARCHY_SEPARATOR, "_")) for v in edit_vars_symbols}
+            pars_dict = {p: Symbol(p.name.replace(HIERARCHY_SEPARATOR, "_")) for p in edit_pars_symbols}
+        else:
+            vars_dict = {v: Symbol(f"x_{i}") for i, v in enumerate(edit_vars_symbols)}
+            pars_dict = {p: Symbol(f"a_{i}") for i, p in enumerate(edit_pars_symbols)}
+        vars_dict.update({self.time.symbol: Symbol("t")}) 
+        if keep_surface_symbols: 
+            vars_dict |= {v: v for v in surface_vars_symbols}
+            pars_dict |= {p: p for p in surface_pars_symbols}
         return vars_dict, pars_dict
+                
 
     def get_readout(self, vars_dict: dict = None, pars_dict: dict = None) -> str:
         """

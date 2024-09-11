@@ -1207,7 +1207,6 @@ class CompiledPortedObject(CompositePortedObject):
 
     def _sub_symbol_identifications(self):
         # Substitute equivalent symbols by a representative
-        # TODO: Cycle detection
         for symbol_identification in self.symbol_identifications:
             self._sub_everywhere(
                 symbol_identification.old_symbol, symbol_identification.new_symbol
