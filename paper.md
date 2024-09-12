@@ -35,7 +35,7 @@ affiliations:
     Division of Ecosystem Science, College of Natural Resources, University of California, Berkeley,
     CA 94720-3114, USA
    index: 4
-date: 10 September 2024
+date: 12 September 2024
 bibliography: paper.bib
 ---
 
