@@ -132,9 +132,14 @@ class UpdateRule(ExpressionWrapper):
             vars_dict: a dictionary providing mappings between `sympy.Symbol` objects
             pars_dict: a dictionary providing mappings between `sympy.Symbol` objects
         """
-        self.variables = {v.subs(vars_dict) for v in self.variables}
-        self.parameters = {p.subs(pars_dict) for p in self.parameters}
-        self.expression = self.expression.subs(vars_dict | pars_dict)
+        vars_dict_filter = {symbol: vars_dict[symbol] for symbol in self.variables}
+        pars_dict_filter = {symbol: pars_dict[symbol] for symbol in self.parameters}
+        subbed_vars = {vars_dict[v] for v in self.variables}
+        subbed_pars = {pars_dict[p] for p in self.parameters}
+        subbed_expr = self.expression.subs(vars_dict_filter | pars_dict_filter)
+        self.variables = subbed_vars
+        self.parameters = subbed_pars
+        self.expression = subbed_expr
 
 
 
@@ -188,7 +193,9 @@ class SimVariable(Variable):
             time_symbol = print_vars_dict[time_symbol]
         except:
             time_symbol = Symbol("T")
-        print_equation = self.update_rule.expression.subs(print_vars_dict | print_pars_dict)
+        print_dict = print_vars_dict | print_pars_dict
+        dependencies = self.update_rule.variables | self.update_rule.parameters
+        print_equation = self.update_rule.expression.subs([(symbol, print_dict[symbol]) for symbol in dependencies])
         if type == "latex":
             return latex(Eq(Derivative(print_symbol, time_symbol), print_equation), mul_symbol="dot")
         else:
@@ -271,8 +278,10 @@ class SimParameter(Parameter):
 
         """
         print_symbol = print_pars_dict[self.symbol]
+        print_dict = print_vars_dict | print_pars_dict
+        dependencies = self.update_rule.variables | self.update_rule.parameters
         try:
-            print_equation = self.expression.subs(print_vars_dict | print_pars_dict)
+            print_equation = self.update_rule.expression.subs([(symbol, print_dict[symbol]) for symbol in dependencies])
         except AttributeError:
             print_equation = Symbol("REQ")
         if type == "latex":
