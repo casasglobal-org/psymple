@@ -2,106 +2,122 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
     <url>
          <loc>https://casasglobal-org.github.io/psymple/dev/</loc>
-         <lastmod>2024-09-11</lastmod>
+         <lastmod>2024-09-13</lastmod>
     </url>
     <url>
          <loc>https://casasglobal-org.github.io/psymple/dev/abstract/</loc>
-         <lastmod>2024-09-11</lastmod>
+         <lastmod>2024-09-13</lastmod>
     </url>
     <url>
          <loc>https://casasglobal-org.github.io/psymple/dev/components/composite_ported_objects/</loc>
-         <lastmod>2024-09-11</lastmod>
+         <lastmod>2024-09-13</lastmod>
     </url>
     <url>
          <loc>https://casasglobal-org.github.io/psymple/dev/components/functional_ported_objects/</loc>
-         <lastmod>2024-09-11</lastmod>
+         <lastmod>2024-09-13</lastmod>
     </url>
     <url>
          <loc>https://casasglobal-org.github.io/psymple/dev/components/variable_ported_objects/</loc>
-         <lastmod>2024-09-11</lastmod>
+         <lastmod>2024-09-13</lastmod>
+    </url>
+    <url>
+         <loc>https://casasglobal-org.github.io/psymple/dev/examples/tutorials/</loc>
+         <lastmod>2024-09-13</lastmod>
+    </url>
+    <url>
+         <loc>https://casasglobal-org.github.io/psymple/dev/examples/mixing_problems/multiple_tanks/</loc>
+         <lastmod>2024-09-13</lastmod>
+    </url>
+    <url>
+         <loc>https://casasglobal-org.github.io/psymple/dev/examples/mixing_problems/single_tank/</loc>
+         <lastmod>2024-09-13</lastmod>
+    </url>
+    <url>
+         <loc>https://casasglobal-org.github.io/psymple/dev/examples/population_dynamics/malthusian_population/</loc>
+         <lastmod>2024-09-13</lastmod>
     </url>
     <url>
          <loc>https://casasglobal-org.github.io/psymple/dev/mathematics/functional_substitution/</loc>
-         <lastmod>2024-09-11</lastmod>
+         <lastmod>2024-09-13</lastmod>
     </url>
     <url>
          <loc>https://casasglobal-org.github.io/psymple/dev/mathematics/ported_objects/</loc>
-         <lastmod>2024-09-11</lastmod>
+         <lastmod>2024-09-13</lastmod>
     </url>
     <url>
          <loc>https://casasglobal-org.github.io/psymple/dev/mathematics/variable_aggregation/</loc>
-         <lastmod>2024-09-11</lastmod>
+         <lastmod>2024-09-13</lastmod>
     </url>
     <url>
          <loc>https://casasglobal-org.github.io/psymple/dev/mathematics/variables_parameters/</loc>
-         <lastmod>2024-09-11</lastmod>
+         <lastmod>2024-09-13</lastmod>
     </url>
     <url>
          <loc>https://casasglobal-org.github.io/psymple/dev/overview/modelling_systems/</loc>
-         <lastmod>2024-09-11</lastmod>
+         <lastmod>2024-09-13</lastmod>
     </url>
     <url>
          <loc>https://casasglobal-org.github.io/psymple/dev/overview/modelling_types/</loc>
-         <lastmod>2024-09-11</lastmod>
+         <lastmod>2024-09-13</lastmod>
     </url>
     <url>
          <loc>https://casasglobal-org.github.io/psymple/dev/overview/system_design/</loc>
-         <lastmod>2024-09-11</lastmod>
+         <lastmod>2024-09-13</lastmod>
     </url>
     <url>
          <loc>https://casasglobal-org.github.io/psymple/dev/reference/variables/</loc>
-         <lastmod>2024-09-11</lastmod>
+         <lastmod>2024-09-13</lastmod>
     </url>
     <url>
          <loc>https://casasglobal-org.github.io/psymple/dev/reference/build/assignments/</loc>
-         <lastmod>2024-09-11</lastmod>
+         <lastmod>2024-09-13</lastmod>
     </url>
     <url>
          <loc>https://casasglobal-org.github.io/psymple/dev/reference/build/compilation/</loc>
-         <lastmod>2024-09-11</lastmod>
+         <lastmod>2024-09-13</lastmod>
     </url>
     <url>
          <loc>https://casasglobal-org.github.io/psymple/dev/reference/build/data/</loc>
-         <lastmod>2024-09-11</lastmod>
+         <lastmod>2024-09-13</lastmod>
     </url>
     <url>
          <loc>https://casasglobal-org.github.io/psymple/dev/reference/build/ported_objects/</loc>
-         <lastmod>2024-09-11</lastmod>
+         <lastmod>2024-09-13</lastmod>
     </url>
     <url>
          <loc>https://casasglobal-org.github.io/psymple/dev/reference/build/ports/</loc>
-         <lastmod>2024-09-11</lastmod>
+         <lastmod>2024-09-13</lastmod>
     </url>
     <url>
          <loc>https://casasglobal-org.github.io/psymple/dev/reference/build/system/</loc>
-         <lastmod>2024-09-11</lastmod>
+         <lastmod>2024-09-13</lastmod>
     </url>
     <url>
          <loc>https://casasglobal-org.github.io/psymple/dev/reference/build/wires/</loc>
-         <lastmod>2024-09-11</lastmod>
+         <lastmod>2024-09-13</lastmod>
     </url>
     <url>
          <loc>https://casasglobal-org.github.io/psymple/dev/reference/simulate/simulation/</loc>
-         <lastmod>2024-09-11</lastmod>
+         <lastmod>2024-09-13</lastmod>
     </url>
     <url>
          <loc>https://casasglobal-org.github.io/psymple/dev/reference/simulate/solvers/</loc>
-         <lastmod>2024-09-11</lastmod>
+         <lastmod>2024-09-13</lastmod>
     </url>
     <url>
          <loc>https://casasglobal-org.github.io/psymple/dev/user_guide/compilation/</loc>
-         <lastmod>2024-09-11</lastmod>
+         <lastmod>2024-09-13</lastmod>
     </url>
     <url>
          <loc>https://casasglobal-org.github.io/psymple/dev/user_guide/getting_started/</loc>
-         <lastmod>2024-09-11</lastmod>
+         <lastmod>2024-09-13</lastmod>
     </url>
     <url>
          <loc>https://casasglobal-org.github.io/psymple/dev/user_guide/simulation/</loc>
-         <lastmod>2024-09-11</lastmod>
+         <lastmod>2024-09-13</lastmod>
     </url>
     <url>
          <loc>https://casasglobal-org.github.io/psymple/dev/user_guide/system/</loc>
-         <lastmod>2024-09-11</lastmod>
+         <lastmod>2024-09-13</lastmod>
     </url>
 </urlset>
