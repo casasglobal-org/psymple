@@ -26,9 +26,6 @@ share/python-wheels/
 *.egg
 MANIFEST
 
-# Examples
-examples/
-
 # Development
 api.py
 functions.py
