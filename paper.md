@@ -35,7 +35,7 @@ affiliations:
     Division of Ecosystem Science, College of Natural Resources, University of California, Berkeley,
     CA 94720-3114, USA
    index: 4
-date: 12 September 2024
+date: 13 September 2024
 bibliography: paper.bib
 ---
 
@@ -73,7 +73,7 @@ FPOs and VPOs can be arbitrarily combined into composite ported objects (CPOs) t
 
 More generally, `psymple` is built to a specification shared by "next-generation" dynamical systems modelling frameworks, see [@baez:2023], including being *faceted*, where models can be considered one piece at a time; *modular*, where components naturally compose together; and *functorial*, where the data describing the model (its syntax) is systematically and reliably transformed into system behaviour (its semantics). These ideas allow for legible modelling of highly complex, specialised systems, and drive clear, adaptable and accessible modelling practices in line with those promoted by the [Open Modeling Foundation](https://www.openmodelingfoundation.org/). For example, modular structures pave the way for cross-platform integrations and promote reuse and flexibility, while an abstracted data structure enables the creation of low- or no-code interfaces to improve utilisation amongst non-specialist users.
 
-Concretely, the faceted, modular structure provided by ported objects in `psymple` is complemented by a string-based authoring interface which enables no-code authoring from Python dictionary objects or `JSON` file formats. The data defining ported objects is internally processed through a composition process using the Python symbolic mathematics package `sympy` [@meur:2017]. This enables the automatic collection and simplification of equations, the elimination of errors from manually combining complex system equations, and clear inspection of a whole system, or its parts, with automatic outputs including \LaTeX format. 
+Concretely, the faceted, modular structure provided by ported objects in `psymple` is complemented by a string-based authoring interface which codifies the diagrammatic wiring structures, and enables no-code authoring from Python dictionary objects or `JSON` file formats. The data-based syntax defining ported objects is internally processed into model semantics, meaning simulatable systems of equations, through a composition process using the Python symbolic mathematics package `sympy` [@meur:2017]. This enables the automatic collection and simplification of equations, the elimination of errors from manually combining complex system equations, and clear inspection of a whole system, or its parts, with automatic outputs including \LaTeX format. 
 
 # Research
 
