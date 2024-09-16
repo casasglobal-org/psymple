@@ -21,19 +21,16 @@ authors:
     affiliation: 1
 
 affiliations:
- - name: IDEMS International CIC, Reading, United Kingdom
+ - name: IDEMS International CIC, United Kingdom
    index: 1
  - name: 
-    Agenzia nazionale per le nuove tecnologie, l’energia e lo sviluppo economico sostenibile (ENEA),
-    Centro Ricerche Casaccia, Via Anguillarese 301, 00123 Rome, Italy
+    Agenzia nazionale per le nuove tecnologie, l’energia e lo sviluppo economico sostenibile (ENEA), Italy
    index: 2
  - name: 
-    Center for the Analysis of Sustainable Agricultural Systems (casasglobal.org), 37 Arlington Ave, Kensington,
-    CA 94707-1035, USA
+    Center for the Analysis of Sustainable Agricultural Systems (casasglobal.org), USA
    index: 3
  - name:
-    Division of Ecosystem Science, College of Natural Resources, University of California, Berkeley,
-    CA 94720-3114, USA
+    Division of Ecosystem Science, College of Natural Resources, University of California, Berkeley, USA
    index: 4
 date: 13 September 2024
 bibliography: paper.bib
