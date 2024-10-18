@@ -6,7 +6,7 @@ This page gives an overview of what is meant by mechanistic and correlative mode
 
 Mechanistic models are dynamic models in which the evolution of the system is specified as a system of first-order ordinary differential equations (ODEs). 
 
-!!! info "Defintion: mechanistic model"
+!!! info "Definition: mechanistic model"
 
     A mechanistic dynamic system model is of the form
 
