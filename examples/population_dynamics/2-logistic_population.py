@@ -84,8 +84,8 @@ apparent advantages:
     (3) The object as a whole has a clean form: it is an object depending on input parameters "r" and "K",
         and makes the variable "x" available to the wider system.
 
-Fortuntately, composite objects in psymple allow for all of these to be implemented, and this is how
-psymple is intended to be used in best practice to allow for full modularity and resuability. To achieve this,
+Fortunately, composite objects in psymple allow for all of these to be implemented, and this is how
+psymple is intended to be used in best practice to allow for full modularity and reusablity. To achieve this,
 composite objects can be given their own ports: input ports to read parameters or specify default values, and
 variable ports to expose variables and their differential equations for composition. These ports connect to 
 wires in the ways we've already seen.
