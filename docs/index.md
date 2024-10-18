@@ -1,6 +1,6 @@
 # Introduction
 
-`psymple` is a package desinged for general complex systems modelling. A complex system is a dynamic system whose interconnectivity produces non-trivial or unexpected behaviour. Examples of complex systems exist everywhere, from ecological systems, chemical reactions, economic systems, astronomy and even social networks.
+`psymple` is a package designed for general complex systems modelling. A complex system is a dynamic system whose interconnectivity produces non-trivial or unexpected behaviour. Examples of complex systems exist everywhere, from ecological systems, chemical reactions, economic systems, astronomy and even social networks.
 
 ## Roots in ecological modelling
 
@@ -16,7 +16,7 @@ This package is primarily a system for building complex system models consisting
 
 ## Modern modelling
 
-`psymple` subscribes to the emerging theory of _collaborative modelling_, the practice of multiple contributors collaborating to build complex systems models. This requires modular, resuable components which naturally fit together, built with clarity and clear records of assumptions, data sources and expertise inputs. 
+`psymple` subscribes to the emerging theory of _collaborative modelling_, the practice of multiple contributors collaborating to build complex systems models. This requires modular, reusable components which naturally fit together, built with clarity and clear records of assumptions, data sources and expertise inputs. 
 
 The collaboration of many domain experts often presents challenges with different technical languages or interpretations of concepts. `psymple` adopts a data-first design for its main objects which allows them to be built from, or dismantled into, wide-ranging formats.
 
