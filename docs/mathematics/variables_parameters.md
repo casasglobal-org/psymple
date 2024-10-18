@@ -14,7 +14,7 @@ The core purpose of `psymple` is to build simulable dynamic systems from compone
 
 Here, *external dependency* can mean any other system variable, parameter (see below), or constant.
 
-!!! info "Defintion"
+!!! info "Definition"
 
     A *mathematical parameter* \( p \) is a state whose value can be expressed as a function of time, and external dependencies:
 
