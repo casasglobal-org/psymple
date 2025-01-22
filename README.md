@@ -18,8 +18,12 @@ The latest version of `psymple` documentation can be found [here](https://casasg
 
 ## Where to start
 
-Familiarisation with the purpose and design principles of `psymple` is recommended before beginning. You can start reading these here: [hybrid systems modelling](https://casasglobal-org.github.io/psymple/overview/modelling_systems/).
+For most new users, going through the following resources in the suggested order will provide a good introduction to `psymple`. 
 
-Once you're happy, you can start modelling! The best pages to start are [functions](https://casasglobal-org.github.io/psymple/components/functional_ported_objects.md), [differential equations](https://casasglobal-org.github.io/psymple/components/variable_ported_objects.md) and [composite systems](https://casasglobal-org.github.io/psymple/components/composite_ported_objects.md).
+1. To familiarise yourself with the need, purpose and design of `psymple`, the best place to start is [here](https://casasglobal-org.github.io/psymple/dev/overview/introduction/).
+2. To start modelling with `psymple`, the best place to find out about capturing functions and differential equations is [here](https://casasglobal-org.github.io/psymple/dev/components/functional_ported_objects/).
+3. To start simulating models in `psymple`, start reading about systems [here](https://casasglobal-org.github.io/psymple/dev/user_guide/system/).
+4. A detailed set of examples demonstrating the process of building and simulating models can be found [here](https://casasglobal-org.github.io/psymple/dev/examples/).
+5. If you're interested in the mathematical basis of `psymple`, the best place to start is [here](https://casasglobal-org.github.io/psymple/dev/mathematics/ported_objects/).
+6. Information on how to get help, support, or get involved with developing `psymple` can be found [here](https://casasglobal-org.github.io/psymple/dev/development/development/).
 
-If you're interested in how `psymple` implements mathematical principles into `python` objects, the best place to start is [ported objects](https://casasglobal-org.github.io/psymple/mathematics/ported_objects.md).
