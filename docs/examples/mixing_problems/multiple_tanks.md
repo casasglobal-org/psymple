@@ -1,5 +1,9 @@
 # Multiple tanks mixing problem
 
+!!! info "Raw code"
+
+    The raw code for this example without explanations can be found [here](https://github.com/casasglobal-org/psymple/blob/main/examples/mixing_problems/2-multiple_tanks.py).
+
 The previous example modelled a mixing problem with a single tank, which had an external flow in and an external flow out. This example considers a mixing problem consisting of two or more tanks, each of which can have external flows in and out, and which furthermore can have flows to and from other tanks in the system.
 
 ## System data

@@ -1,5 +1,9 @@
 # Single tank mixing problem
 
+!!! info "Raw code"
+
+    The raw code for this example without explanations can be found [here](https://github.com/casasglobal-org/psymple/blob/main/examples/mixing_problems/1-single_tank.py).
+
 Consider a single tank with an initial volume of water $V_0\,\mathrm{l}$ and an initial amount of $M_0\,\mathrm{g}$ of salt dissolved in it. A solution with concentration $c(t)\,\mathrm{g}/\mathrm{l}$ of salt flows into the tank at rate $r_0(t)\,\mathrm{l}/\mathrm{s}$ and the mixed solution flows out of the tank at a rate of $r_1(t)\,\mathrm{l}/\mathrm{s}$.
 
 Let $V(t)$ be the volume of solution in the tank at time $t$. Then  $V'(t) = r_0(t) - r_1(t)$. Furthermore, let $M(t)$ be the amount of salt in the solution at time $t$. The rate of change of salt in the solution is given by $M'(t) = r_0(t) c(t) - r_1(t) M(t)/V(t)$.
@@ -121,7 +125,7 @@ for name, inputs in zip(
         initial_values={"V": 1000, "M": 20}, # (3)!
         input_parameters=inputs,
     )
-    sim.simulate(t_end=10)
+    sim.simulate(t_end=1000)
 ```
 
 1. These are the names for each simulation.
