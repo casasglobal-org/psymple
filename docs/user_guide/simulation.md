@@ -119,4 +119,4 @@ The time series used to plot each variable can also be accessed:
 
 ## Next steps
 
-Many more examples of creating and simulating models in `psymple` can be found in the [Examples](../examples/tutorials.md) section.
+Many more examples of creating and simulating models in `psymple` can be found in the [Examples](../examples/index.md) section.

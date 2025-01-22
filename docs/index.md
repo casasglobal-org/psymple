@@ -26,7 +26,7 @@ For most new users, going through the following resources in the suggested order
 
     Find out about the purpose and design principles of `psymple`.
 
-    [:octicons-arrow-right-24: Read more](../overview/introduction.md)
+    [:octicons-arrow-right-24: Read more](./overview/introduction.md)
 
 -   :material-roman-numeral-2:{ .lg .middle } __Modelling in psymple__
 
@@ -34,7 +34,7 @@ For most new users, going through the following resources in the suggested order
 
     Learn how to capture functions and differential equations in `psymple`, and combine these into complex models.
 
-    [:octicons-arrow-right-24: Start modelling](../components/functional_ported_objects.md)
+    [:octicons-arrow-right-24: Start modelling](./components/functional_ported_objects.md)
 
 -   :material-roman-numeral-3:{ .lg .middle } __Simulating models__
 
@@ -42,7 +42,7 @@ For most new users, going through the following resources in the suggested order
 
     Understand how to create and run simulations for `psymple` models.
 
-    [:octicons-arrow-right-24: Run simulations](./system.md)
+    [:octicons-arrow-right-24: Run simulations](system.md)
 
 -   :material-roman-numeral-4:{ .lg .middle } __Tutorials__
 
@@ -50,7 +50,7 @@ For most new users, going through the following resources in the suggested order
 
     Work through full examples of implementing, parametrising and simulating models.
 
-    [:octicons-arrow-right-24: See more](../examples/tutorials.md)
+    [:octicons-arrow-right-24: See more](./examples/tutorials.md)
 
 -   :material-roman-numeral-5:{ .lg .middle } __The mathematics__
 
@@ -58,7 +58,7 @@ For most new users, going through the following resources in the suggested order
 
     Learn more about the mathematical structures underneath psymple which tie everything together.
 
-    [:octicons-arrow-right-24: See the maths](../mathematics/ported_objects.md)
+    [:octicons-arrow-right-24: See the maths](./mathematics/ported_objects.md)
 
 -   :material-roman-numeral-6:{ .lg .middle } __Get involved__
 
@@ -66,6 +66,6 @@ For most new users, going through the following resources in the suggested order
 
     Find out how you can get involved in the community by using or developing `psymple`.
 
-    [:octicons-arrow-right-24: Get involved](../development/development.md)
+    [:octicons-arrow-right-24: Get involved](./development/development.md)
 
 </div>

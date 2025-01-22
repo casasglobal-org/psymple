@@ -14,7 +14,7 @@ These examples are arranged roughly in order of difficulty and complexity, with 
 
     Population dynamics models, including exponential growth, the logistic equation, and predator-prey models.
 
-    [:octicons-arrow-right-24: Get started](./population_dynamics/population_modelling.md)
+    [:octicons-arrow-right-24: Get started](./population_dynamics/index.md)
 
 -   :material-roman-numeral-2:{ .lg .middle } __Mixing problems__
 
@@ -22,7 +22,7 @@ These examples are arranged roughly in order of difficulty and complexity, with 
 
     Mixing of solutions in a single tank or across any number of tanks.
 
-    [:octicons-arrow-right-24: Get started](./mixing_problems/mixing_problems.md)
+    [:octicons-arrow-right-24: Get started](./mixing_problems/index.md)
 
 -   :material-roman-numeral-3:{ .lg .middle } __Second-order systems__
 
@@ -30,6 +30,6 @@ These examples are arranged roughly in order of difficulty and complexity, with 
 
     How to simulate complex second-order or higher-order systems.
 
-    [:octicons-arrow-right-24: Get started](./second_order_odes/second_order_odes.md)
+    [:octicons-arrow-right-24: Get started](./second_order_odes/index.md)
 
 </div>
