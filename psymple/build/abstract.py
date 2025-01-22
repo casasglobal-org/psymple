@@ -83,8 +83,8 @@ class PortedObject(ABC):
             return False
         elif port.name in self.parsing_locals:
             warnings.warn(
-                f"Attempted to create port with name '{port.name}', but this is already defined "
-                f"in the parsing_locals dictionary {self.parsing_locals}. Port will not be created."
+                f"The parameter '{port.name}' has been specified as a system parameter. " 
+                f"A port for '{port.name}' will not be created in '{self.name}'."
             )
             return False
         else:

@@ -134,10 +134,13 @@ class FunctionHandler:
                 assert all([isinstance(s, str) for s in signature])
                 assert set(signature) == set(sym_signature)
             else:
-                warnings.warn(
-                    f"A signature for function {name} was not provided. The appearance of "
-                    f"the function in displayed expressions may not be as expected."
-                )
+                try:
+                    value = float(function)
+                except:
+                    warnings.warn(
+                        f"A signature for function {name} was not provided. The appearance of "
+                        f"the function in displayed expressions may not be as expected."
+                    )
                 signature = sym_signature
             self._check_are_system_parameters(*signature)
             sym_func = self._add_symbolic_function(name, function, signature)
