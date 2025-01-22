@@ -2238,10 +2238,10 @@
 
 
 <h1 id="single-tank-mixing-problem">Single tank mixing problem</h1>
-<div class="admonition info">
-<p class="admonition-title">Raw code</p>
+<details class="info">
+<summary>Raw code</summary>
 <p>The raw code for this example without explanations can be found <a href="https://github.com/casasglobal-org/psymple/blob/main/examples/mixing_problems/1-single_tank.py">here</a>.</p>
-</div>
+</details>
 <p>Consider a single tank with an initial volume of water <span class="arithmatex">\(V_0\,\mathrm{l}\)</span> and an initial amount of <span class="arithmatex">\(M_0\,\mathrm{g}\)</span> of salt dissolved in it. A solution with concentration <span class="arithmatex">\(c(t)\,\mathrm{g}/\mathrm{l}\)</span> of salt flows into the tank at rate <span class="arithmatex">\(r_0(t)\,\mathrm{l}/\mathrm{s}\)</span> and the mixed solution flows out of the tank at a rate of <span class="arithmatex">\(r_1(t)\,\mathrm{l}/\mathrm{s}\)</span>.</p>
 <p>Let <span class="arithmatex">\(V(t)\)</span> be the volume of solution in the tank at time <span class="arithmatex">\(t\)</span>. Then  <span class="arithmatex">\(V'(t) = r_0(t) - r_1(t)\)</span>. Furthermore, let <span class="arithmatex">\(M(t)\)</span> be the amount of salt in the solution at time <span class="arithmatex">\(t\)</span>. The rate of change of salt in the solution is given by <span class="arithmatex">\(M'(t) = r_0(t) c(t) - r_1(t) M(t)/V(t)\)</span>.</p>
 <h2 id="modelling-flows-in-psymple">Modelling flows in <code>psymple</code></h2>
