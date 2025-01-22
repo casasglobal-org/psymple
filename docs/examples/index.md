@@ -2,7 +2,7 @@
 
 This page contains examples which go through the process of defining, parametrising and simulation systems in `psymple`. 
 
-It is recommended to go through these examples after covering, or with reference to, the material in the [user guide](../user_guide/getting_started.md), which has a bigger focus on the syntax and best practices of using `psymple`. Some of the examples covered in the user guide are covered here, and vice-versa. 
+It is recommended to go through these examples after covering, or with reference to, the material in the [user guide](../components/functional_ported_objects.md), which has a bigger focus on the syntax and best practices of using `psymple`. Some of the examples covered in the user guide are covered here, and vice-versa. 
 
 These examples are arranged roughly in order of difficulty and complexity, with the later examples also providing less commentary on the implementation.
 

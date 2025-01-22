@@ -4,7 +4,7 @@
 
 There are many ways you can be involved in contributing to the development and maintenance of `psymple`. 
 
-- Help to find bugs or other issues, by adding a bug report to the [issues](https://github.com/casasglobal-org/psymple/issues) page.
+- Use the [issues](https://github.com/casasglobal-org/psymple/issues) page to get help with issues, errors, or submit bug reports.
 - Help to edit and maintain the [documentation](https://casasglobal-org.github.io/psymple/) using issues or [pull requests](https://github.com/casasglobal-org/psymple/pulls).
 - Develop new features, examples, documentation or bug fixes by creating pull requests.
 - Get involved by helping to review open issues and pull requests.

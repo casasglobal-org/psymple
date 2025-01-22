@@ -42,7 +42,7 @@ For most new users, going through the following resources in the suggested order
 
     Understand how to create and run simulations for `psymple` models.
 
-    [:octicons-arrow-right-24: Run simulations](system.md)
+    [:octicons-arrow-right-24: Run simulations](./user_guide/system.md)
 
 -   :material-roman-numeral-4:{ .lg .middle } __Tutorials__
 
@@ -50,7 +50,7 @@ For most new users, going through the following resources in the suggested order
 
     Work through full examples of implementing, parametrising and simulating models.
 
-    [:octicons-arrow-right-24: See more](./examples/tutorials.md)
+    [:octicons-arrow-right-24: See more](./examples/index.md)
 
 -   :material-roman-numeral-5:{ .lg .middle } __The mathematics__
 
