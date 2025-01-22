@@ -1,5 +1,9 @@
 # The logistic equation
 
+!!! info "Raw code"
+
+    The raw code for this example without explanations can be found [here](https://github.com/casasglobal-org/psymple/blob/main/examples/population_dynamics/2-logistic_population.py).
+
 This example follows on from [Malthusian growth](malthusian_population.md). The code for a simple Malthusian population produced there is available in the drop-down box below.
 
 ??? example "Malthusian population"
@@ -98,7 +102,7 @@ system_1 = System(logistic_simple)
 system_1.compile()
 
 sim_1 = system_1.create_simulation(initial_values={"x": 1})
-sim_1.simulate(t_end=25)
+sim_1.simulate(t_end=100)
 sim_1.plot_solution()
 
 
@@ -106,7 +110,7 @@ system_2 = System(logistic_pop)
 system_2.compile()
 
 sim_2 = system_2.create_simulation(initial_values={"x": 1})
-sim_2.simulate(t_end=25)
+sim_2.simulate(t_end=100)
 sim_2.plot_solution()
 ```
 

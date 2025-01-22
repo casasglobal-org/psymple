@@ -165,6 +165,10 @@ cython_debug/
 .vscode/settings.json
 psymple/api.py
 examples/test.ipynb
+examples/test*
 psymple/functions.py
 doctest_runner.py
 test_json.json
+examples/mixing_problems/3-state_dependent_rates.py
+examples/bug.py
+examples/population_dynamics/3-reponse_functions.py

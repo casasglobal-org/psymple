@@ -1,5 +1,9 @@
 # Malthusian growth
 
+!!! info "Raw code"
+
+    The raw code for this example without explanations can be found [here](https://github.com/casasglobal-org/psymple/blob/main/examples/population_dynamics/1-malthusian_population.py).
+
 A fundamental equation in population dynamics describes a population which reproduces as a constant rate \(r\). Without any other influence, this population grows exponentially according to the differential equation \( \frac{dx}{dt} = rx \). This phenomenon is known as *Malthusian growth*.
 
 This example covers:

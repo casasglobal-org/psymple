@@ -99,9 +99,9 @@ nav:
       - Single tank: examples/mixing_problems/single_tank.md
       - Multiple tanks: examples/mixing_problems/multiple_tanks.md
     - Second-order ODEs:
-      - Second-order ODEs: examples\second_order_odes\index.md
-      - Projectile motion: examples\second_order_odes\projectile_motion.md
-      - Three body problem: examples\second_order_odes\three_body_problem.md
+      - Second-order ODEs: examples/second_order_odes/index.md
+      - Projectile motion: examples/second_order_odes/projectile_motion.md
+      - Three body problem: examples/second_order_odes/three_body_problem.md
   - Mathematical components:
     - Ported objects: mathematics/ported_objects.md
     - Variables and parameters: mathematics/variables_parameters.md

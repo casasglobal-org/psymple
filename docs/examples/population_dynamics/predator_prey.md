@@ -1,5 +1,9 @@
 # Predator-prey systems
 
+!!! info "Raw code"
+
+    The raw code for this example without explanations can be found [here](https://github.com/casasglobal-org/psymple/blob/main/examples/population_dynamics/3-predator_prey.py).
+
 A predator-prey system was introduced in the [defining ODEs](../../components/variable_ported_objects.md#example) tutorial. This example shows how to build this system on top of the single-species population models constructed in [Malthusian growth](malthusian_population.md) and [logistic growth](logistic_growth.md).
 
 ## Lotka-Volterra model
@@ -70,8 +74,8 @@ ecosystem = CompositePortedObject(
     children=[pred, prey, interaction],
     variable_ports=["x", "y"],
     variable_wires=[
-        (["prey.x", "interaction.x"], "x"),
-        (["pred.x", "interaction.y"], "y"),
+        (["prey.x", "pred-prey.x"], "x"),
+        (["pred.x", "pred-prey.y"], "y"),
     ]
 )
 ```
