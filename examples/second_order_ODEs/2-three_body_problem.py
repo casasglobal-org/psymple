@@ -10,45 +10,40 @@ from psymple.build import (
     System,
 )
 
-S = System(
-    system_parameters=[("G", 1)], #6.67
+"""Common objects"""
+
+vars = VariablePortedObject(
+    name="vars",
+    assignments=[
+        ("v_x", "mu * Del_x"),
+        ("v_y", "mu * Del_y"),
+    ]
 )
 
-# VELOCITY
+dist = FunctionalPortedObject(
+    name="dist",
+    assignments=[
+        ("Del_x", "x_o - x"),
+        ("Del_y", "y_o - y"),
+        ("d", "sqrt((x_o-x)**2 + (y_o-y)**2)"),
+    ]
+)
 
-class force(FunctionalPortedObject):
-    def __init__(self):
-        super().__init__(
-            name=f"force",
-            assignments=[("mu", "G*m/d**3")]
-        )
+force = FunctionalPortedObject(
+    name=f"force",
+    assignments=[("mu", "G*m/d**3")]
+)
 
-class vars(VariablePortedObject):
-    def __init__(self):
-        super().__init__(
-            name="vars",
-            assignments=[
-                ("v_x", "mu * Del_x"),
-                ("v_y", "mu * Del_y"),
-            ]
-        )
-
-class dist(FunctionalPortedObject):
-    def __init__(self):
-        super().__init__(
-            name="dist",
-            assignments=[
-                ("Del_x", "x_o - x"),
-                ("Del_y", "y_o - y"),
-                ("d", "sqrt((x_o-x)**2 + (y_o-y)**2)"),
-            ]
-        )
+"""
+Velocity model
+"""
 
 class velocity(CompositePortedObject):
+
     def __init__(self, id):
         super().__init__(
             name=f"velocity_{id}",
-            children=[vars(), force(), dist()],
+            children=[vars, force, dist],
             input_ports=["x", "y", "x_o", "y_o", "m_o"],
             variable_ports=["v_x", "v_y"],
             directed_wires=[
@@ -68,6 +63,10 @@ class velocity(CompositePortedObject):
             ]
         )
 
+"""
+Trajectory model
+"""
+
 class pos(VariablePortedObject):
     def __init__(self, id):
         super().__init__(
@@ -77,37 +76,54 @@ class pos(VariablePortedObject):
                 ("y", "v_y"),
             ]
         )
-    
-n = 3
 
-bodies = [i for i in range(1,n+1)]
-ints = [f"{i}{j}" for i in range(1,n+1) for j in range(1,n+1) if i != j]
+
+"""
+System data
+"""   
+
+n=3
+
+bodies = [f"{i+1}" for i in range(n)]
+ints = [f"{i+1},{j+1}" for i in range(n) for j in range(n) if i != j]
 coords = ["x", "y"]
 
-system = CompositePortedObject(
+"""
+n-body model
+"""
+
+forces = [velocity(id) for id in ints]
+positions = [pos(id) for id in bodies]
+
+n_body_model = CompositePortedObject(
     name="system",
-    children = [velocity(id) for id in ints] + [pos(i) for i in bodies],
-    variable_ports=[port for i in bodies for port in [f"x_{i}", f"y_{i}", f"v_x_{i}", f"v_y_{i}"]],
+    children = forces + positions,
+    variable_ports=[
+        port 
+        for i in bodies 
+        for port in [f"x_{i}", f"y_{i}", f"v_x_{i}", f"v_y_{i}"]
+    ],
     input_ports=[f"m_{i}" for i in bodies],
     directed_wires=[
-        (f"m_{i}", [f"velocity_{j}{i}.m_o" for j in bodies if j != i])
+        (f"m_{i}", [f"velocity_{j},{i}.m_o" for j in bodies if j != i])
         for i in bodies
     ]
     + [
         (
             f"pos_{i}.{coord}", 
-            [f"velocity_{i}{j}.{coord}" for j in bodies if j != i]
-            + [f"velocity_{j}{i}.{coord}_o" for j in bodies if j != i]
+            [f"velocity_{i},{j}.{coord}" for j in bodies if j != i]
+            + [f"velocity_{j},{i}.{coord}_o" for j in bodies if j != i]
         )
         for i in bodies for coord in coords
     ]
     + [
-        (f"velocity_{i}{i%n + 1}.v_{coord}", f"pos_{i}.v_{coord}")
+        (f"velocity_{i},{int(i)%n + 1}.v_{coord}", f"pos_{i}.v_{coord}") # (1)!
         for i in bodies for coord in coords
     ],
     variable_wires=[
         (
-            [f"velocity_{i}{j}.v_{coord}" for j in bodies if j != i], f"v_{coord}_{i}"
+            [f"velocity_{i},{j}.v_{coord}" for j in bodies if j != i], 
+            f"v_{coord}_{i}"
         )
         for i in bodies for coord in coords
     ]
@@ -117,29 +133,20 @@ system = CompositePortedObject(
     ],
 )
 
-S.set_object(system, compile=False)
-S.compile()
-
-print(S)
-
 """
-initial_values={
-    "x_1": 5.2,
-    "y_1": 0,
-    "x_2": 0,
-    "y_2": 5.2,
-    "x_3": -5.2,
-    "y_3": 0,
-    "v_x_1": 0,
-    "v_y_1": 1,
-    "v_x_2": -1,
-    "v_y_2": 0,
-    "v_x_3": 0,
-    "v_y_3": -1,
-},
+System and context
 """
 
-# Thse initial values should give 3-body figure eight motion
+S = System(
+    n_body_model,
+    system_parameters=[("G", 1)],
+    compile=True
+)
+
+"""
+Initial conditions and input parameters
+"""
+
 initial_values={
     "x_1": 0.9700436,
     "y_1": -0.24308753,
@@ -155,20 +162,22 @@ initial_values={
     "v_y_3": 0.43236573,
 }
 
+input_parameters={
+    "m_1": 1,
+    "m_2": 1,
+    "m_3": 1,
+}
+
+"""
+Simulation and trajectory plot
+"""
+
 sim = S.create_simulation(
-    #solver="discrete",
     initial_values=initial_values,
-    input_parameters={
-        "m_1": 1, #0.7
-        "m_2": 1, #60
-        "m_3": 1, #0.7
-    }
+    input_parameters=input_parameters,
 )
 
-
-sim.simulate(10)
-
-sim.plot_solution()
+sim.simulate(t_end=10)
 
 import matplotlib.pyplot as plt
 
@@ -187,6 +196,3 @@ plt.plot(x_2, y_2, color="red")
 plt.plot(x_3, y_3, color="green")
 
 plt.show()
-
-
-#print(S)

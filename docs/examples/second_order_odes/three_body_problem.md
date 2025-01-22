@@ -1,5 +1,9 @@
 # Three body problem
 
+??? info "Raw code"
+
+    The raw code for this example without explanations can be found [here](https://github.com/casasglobal-org/psymple/blob/main/examples/second_order_ODEs/2-three_body_problem.py).
+
 The three body problem, or more generally the $n$-body problem, is a classical problem in celestial mechanics. The statement of the problem is to find the trajectories of three or more massive bodies under the gravitational influence of each other. 
 
 ## System of equations
@@ -167,7 +171,7 @@ n_body_model = CompositePortedObject(
 )
 ```
 
-1. The choice `i%n + 1` ensures only one of the interaction components connects to a position integrator for each $i$. 
+1. The choice `int(i)%n + 1` ensures only one of the interaction components connects to a position integrator for each $i$. 
 
 
 ## Simulation and plots
@@ -203,10 +207,10 @@ initial_values={
 }
 
 input_parameters={
-        "m_1": 1,
-        "m_2": 1,
-        "m_3": 1,
-    }
+    "m_1": 1,
+    "m_2": 1,
+    "m_3": 1,
+}
 ```
 
 Here is the simulation run.

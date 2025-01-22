@@ -1,5 +1,9 @@
 # Projectile motion
 
+??? info "Raw code"
+
+    The raw code for this example without explanations can be found [here](https://github.com/casasglobal-org/psymple/blob/main/examples/second_order_ODEs/1-projectile_motion.py).
+
 The motion of a projectile can be affected by multiple forces. This example considers the motion of an object under gravity, which adds an acceleration vertically downwards, and air resistance which acts against the velocity vector.
 
 In general, the force exerted due to air resistance is given by
@@ -25,7 +29,7 @@ from psymple.build import System
 
 system = System()
 system.add_system_parameter("g", "9.81"),
-system.add_system_parameter("air_density", "1.225")
+system.add_system_parameter("rho", "1.225")
 system.add_utility_function(name="frac_0", function=frac_0)
 ```
 
