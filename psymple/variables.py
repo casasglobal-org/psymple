@@ -185,7 +185,7 @@ class SimVariable(Variable):
             print_vars_dict: a mapping between `sympy.Symbol` objects to use for the readout
             print_pars_dict: a mapping between `sympy.Symbol` objects to use for the readout
             type: the format of the output. By default, this is a string. Specifying `"latex"`
-                prouces a `LaTeX`-compilable output.
+                produces a `LaTeX`-compilable output.
 
         """
         print_symbol = print_vars_dict[self.symbol]
@@ -274,7 +274,7 @@ class SimParameter(Parameter):
             print_vars_dict: a mapping between `sympy.Symbol` objects to use for the readout
             print_pars_dict: a mapping between `sympy.Symbol` objects to use for the readout
             type: the format of the output. By default, this is a string. Specifying `"latex"`
-                prouces a `LaTeX`-compilable output.
+                produces a `LaTeX`-compilable output.
 
         """
         print_symbol = print_pars_dict[self.symbol]

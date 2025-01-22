@@ -111,7 +111,7 @@ The automatic creation of input ports can be overridden: see the documentation o
 
 In practice, there are only two reasons to specify ports:
 
-1. In the case where not every variable needs to be exposed. This is useful when, for example, a second-order differential equation is being modelled by a system of first-order equations. For example, the pendulum equation $ \ddot y = - \frac{g}{l} sin(y) $ can be written as the two first-order equations $ \dot y = x $ and $ \dot x = - \frac{g}{l} sin(y) $. In this case, we only need to expose the variable `y`. This can be done as follows:
+1. In the case where not every variable needs to be exposed. This is useful when, for example, a second-order differential equation is being modelled by a system of first-order equations. For example, the pendulum equation $\ddot y = - \frac{g}{l} sin(y)$ can be written as the two first-order equations $\dot y = x$ and $\dot x = - \frac{g}{l} sin(y)$. In this case, we only need to expose the variable `y`. This can be done as follows:
 
     ``` py title="second-order ODE model"
     from psymple.build import VariablePortedObject

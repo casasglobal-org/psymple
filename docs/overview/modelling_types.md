@@ -54,7 +54,7 @@ Correlative models can be used to approximate the behaviour of a system componen
 
 !!! example "Example: correlative ecological niche models"
 
-    Data may be used to model the prevalance of a certain species $y$ in response to temporal climatic features such as temperature $T$, relative humitidy $H_r$ and precipitation $P$. In this case the model will have the form
+    Data may be used to model the prevalence of a certain species $y$ in response to temporal climatic features such as temperature $T$, relative humidity $H_r$ and precipitation $P$. In this case the model will have the form
 
     $$
     y(t) = f(T, H_r, P)
@@ -65,7 +65,7 @@ Correlative models can be used to approximate the behaviour of a system componen
 
 ## Spectrum models
 
-In `psymple`, spectrum models consistint of building blocks from purely mechanistic models and purely correlative models can be constructed by allowing arbitrary combinations of ordinary differential equations (ODEs) and multivariate functions to be combined together. A system in `psymple` is therefore of the form:
+In `psymple`, spectrum models consist of building blocks from purely mechanistic models and purely correlative models can be constructed by allowing arbitrary combinations of ordinary differential equations (ODEs) and multivariate functions to be combined together. A system in `psymple` is therefore of the form:
 
 $$
 \begin{align}
@@ -74,7 +74,3 @@ $$
 \underline{b} &= \underline{h}(t)
 \end{align}
 $$
-
-## Up next:
-
-[System design](system_design.md)

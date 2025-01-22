@@ -1,6 +1,10 @@
-In the previous example, we considered a mixing problem with a single tank, which had an external flow in and an external flow out. Now we consider a mixing problem consisting of two or more tanks, each of which can have external flows in and out in the same manner as for the single tank, and which furthermore can have flows to and from other tanks in the system.
+# Multiple tanks mixing problem
 
-It will help to first specify the system data. In this case, we will create a system with \( n > 1 \) tanks, such that every tank has a flow in and flow out, plus a flow to and from every other tank. The following data can be freely altered to reduce the external flows and connections, if desired.
+The previous example modelled a mixing problem with a single tank, which had an external flow in and an external flow out. This example considers a mixing problem consisting of two or more tanks, each of which can have external flows in and out, and which furthermore can have flows to and from other tanks in the system.
+
+## System data
+
+It will help to first specify the system data. The following data specifies a system of $2$ tanks which are fully interconnected, and each have external flows both in and out. This data can be freely altered to reflect different configurations and all the code in this example will automatically run.
 
 ```py title="system data"
 # Number of tanks
@@ -24,9 +28,11 @@ pipes_in_id = [1, 2]
 pipes_out_id = [1, 2]
 ```
 
-If you followed through the single tank example, the following lists of pipes in and out are created in exactly the same way as there. We create pipes in for every tank in `pipes_in_id` and pipes out for every tank in `pipes_out_id`.
+## Defining the flow components
 
-```py
+As for the [single tank example](single_tank.md#modelling-flows-in-psymple), a tank is defined as the aggregation of multiple variables representing inflows and outflows. The following lists of pipes in and out are created in exactly the same way for the single tank example, with pipes in for every tank in `pipes_in_id` and pipes out for every tank in `pipes_out_id`.
+
+```py title="external pipes"
 from psymple.build import VariablePortedObject
 
 pipes_in = [
@@ -52,7 +58,7 @@ pipes_out = [
 ]
 ```
 
-Next, we need to define connector pipes. These have four variables:
+To connect two tanks, a connector pipe is required. These have four variables:
 
 - `Q_in`, the amount of salt entering the pipe from a tank,
 - `Q_out`, the amount of salt flowing into the next tank. Note that this has the same concentration
@@ -60,9 +66,9 @@ Next, we need to define connector pipes. These have four variables:
 - `V_in`, the volume of water entering the pipe from the tank,
 - `V_out`, the volume of water exiting the pipe into the next tank.
 
-We create a connector pipe for every pair in `link_pipes_id`.
+A connector pipe is defined for every pair in `link_pipes_id`.
 
-```py
+```py title="connector pipes"
 connectors = [
     VariablePortedObject(
         name=f"pipe_{i}_{j}",
@@ -77,11 +83,9 @@ connectors = [
 ]
 ```
 
-Now we just need to define our system of tanks. Compared to the single tank example, the children, variable ports and input ports are exactly the same (just one for each tank, if it was specified), except for additionally the specification of the flow rates `rate_i_j` of the connector pipes as additional input ports.
+## Defining the system
 
-The directed wires simply connect the rates at the input ports to the correct pipes.
-
-The only thing which becomes more complicated is the aggregation of the variables. Each tank `i`, and therefore each variable `Q_i` (and `V_i`), can have:
+The system is defined by variables `Q_1`,...,`Q_n` and `V_1`,...,`V_n` representing the mass and volume in each of the $n$ tanks. This is done in an analogous way to the single tank example, where the only thing which becomes more complicated is the aggregation of the variables. Each tank `i`, and therefore each variable `Q_i` (and `V_i`), can have:
 
 - External in-flows if `i in pipes_in_id`,
 - External out-flows if `i in pipes_out_id`,
@@ -134,6 +138,14 @@ tanks = CompositePortedObject(
 
 And that's it!
 
+## Simulating the system
+
+The following code sets up a simulation in which for $t<50$>, there are flows of $10\text{l/s}$ (from tank 2) and $4 \text{l/s}$ (external) into tank 1 and flows of $3\text{l/s}$ (to tank 2) and $11\text{l/s}$ (external) out. Similarly, tank 2 has flows in of $3\text{l/s}$ (from tank 1) and $7\text{l/s}$ (external) and flows out of $10\text{l/s}$ (to tank 1).
+
+The external concentration of the fluid entering tank 1 is $0.5\text{g/l}$ and for tank 2 only pure water is added. 
+
+The total amount of solution in each tank will remain constant for $t<50$. At $t=50$ the external supply to tank 1 is turned off so that the volume of tank 1 will start to drain.
+
 ```py
 S = System(tanks)
 S.compile()
@@ -144,18 +156,26 @@ S.set_parameters(
         "rate_2_1": 10,
         "rate_in_1": "Piecewise((4, T<50), (0, True))",
         "rate_in_2": 7,
-        "conc_in_1": 1 / 2,
+        "conc_in_1": 0.5,
         "conc_in_2": 0,
         "rate_out_1": 11,
-        #"rate_out_2": 0
+        "rate_out_2": 0,
     }
 )
 
 print(S)
 
-sym = S.create_simulation(solver="cts", initial_values={"Q_1": 20, "Q_2": 80, "V_1": 800, "V_2": 1000})
+sym = S.create_simulation(
+    initial_values={"Q_1": 20, "Q_2": 80, "V_1": 800, "V_2": 1000}
+)
 
-sym.simulate(100, n_steps=100)
+sym.simulate(t_end=250)
 
 sym.plot_solution()
 ```
+
+The following plot shows the result of the simulation until tank 1 is empty after $250\text{s}$. 
+
+![Multiple tank mixing problem](../figures/multi_tank_mixing_expt_1.png)
+
+The figure shows that the concentrations in the two tanks decreasing after $t=50$ since only fresh water is added to the system after this point.
