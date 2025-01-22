@@ -18,7 +18,7 @@ For example:
 
 !!! example "Example"
 
-    The aggreation of the differential equations \( \frac{dx}{dt} = axt +  by + c \) and \( \frac{dy}{dt} = dsin(y) \) under the identification \( (x,y) \longrightarrow z \) is given by 
+    The aggregation of the differential equations \( \frac{dx}{dt} = axt +  by + c \) and \( \frac{dy}{dt} = dsin(y) \) under the identification \( (x,y) \longrightarrow z \) is given by 
 
     $$
     \frac{dz}{dt} = (azt + bz + c) + (dsin(z)).
@@ -58,4 +58,4 @@ In `psymple`, variable aggregation is stored *formally* by connecting the ports 
 
 Concretely, the child ports \( C \) each expose a differential assignment to be aggregated together, the identification variable \( I \) stores the identification to be made, and the destination port \( P_d \) exposes the aggregated assignment.
 
-On model compilation, the variable aggregation wires in a system are intepreted and the variable aggregations are performed accordingly. 
+On model compilation, the variable aggregation wires in a system are interpreted and the variable aggregations are performed accordingly. 

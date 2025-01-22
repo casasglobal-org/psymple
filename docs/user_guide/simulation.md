@@ -19,7 +19,7 @@ The code defining the model and system for the example of [an object falling ver
 
 ??? example "Falling object example"
 
-    ```py title="Falling object with air resistence"
+    ```py title="Falling object with air resistance"
     from psymple.build import (
         FunctionalPortedObject, 
         VariablePortedObject,

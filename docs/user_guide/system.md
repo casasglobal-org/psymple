@@ -60,7 +60,7 @@ Then, whenever `"frac_0(x,y,z)"` is used in an assignment, it is recognised as a
 
 !!! info "Function arguments"
 
-    When adding a callable function as above, `psymple` determines the number of inputs the function should be provided. In the above example, enterting `"frac_0(x,y)"` in an assignment will raise an error because the lambda function `frac_0` cannot be interpreted with just two arguments.
+    When adding a callable function as above, `psymple` determines the number of inputs the function should be provided. In the above example, entering `"frac_0(x,y)"` in an assignment will raise an error because the lambda function `frac_0` cannot be interpreted with just two arguments.
 
     **Currently, default arguments, position-only arguments and keyword-only arguments are not fully supported. This is a planned feature.**
 
@@ -137,7 +137,7 @@ Once a system exists, a ported object can be imported and [compiled](compilation
 - A set of differential equations, one describing the evolution of each variable after compilation.
 - A set of functions which define dependencies in the differential equations in terms of variables and, recursively, other functions.
 
-These two collections define a *simulable system*, which can be solved proceedurally (not implemented), or numerically once all the dependencies have been substituted in terms of system variables.
+These two collections define a *simulable system*, which can be solved procedurally (not implemented), or numerically once all the dependencies have been substituted in terms of system variables.
 
 ### Example
 
@@ -145,7 +145,7 @@ In the following example, this [model of an object falling vertically, subject t
 
 ??? example "Falling object example"
 
-    ```py title="Falling object with air resistence"
+    ```py title="Falling object with air resistance"
     from psymple.build import (
         FunctionalPortedObject, 
         VariablePortedObject,

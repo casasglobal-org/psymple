@@ -51,7 +51,7 @@ These are processed as follows.
 
 3. Variable wires are processed. If the aggregated variable is to be exposed at a variable port, a formal substitution is made for each child variable symbol to be replaced by the destination symbol and the assignment is stored at the variable port. If the variable is not to be exposed, it is stored as internal information with the specified symbol, which is formally substituted for each child variable symbol.
 4. Any inputs of children which have not been connected to are converted to a parameter assignment with their default value, which is stored as internal information (a default value must be defined for such ports, otherwise an exception is raised).
-5. Formal subsitutions are performed as actual symbol substitutions.
+5. Formal substitutions are performed as actual symbol substitutions.
 6. A renaming process prefixing the symbols of all ports and symbols is performed, allowing them to be uniquely referenced in parent ported objects.
 
 !!! info "Internal storage"
