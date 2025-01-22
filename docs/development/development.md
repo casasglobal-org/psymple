@@ -1,6 +1,12 @@
 # Development
 
-`psymple` is an open-source and open-access project which welcomes all contributions from all third parties. More information about how to contribute to `psymple` can be found on the [Community Guidelines](community_guidelines.md) page.
+`psymple` is an open-source and open-access project which welcomes all contributions from all third parties. 
+
+## Getting support or contributing to `psymple`
+
+More information about how to contribute to `psymple` or getting help from the community can be found on the [Community Guidelines](community_guidelines.md) page. All contributions must adhere to the current Code of Conduct.
+
+[Read the Code of Conduct](community_guidelines.md#code-of-conduct){ .md-button }
 
 ## Governance and steering
 
@@ -12,9 +18,9 @@ The package `psymple` is currently being produced under a collaboration between 
 - Update policy documents such as this one.
 - Make decisions when regular community discussion doesn’t produce consensus on an issue in a reasonable time frame.
 
-More information about this team and their contributions an expertise can be found on the [Development Team](development_team.md) page.
+Follow the link below to find out more about this team and their contributions an expertise.  
 
-## Code of conduct
+[Core Governance Team](development_team.md#core-governance-and-steering-team){ .md-button }
 
-Our current Code of conduct can be found [here](community_guidelines.md#code-of-conduct).
+
 

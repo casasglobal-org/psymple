@@ -14,6 +14,8 @@ The latest version of `psymple` is available on [PyPI](https://pypi.org/project/
 pip install psymple
 ```
 
+`psymple` includes automated tests. More information can be found on the [testing](./development/testing_psymple.md) page.
+
 ## Where to start
 
 For most new users, going through the following resources in the suggested order will provide a good introduction to `psymple`. 

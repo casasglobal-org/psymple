@@ -13,7 +13,10 @@ There are many ways you can be involved in contributing to the development and m
 !!! tip "Credit where it is due"
 
     Anyone who makes consistent and positive contributions, either directly or indirectly, will be offered an entry on our [Development Team](development_team.md) page.
-    
+
+## Automated testing
+
+`psymple` includes automated testing of its features. More information on how to view tests, run tests, or contribute new tests can be found on the [testing `psymple` page](testing_psymple.md).
 
 ## Code of conduct
 
