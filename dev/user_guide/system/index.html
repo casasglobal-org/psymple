@@ -2381,7 +2381,7 @@
 <p>Then, whenever <code>"frac_0(x,y,z)"</code> is used in an assignment, it is recognised as a symbolic function, and interpreted at the lambda function <code>frac_0</code> at simulation. </p>
 <div class="admonition info">
 <p class="admonition-title">Function arguments</p>
-<p>When adding a callable function as above, <code>psymple</code> determines the number of inputs the function should be provided. In the above example, enterting <code>"frac_0(x,y)"</code> in an assignment will raise an error because the lambda function <code>frac_0</code> cannot be interpreted with just two arguments.</p>
+<p>When adding a callable function as above, <code>psymple</code> determines the number of inputs the function should be provided. In the above example, entering <code>"frac_0(x,y)"</code> in an assignment will raise an error because the lambda function <code>frac_0</code> cannot be interpreted with just two arguments.</p>
 <p><strong>Currently, default arguments, position-only arguments and keyword-only arguments are not fully supported. This is a planned feature.</strong></p>
 </div>
 <p>It is also possible to specify utility functions by specifying their symbolic representation. For example, a model temperature function <span class="arithmatex">\(temp(t) = 10sin(t) + 20\)</span> can be added as follows:</p>
@@ -2444,12 +2444,12 @@
 <li>A set of differential equations, one describing the evolution of each variable after compilation.</li>
 <li>A set of functions which define dependencies in the differential equations in terms of variables and, recursively, other functions.</li>
 </ul>
-<p>These two collections define a <em>simulable system</em>, which can be solved proceedurally (not implemented), or numerically once all the dependencies have been substituted in terms of system variables.</p>
+<p>These two collections define a <em>simulable system</em>, which can be solved procedurally (not implemented), or numerically once all the dependencies have been substituted in terms of system variables.</p>
 <h3 id="example">Example</h3>
 <p>In the following example, this <a href="../../components/composite_ported_objects/#example">model of an object falling vertically, subject to gravitational and air resistance forces</a>, is considered. The code can also be found by expanding the following block.</p>
 <details class="example">
 <summary>Falling object example</summary>
-<div class="language-py highlight"><span class="filename">Falling object with air resistence</span><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">psymple.build</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+<div class="language-py highlight"><span class="filename">Falling object with air resistance</span><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">psymple.build</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
 </span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>    <span class="n">FunctionalPortedObject</span><span class="p">,</span> 
 </span><span id="__span-5-3"><a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a>    <span class="n">VariablePortedObject</span><span class="p">,</span>
 </span><span id="__span-5-4"><a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a>    <span class="n">CompositePortedObject</span><span class="p">,</span>

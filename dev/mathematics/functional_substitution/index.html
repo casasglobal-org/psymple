@@ -2193,13 +2193,13 @@
 <p>Functional substitution, also called partial composition, is defined as follows.</p>
 <div class="admonition info">
 <p class="admonition-title">Definition</p>
-<p>Given functions <span class="arithmatex">\( f: X^n \longrightarrow Z \)</span> and <span class="arithmatex">\( g: Y^m \longrightarrow X \)</span>, the <em>partial compositon</em> of <span class="arithmatex">\( f \)</span> with <span class="arithmatex">\( g \)</span> at coordinate <span class="arithmatex">\( i \)</span> is given by</p>
+<p>Given functions <span class="arithmatex">\( f: X^n \longrightarrow Z \)</span> and <span class="arithmatex">\( g: Y^m \longrightarrow X \)</span>, the <em>partial composition</em> of <span class="arithmatex">\( f \)</span> with <span class="arithmatex">\( g \)</span> at coordinate <span class="arithmatex">\( i \)</span> is given by</p>
 <div class="arithmatex">\[
 f \vert_{x_i = g} = f(x_1, \dots, x_{i-1}, g(y_1, \dots, y_m), x_{i+1}, \dots, x_n): X^{n-1} \times Y^m \longrightarrow Z.
 \]</div>
 </div>
 <h2 id="discussion">Discussion</h2>
-<p>In <code>psymple</code>, a key assumption is that complex models consist of many substituted or partially composed functions. Returning to <a href="../variables_parameters/#functions">the example of the drag force exerted on a projectile</a>, where the magitude <span class="arithmatex">\( F \)</span> was given by</p>
+<p>In <code>psymple</code>, a key assumption is that complex models consist of many substituted or partially composed functions. Returning to <a href="../variables_parameters/#functions">the example of the drag force exerted on a projectile</a>, where the magnitude <span class="arithmatex">\( F \)</span> was given by</p>
 <div class="arithmatex">\[
 F = \frac{1}{2} \rho C_D A v^2.
 \]</div>
@@ -2208,7 +2208,7 @@ F = \frac{1}{2} \rho C_D A v^2.
 <div class="arithmatex">\[
 F = \frac{1}{2} \rho(P(x,y,A),T(x,y,A)) C_D(r_1,\dots,r_k) A(r_1,\dots,r_k) v^2
 \]</div>
-<p>including these dependencies is both unclear, since the main components of the force magnitude are lost amongst other functions, and unreusable, since for example the model for air density becomes fixed: changing this model would also require a full resconstruction of the model for <span class="arithmatex">\( F \)</span> itself.</p>
+<p>including these dependencies is both unclear, since the main components of the force magnitude are lost amongst other functions, and unreusable, since for example the model for air density becomes fixed: changing this model would also require a full reconstruction of the model for <span class="arithmatex">\( F \)</span> itself.</p>
 <h2 id="implementation-detail">Implementation detail</h2>
 <p>In <code>psymple</code>, functional substitution is stored <em>formally</em> by connecting the ports of ported object instances by <a class="autorefs autorefs-internal" href="../../reference/build/wires/#psymple.build.wires.DirectedWire"><code>Directedwire</code></a> instances. A directed wire <span class="arithmatex">\( W_d(P_s, D) \)</span> from <em>source port</em> <span class="arithmatex">\( P_s \)</span> to <em>destination ports</em> <span class="arithmatex">\( D = \{P_1,\dots,P_k \} \)</span> stores the information associated to functional substitution. Concretely, the source port <span class="arithmatex">\( P_s \)</span> exposes an assignment containing an expression, and the destination ports <span class="arithmatex">\( D \)</span> expose symbols attached to expressions of other assignments. </p>
 <p>Therefore the directed wire <span class="arithmatex">\( W_d(P_s, D) \)</span> represents the functional substitutions</p>
@@ -2216,7 +2216,7 @@ F = \frac{1}{2} \rho(P(x,y,A),T(x,y,A)) C_D(r_1,\dots,r_k) A(r_1,\dots,r_k) v^2
 \{g_1 \vert_{x_1 = f}, g_2 \vert_{x_2 = f}, \dots, g_k \vert_{x_k = f} \}
 \]</div>
 <p>where <span class="arithmatex">\( f \)</span> is the expression exposed at <span class="arithmatex">\( P_s \)</span>, and <span class="arithmatex">\( x_i \)</span> is the symbol exposed at <span class="arithmatex">\( P_i \in D \)</span> in expression <span class="arithmatex">\( g_i \)</span>. </p>
-<p>On model compilation, the directed wires in a system are intepreted and the function substitutions performed accordingly. </p>
+<p>On model compilation, the directed wires in a system are interpreted and the function substitutions performed accordingly. </p>
 
 
 

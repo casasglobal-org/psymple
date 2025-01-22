@@ -2201,7 +2201,7 @@
 <p>For example:</p>
 <div class="admonition example">
 <p class="admonition-title">Example</p>
-<p>The aggreation of the differential equations <span class="arithmatex">\( \frac{dx}{dt} = axt +  by + c \)</span> and <span class="arithmatex">\( \frac{dy}{dt} = dsin(y) \)</span> under the identification <span class="arithmatex">\( (x,y) \longrightarrow z \)</span> is given by </p>
+<p>The aggregation of the differential equations <span class="arithmatex">\( \frac{dx}{dt} = axt +  by + c \)</span> and <span class="arithmatex">\( \frac{dy}{dt} = dsin(y) \)</span> under the identification <span class="arithmatex">\( (x,y) \longrightarrow z \)</span> is given by </p>
 <div class="arithmatex">\[
 \frac{dz}{dt} = (azt + bz + c) + (dsin(z)).
 \]</div>
@@ -2227,7 +2227,7 @@
 <h2 id="implementation-detail">Implementation detail</h2>
 <p>In <code>psymple</code>, variable aggregation is stored <em>formally</em> by connecting the ports of ported object instances by <a class="autorefs autorefs-internal" href="../../reference/build/wires/#psymple.build.wires.VariableAggregationWiring"><code>VariableAggregationWiring</code></a> instances. A variable aggregation wire <span class="arithmatex">\( W_v(C, P_d, I) \)</span> from <em>child ports</em> <span class="arithmatex">\( C = \{P_1,\dots,P_k \} \)</span> to <em>destination port</em> <span class="arithmatex">\( P_d \)</span> with <em>identification variable</em> <span class="arithmatex">\( I \)</span> stores the information associated to variable aggregation. </p>
 <p>Concretely, the child ports <span class="arithmatex">\( C \)</span> each expose a differential assignment to be aggregated together, the identification variable <span class="arithmatex">\( I \)</span> stores the identification to be made, and the destination port <span class="arithmatex">\( P_d \)</span> exposes the aggregated assignment.</p>
-<p>On model compilation, the variable aggregation wires in a system are intepreted and the variable aggregations are performed accordingly. </p>
+<p>On model compilation, the variable aggregation wires in a system are interpreted and the variable aggregations are performed accordingly. </p>
 
 
 
