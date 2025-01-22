@@ -1,6 +1,6 @@
 # Single tank mixing problem
 
-!!! info "Raw code"
+??? info "Raw code"
 
     The raw code for this example without explanations can be found [here](https://github.com/casasglobal-org/psymple/blob/main/examples/mixing_problems/1-single_tank.py).
 

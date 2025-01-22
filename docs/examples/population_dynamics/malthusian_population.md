@@ -1,6 +1,6 @@
 # Malthusian growth
 
-!!! info "Raw code"
+??? info "Raw code"
 
     The raw code for this example without explanations can be found [here](https://github.com/casasglobal-org/psymple/blob/main/examples/population_dynamics/1-malthusian_population.py).
 
