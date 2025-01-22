@@ -91,7 +91,7 @@ connectors = [
 """
 Now we just need to define our system of tanks. Compared to the single tank example, 
 the children, variable ports and input ports are exactly the same (just one for each tank, 
-if it was specified), except for aditionally the specification of the flow rates `rate_i_j` 
+if it was specified), except for additionally the specification of the flow rates `rate_i_j` 
 of the connector pipes as additional input ports.
 
 The directed wires simply connect the rates at the input ports to the correct pipes.
