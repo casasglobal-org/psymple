@@ -24,6 +24,6 @@ The python mathematics library [sympy](https://www.sympy.org/en/index.html) allo
 
 Systems are built and stored using a flexible `json` data model for its main objects which allows them to be built from, or dismantled into, wide-ranging formats. This is designed to provide:
 
-1. **Collaborative modelling**: varied domain experts with different technical languages or interpretations of concepts can develop and interact with different interfaces to the core data format. [Read more about collaborative modelling.](https://topos.institute/collaborative-modelling)
+1. **Collaborative modelling**: varied domain experts with different technical languages or interpretations of concepts can develop and interact with different interfaces to the core data format. [Read more about collaborative modelling.](https://topos.institute/work/collaborative-modelling/)
 2. **Traceability**: a data-centric focus provides a more natural setting to integrate data and assumption sources into the platform for clear and trustable model creation.
 3. **Language-agnosticism**: the choice to build `psymple` in `python` is designed to maximise its scalability and uptake. Implementations in other languages may have other advantages, but can be built with the same core data format.

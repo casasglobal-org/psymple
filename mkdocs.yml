@@ -16,10 +16,12 @@ theme:
     - navigation.tabs
     - navigation.tabs.sticky
     - navigation.sections
+    - navigation.footer
     - search.suggest
     - search.highlight
 
 markdown_extensions:
+  - tables
   - admonition
   - pymdownx.details
   - pymdownx.superfences
@@ -36,6 +38,11 @@ markdown_extensions:
   - pymdownx.inlinehilite
   - pymdownx.tabbed:
       alternate_style: true
+  - attr_list
+  - md_in_html
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
 
 extra_javascript:
   - javascripts/mathjax.js
@@ -62,11 +69,6 @@ extra:
     default: latest
 
 nav:
-  - Introduction: index.md
-  - Overview:
-    - Hybrid systems modelling: overview/modelling_systems.md
-    - Mechanistic vs. correlative models: overview/modelling_types.md
-    - System desgin: overview/system_design.md
   - User guide:
     - user_guide/getting_started.md
     - Building a model:
@@ -78,11 +80,27 @@ nav:
       - Building a system: user_guide/system.md
     - Running a simulation: 
       - Simulations: user_guide/simulation.md
-    - Examples:
-      - examples/tutorials.md
-      - Mixing problems: 
-        - Single tank: examples/mixing_problems/single_tank.md
-        - Multiple tanks: examples/mixing_problems/multiple_tanks.md
+  - Overview:
+    - Introduction: overview/introduction.md
+    - Statement of need: overview/statement_of_need.md
+    - Hybrid systems modelling: overview/modelling_systems.md
+    - Mechanistic and correlative models: overview/modelling_types.md
+    - System design: overview/system_design.md
+  - Examples:
+    - examples/tutorials.md
+    - Population dynamics:
+      - Population modelling: examples/population_dynamics/population_modelling.md
+      - Malthusian growth: examples/population_dynamics/malthusian_population.md
+      - Logistic growth: examples/population_dynamics/logistic_growth.md
+      - Predator-prey systems: examples/population_dynamics/predator_prey.md
+    - Mixing problems: 
+      - Mixing problems: examples/mixing_problems/mixing_problems.md
+      - Single tank: examples/mixing_problems/single_tank.md
+      - Multiple tanks: examples/mixing_problems/multiple_tanks.md
+    - Second-order ODEs:
+      - Second-order ODEs: examples\second_order_odes\second_order_odes.md
+      - Projectile motion: examples\second_order_odes\projectile_motion.md
+      - Three body problem: examples\second_order_odes\three_body_problem.md
   - Mathematical components:
     - Ported objects: mathematics/ported_objects.md
     - Variables and parameters: mathematics/variables_parameters.md
@@ -102,4 +120,8 @@ nav:
       - Solvers: reference/simulate/solvers.md
     - psymple.core:
       - Variables: reference/variables.md
+  - Development:
+    - Get involved: development/development.md
+    - Development team: development/development_team.md
+    - Community guidelines: development/community_guidelines.md
   

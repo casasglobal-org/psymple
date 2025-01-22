@@ -90,6 +90,8 @@ A simple plot of the solution can be made with the [`plot_solution`][psymple.sim
 sim.plot_solution()
 ```
 
+![Vertical projectile motion](../examples/figures/projectile_vertical_rho_1.png)
+
 Running this checks that the model looks good, with the velocity of the object increasing from $0$ up to a terminal velocity around $13.35 \mathrm{ms}^{-1}$.
 
 The time series used to plot each variable can also be accessed:
@@ -114,3 +116,7 @@ The time series used to plot each variable can also be accessed:
  13.35496943 13.35504028 13.35507149 13.35506695 13.35503273 13.35497705
  13.35491029 13.35484501 13.3547959  13.35477983]
 ```
+
+## Next steps
+
+Many more examples of creating and simulating models in `psymple` can be found in the [Examples](../examples/tutorials.md) section.

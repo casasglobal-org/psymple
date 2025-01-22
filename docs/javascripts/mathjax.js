@@ -8,7 +8,9 @@ window.MathJax = {
     options: {
       ignoreHtmlClass: ".*|",
       processHtmlClass: "arithmatex"
-    }
+    },
+    loader: {load: ['[tex]/mhchem']},
+    tex: {packages: {'[+]': ['mhchem']}}
   };
   
   document$.subscribe(() => { 

@@ -20,7 +20,7 @@ A very simple problem which can be modelled in a composite ported object is the 
     \frac{1}{2}C_D \rho A v^2
     $$
 
-    directed vertically upwards, where $C_D$ is the drag coefficient of the object, $\rho$ is the air denstity, $A$ is the effective surface area of the object, and $m$ is its mass.
+    directed vertically upwards, where $C_D$ is the drag coefficient of the object, $\rho$ is the air density, $A$ is the effective surface area of the object, and $m$ is its mass.
 
 In `psymple`, the forces acting on the falling object can be modelled individually, and then aggregated together. Let the positive direction be downwards. For the gravitational force $F_G = mg$, applying Newton's second law gives $\frac{dv}{dt} = g$, while for the resistance force, $\frac{dv}{dt} = - \mu v^2$, where $\mu = \frac{C_D \rho A}{2m}$. 
 
@@ -60,7 +60,7 @@ To create the falling object model from these components, `psymple` needs to kno
 
 !!! info "Referencing a child port"
 
-    The port of a child object is referenced by the string `"name.port_name"` where `name = child.name` is the attritube specified when instantiating that child object. This *does not* need to be the same as the `python` identifier.
+    The port of a child object is referenced by the string `"name.port_name"` where `name = child.name` is the attribute specified when instantiating that child object. This *does not* need to be the same as the `python` identifier.
 
 These are all accomplished inside this composite ported object:
 
@@ -147,7 +147,7 @@ Similarly, there are two syntaxes for specifying variable wires. The following a
 When `psymple` builds the `model` composite ported object, it:
 
 1. Creates the input ports and variable ports specified.
-2. Builds a [`DirectedWire`][psymple.build.wires.DirectedWire] instance for each itme in the argument list `directed_wires`. In doing so, it checks that all the ports exist and are of the correct type (source ports must be input ports of `model`, or output ports/variable ports of its children, and destination ports must be input ports of children, or output ports of `model`).
+2. Builds a [`DirectedWire`][psymple.build.wires.DirectedWire] instance for each item in the argument list `directed_wires`. In doing so, it checks that all the ports exist and are of the correct type (source ports must be input ports of `model`, or output ports/variable ports of its children, and destination ports must be input ports of children, or output ports of `model`).
 3. Builds a [`VariableAggregationWiring`][psymple.build.wires.VariableAggregationWiring] instance for each item in the argument list `variable_wires`. In doing so, it checks all the ports exist and are variable ports.
 
 ## Next steps
