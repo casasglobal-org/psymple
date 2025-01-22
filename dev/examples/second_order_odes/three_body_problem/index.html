@@ -2304,6 +2304,10 @@
 
 
 <h1 id="three-body-problem">Three body problem</h1>
+<details class="info">
+<summary>Raw code</summary>
+<p>The raw code for this example without explanations can be found <a href="https://github.com/casasglobal-org/psymple/blob/main/examples/second_order_ODEs/2-three_body_problem.py">here</a>.</p>
+</details>
 <p>The three body problem, or more generally the <span class="arithmatex">\(n\)</span>-body problem, is a classical problem in celestial mechanics. The statement of the problem is to find the trajectories of three or more massive bodies under the gravitational influence of each other. </p>
 <h2 id="system-of-equations">System of equations</h2>
 <p>The magnitude of the gravitational force acting between two objects of masses <span class="arithmatex">\(m_1\)</span> and <span class="arithmatex">\(m_2\)</span> is given by <span class="arithmatex">\(F = \frac{Gm_1m_2}{r^2}\)</span>, where <span class="arithmatex">\(G = \pu{6.67 \times 10^{-11} N m^2/kg}\)</span> and <span class="arithmatex">\(r\)</span> is the distance between their centres. </p>
@@ -2441,7 +2445,7 @@ F_{ij} = \frac{Gm_j}{((x_j-x_i)^2 + (y_j - y_i)^2)^{\frac{3}{2}}} \left(x_j - x_
 </span><span id="__span-5-39"><a id="__codelineno-5-39" name="__codelineno-5-39" href="#__codelineno-5-39"></a><span class="p">)</span>
 </span></code></pre></div>
 <ol>
-<li>The choice <code>i%n + 1</code> ensures only one of the interaction components connects to a position integrator for each <span class="arithmatex">\(i\)</span>. </li>
+<li>The choice <code>int(i)%n + 1</code> ensures only one of the interaction components connects to a position integrator for each <span class="arithmatex">\(i\)</span>. </li>
 </ol>
 <h2 id="simulation-and-plots">Simulation and plots</h2>
 <p>To run a simulation, a <code>System</code> instance is created for <code>n_body_model</code> which also specifies the system parameter <code>G</code>, the gravitational constant. In this example, matters are scaled so that <span class="arithmatex">\(G = 1\)</span>. </p>
@@ -2469,10 +2473,10 @@ F_{ij} = \frac{Gm_j}{((x_j-x_i)^2 + (y_j - y_i)^2)^{\frac{3}{2}}} \left(x_j - x_
 </span><span id="__span-7-14"><a id="__codelineno-7-14" name="__codelineno-7-14" href="#__codelineno-7-14"></a><span class="p">}</span>
 </span><span id="__span-7-15"><a id="__codelineno-7-15" name="__codelineno-7-15" href="#__codelineno-7-15"></a>
 </span><span id="__span-7-16"><a id="__codelineno-7-16" name="__codelineno-7-16" href="#__codelineno-7-16"></a><span class="n">input_parameters</span><span class="o">=</span><span class="p">{</span>
-</span><span id="__span-7-17"><a id="__codelineno-7-17" name="__codelineno-7-17" href="#__codelineno-7-17"></a>        <span class="s2">&quot;m_1&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
-</span><span id="__span-7-18"><a id="__codelineno-7-18" name="__codelineno-7-18" href="#__codelineno-7-18"></a>        <span class="s2">&quot;m_2&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
-</span><span id="__span-7-19"><a id="__codelineno-7-19" name="__codelineno-7-19" href="#__codelineno-7-19"></a>        <span class="s2">&quot;m_3&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
-</span><span id="__span-7-20"><a id="__codelineno-7-20" name="__codelineno-7-20" href="#__codelineno-7-20"></a>    <span class="p">}</span>
+</span><span id="__span-7-17"><a id="__codelineno-7-17" name="__codelineno-7-17" href="#__codelineno-7-17"></a>    <span class="s2">&quot;m_1&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+</span><span id="__span-7-18"><a id="__codelineno-7-18" name="__codelineno-7-18" href="#__codelineno-7-18"></a>    <span class="s2">&quot;m_2&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+</span><span id="__span-7-19"><a id="__codelineno-7-19" name="__codelineno-7-19" href="#__codelineno-7-19"></a>    <span class="s2">&quot;m_3&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+</span><span id="__span-7-20"><a id="__codelineno-7-20" name="__codelineno-7-20" href="#__codelineno-7-20"></a><span class="p">}</span>
 </span></code></pre></div>
 <p>Here is the simulation run.</p>
 <div class="language-py highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="n">sim</span> <span class="o">=</span> <span class="n">S</span><span class="o">.</span><span class="n">create_simulation</span><span class="p">(</span>
