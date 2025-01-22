@@ -1,6 +1,6 @@
 # Psymple
 
-`psymple` is a Python package desinged for general complex systems modelling. A complex system is a dynamic system whose interconnectivity produces non-trivial or unexpected behaviour. Examples of complex systems exist everywhere, from ecological systems, chemical reactions, economic systems, astronomy and even social networks.
+`psymple` is a Python package designed for general complex systems modelling. A complex system is a dynamic system whose interconnectivity produces non-trivial or unexpected behaviour. Examples of complex systems exist everywhere, from ecological systems, chemical reactions, economic systems, astronomy and even social networks.
 
 ## Installation
 

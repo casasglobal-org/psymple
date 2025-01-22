@@ -20,6 +20,7 @@ For most new users, going through the following resources in the suggested order
 
 <div class="grid cards" markdown>
 
+
 -   :material-roman-numeral-1:{ .lg .middle } __Why psymple exists__
 
     ---

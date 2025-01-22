@@ -42,7 +42,7 @@ These objects are designed to model systems of differential equations as [`Diffe
 - a set of symbolic rate functions, obtained from the `expression_wrapper` attribute of each `DifferentialAssignment` instance,
 - a set of free symbols, defined as the set of all symbols appearing in each symbolic rate function, except those which are variable symbols.
 
-Variable ported objects can be given variable ports, which access the symbolic rate functions accociated to a variable, and input ports, which allow free symbols to be defined externally.
+Variable ported objects can be given variable ports, which access the symbolic rate functions associated to a variable, and input ports, which allow free symbols to be defined externally.
 
 #### Functional ported objects
 
