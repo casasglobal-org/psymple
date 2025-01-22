@@ -1380,6 +1380,8 @@
     
       
         
+          
+        
       
         
       
@@ -1403,16 +1405,24 @@
         <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4_4" >
         
           
-          <label class="md-nav__link" for="__nav_4_4" id="__nav_4_4_label" tabindex="">
-            
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../second_order_odes/" class="md-nav__link ">
+              
   
   <span class="md-ellipsis">
     Second-order ODEs
   </span>
   
 
-            <span class="md-nav__icon md-icon"></span>
-          </label>
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_4_4" id="__nav_4_4_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
         
         <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_4_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_4_4">
@@ -1422,25 +1432,6 @@
           <ul class="md-nav__list" data-md-scrollfix>
             
               
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../second_order_odes/index.md" class="md-nav__link">
-        
-  
-  <span class="md-ellipsis">
-    Second-order ODEs
-  </span>
-  
-
-      </a>
-    </li>
-  
-
-              
             
               
                 
@@ -1449,7 +1440,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../second_order_odes/projectile_motion.md" class="md-nav__link">
+      <a href="../../second_order_odes/projectile_motion/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1470,7 +1461,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../second_order_odes/three_body_problem.md" class="md-nav__link">
+      <a href="../../second_order_odes/three_body_problem/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -2331,6 +2322,10 @@
 
 
 <h1 id="predator-prey-systems">Predator-prey systems</h1>
+<div class="admonition info">
+<p class="admonition-title">Raw code</p>
+<p>The raw code for this example without explanations can be found <a href="https://github.com/casasglobal-org/psymple/blob/main/examples/population_dynamics/3-predator_prey.py">here</a>.</p>
+</div>
 <p>A predator-prey system was introduced in the <a href="../../../components/variable_ported_objects/#example">defining ODEs</a> tutorial. This example shows how to build this system on top of the single-species population models constructed in <a href="../malthusian_population/">Malthusian growth</a> and <a href="../logistic_growth/">logistic growth</a>.</p>
 <h2 id="lotka-volterra-model">Lotka-Volterra model</h2>
 <p>This example begins with the simplest predator-prey system: the Lotka-Volterra system of differential equations for a prey species <span class="arithmatex">\(x\)</span> and predator <span class="arithmatex">\(y\)</span>.</p>
@@ -2386,8 +2381,8 @@
 </span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>    <span class="n">children</span><span class="o">=</span><span class="p">[</span><span class="n">pred</span><span class="p">,</span> <span class="n">prey</span><span class="p">,</span> <span class="n">interaction</span><span class="p">],</span>
 </span><span id="__span-2-6"><a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a>    <span class="n">variable_ports</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;x&quot;</span><span class="p">,</span> <span class="s2">&quot;y&quot;</span><span class="p">],</span>
 </span><span id="__span-2-7"><a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a>    <span class="n">variable_wires</span><span class="o">=</span><span class="p">[</span>
-</span><span id="__span-2-8"><a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a>        <span class="p">([</span><span class="s2">&quot;prey.x&quot;</span><span class="p">,</span> <span class="s2">&quot;interaction.x&quot;</span><span class="p">],</span> <span class="s2">&quot;x&quot;</span><span class="p">),</span>
-</span><span id="__span-2-9"><a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a>        <span class="p">([</span><span class="s2">&quot;pred.x&quot;</span><span class="p">,</span> <span class="s2">&quot;interaction.y&quot;</span><span class="p">],</span> <span class="s2">&quot;y&quot;</span><span class="p">),</span>
+</span><span id="__span-2-8"><a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a>        <span class="p">([</span><span class="s2">&quot;prey.x&quot;</span><span class="p">,</span> <span class="s2">&quot;pred-prey.x&quot;</span><span class="p">],</span> <span class="s2">&quot;x&quot;</span><span class="p">),</span>
+</span><span id="__span-2-9"><a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a>        <span class="p">([</span><span class="s2">&quot;pred.x&quot;</span><span class="p">,</span> <span class="s2">&quot;pred-prey.y&quot;</span><span class="p">],</span> <span class="s2">&quot;y&quot;</span><span class="p">),</span>
 </span><span id="__span-2-10"><a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a>    <span class="p">]</span>
 </span><span id="__span-2-11"><a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a><span class="p">)</span>
 </span></code></pre></div>
