@@ -14,7 +14,7 @@ Abstractly, a ported object is defined as follows.
     \bigcup_{i=1}^n P_i = \bigcup_{i=1}^n \{ I_{i_1}, \dots, I_{i_{k_i}} \} \subseteq I.
     $$
 
-    Any \( I_{i_j} \in P_i \) is called *exposed information* and any \( I_k \in I \setminus (P_1 \cup \cdots \cup P_n \) is called *internal information*. 
+    Any \( I_{i_j} \in P_i \) is called *exposed information* and any \( I_k \in I \setminus (P_1 \cup \cdots \cup P_n) \) is called *internal information*. 
 
 ## Implementation detail
 

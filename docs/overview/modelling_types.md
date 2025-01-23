@@ -65,7 +65,7 @@ Correlative models can be used to approximate the behaviour of a system componen
 
 ## Spectrum models
 
-In `psymple`, spectrum models consist of building blocks from purely mechanistic models and purely correlative models can be constructed by allowing arbitrary combinations of ordinary differential equations (ODEs) and multivariate functions to be combined together. A system in `psymple` is therefore of the form:
+In `psymple`, spectrum models consisting of building blocks from purely mechanistic models and purely correlative models can be constructed by allowing arbitrary combinations of ordinary differential equations (ODEs) and multivariate functions to be combined together. A system in `psymple` is therefore of the form:
 
 $$
 \begin{align}
