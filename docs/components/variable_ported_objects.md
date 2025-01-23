@@ -123,7 +123,7 @@ In practice, there are only two reasons to specify ports:
     )
     ```
 
-2. In the case where a port is to be given a default value, this should be specified in the `input_ports` argument. In the above example of the pendulum equation, a default value of $ g = 9.81 $ might be assigned. This can still be overridden later in model construction or at simulation. This can be done as follows:
+2. In the case where a port is to be given a default value, this should be specified in the `input_ports` argument. In the above example of the pendulum equation, a default value of $g = 9.81$ might be assigned. This can still be overridden later in model construction or at simulation. This can be done as follows:
 
     ``` py title="second-order ODE model with default value"
     from psymple.build import VariablePortedObject
