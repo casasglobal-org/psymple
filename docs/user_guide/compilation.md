@@ -2,7 +2,7 @@
 
 The [definition of a ported object](../mathematics/ported_objects.md) is an object whose ports label and access information inside. 
 
-When a model is build using ported objects, it produces a *formal* object, meaning that instead of producing a ported object to the above definition, it produces an object with the data required to build such an object. *Compilation* is simply the process of forming a ported object with assignments or symbols which are correctly exposed at ports.
+When a model is built using ported objects, it produces a *formal* object, meaning that instead of producing a ported object to the above definition, it produces an object with the data required to build such an object. *Compilation* is simply the process of forming a ported object with assignments or symbols which are correctly exposed at ports.
 
 The advantage of having a compilation process is that it allows a model to be freely edited, and does not impact the order in which components are specified.
 
