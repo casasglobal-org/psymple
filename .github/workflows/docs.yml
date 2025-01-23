@@ -31,5 +31,5 @@ jobs:
       - run: pip install mkdocs-material "mkdocstrings[python]" mike
       - name: Build Docs
         run: |
-          mike deploy --push  ${{ github.event.release.tag_name }} latest
-          mike set-default --push  ${{ github.event.release.tag_name }}
+          mike deploy --push --update-aliases  ${{ github.event.release.tag_name }} latest
+          mike set-default --push latest
