@@ -22,7 +22,9 @@ This is the current team who maintain a collective responsibility for the develo
 
     Anyone who contributes consistently and positively to `psymple` will be offered a place here: see our [Community Guidelines](community_guidelines.md) for more information.
 
+- [George Simmons](https://github.com/GJHSimmons) - Code developer and maintainer
 - [Georg Osang](https://github.com/geoo89) - Code developer and maintainer
 - [Luigi Ponti](https://github.com/luisponti) - Github structures and management
-- [George Simmons](https://github.com/GJHSimmons) - Code developer and maintainer
+- [Chiara Facciolà](https://github.com/fagiothree) - Examples and proofreading
+
 
