@@ -2368,7 +2368,7 @@
 </span></code></pre></div>
 </li>
 <li>
-<p>In the case where a port is to be given a default value, this should be specified in the <code>input_ports</code> argument. In the above example of the pendulum equation, a default value of $ g = 9.81 $ might be assigned. This can still be overridden later in model construction or at simulation. This can be done as follows:</p>
+<p>In the case where a port is to be given a default value, this should be specified in the <code>input_ports</code> argument. In the above example of the pendulum equation, a default value of <span class="arithmatex">\(g = 9.81\)</span> might be assigned. This can still be overridden later in model construction or at simulation. This can be done as follows:</p>
 <div class="language-py highlight"><span class="filename">second-order ODE model with default value</span><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">psymple.build</span><span class="w"> </span><span class="kn">import</span> <span class="n">VariablePortedObject</span>
 </span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>
 </span><span id="__span-6-3"><a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a><span class="n">ode</span> <span class="o">=</span> <span class="n">VariablePortedObject</span><span class="p">(</span>
