@@ -753,7 +753,7 @@ class CompositePortedObject(PortedObject):
             )
         if (
             source_name in self.output_ports
-            or source_name in self.variable_ports
+            #or source_name in self.variable_ports
             or (source_name not in self.input_ports and type(source_port) is InputPort)
         ):
             # Source must be: own input, or child output, or child variable
@@ -915,6 +915,9 @@ class CompositePortedObject(PortedObject):
         for name, input_port in self.input_ports.items():
             #compiled.input_ports[name] = CompiledInputPort(input_port)
             compiled._add_input_port(CompiledInputPort(input_port))
+
+        for name, variable_port in self.variable_ports.items():
+            compiled._add_variable_port(CompiledVariablePort(variable_port, 0))
 
         # For each child input port, we have to ensure it's
         # connected or has a default value
