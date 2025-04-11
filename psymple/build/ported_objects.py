@@ -955,7 +955,7 @@ class CompositePortedObject(PortedObject):
 
             # Directed wires connect:
             # - an input port to child input ports, or;
-            # - a child output port to child input ports and at most one output port, or;
+            # - a child output port or variable port to child input ports and at most one output port, or;
             # - a child variable port to child input ports.
             # We take cases on the number of output ports a directed wire connects to.
             outputs = [
@@ -972,13 +972,13 @@ class CompositePortedObject(PortedObject):
             elif num_outputs == 1:
                 # A wire ending at an output port can only start at a child output port.
                 source = compiled._get_port_by_name(wire.source_port)
-                if type(source) is CompiledOutputPort:
+                if type(source) in (CompiledOutputPort, CompiledVariablePort):
                     wire_root = self._get_port_by_name(outputs[0])
                 else:
                     raise WiringError(
                         f"Incorrect wiring in '{self.name}'. "
-                        "A DirectedWire pointing to an output port must start at "
-                        f"a child OutputPort, not {wire.source_port} ."
+                        "A directed wire pointing to an output port must start at "
+                        f"a child output port or variable port, not {wire.source_port} ."
                     )
             else:
                 # The wire has only internal destinations.
