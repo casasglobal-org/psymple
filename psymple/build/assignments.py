@@ -81,8 +81,9 @@ class ParameterAssignment(Assignment):
                 self.expression,
                 self.symbol_wrapper.description,
             )
-        # We forbid the symbol wrapper to appear in the expression eg. R=2*R
-        if self.symbol in self.expression.free_symbols:
+        # We forbid the symbol wrapper to appear in the expression eg. R=2*R unless the expression
+        # and symbol are identical
+        if (self.symbol in self.expression.free_symbols) and (self.symbol != self.expression):
             raise DependencyError(
                 f"The symbol {self.symbol} cannot appear as both the function "
                 f"value and argument of {self}."
@@ -94,8 +95,8 @@ class ParameterAssignment(Assignment):
     def _sync_param_value(self):
         self.parameter.value = self.expression
 
-    def substitute_symbol(self, old_symbol, new_symbol):
-        super().substitute_symbol(old_symbol, new_symbol)
+    def substitute_symbol(self, old_symbol, new_symbol, sub_symbol, sub_expression):
+        super().substitute_symbol(old_symbol, new_symbol, sub_symbol, sub_expression)
         self._sync_param_value()
 
     @property

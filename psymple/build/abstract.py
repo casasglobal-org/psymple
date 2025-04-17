@@ -64,18 +64,19 @@ class PortedObject(ABC):
         self.add_output_ports(*output_ports)
         self.add_variable_ports(*variable_ports)
 
-    def _check_existing_port_names(self, port: Port):
+    def _check_existing_port_names(self, port: Port, checks: dict):
         """
-        Checks if a port name is valid by checking it is not an already a defined port or
-        a key in self.parsing_locals.
+        Checks if a port name is valid by checking it is not an already a defined port 
+        in a supplied dictionary or a key in self.parsing_locals.
 
         Args:
             port: instance of Port
+            checks: dictionary of (name, port) pairs to search for the port
 
         Returns:
             bool: whether or not the port has a valid name
         """
-        if port.name in self.variable_ports | self.output_ports | self.variable_ports:
+        if port.name in checks:
             warnings.warn(
                 f"Port with name '{port.name}' doubly defined in PortedObject '{self.name}'. Port "
                 f"will not be created."
@@ -259,24 +260,26 @@ class PortedObject(ABC):
             self._add_variable_port(port)
 
     def _add_input_port(self, port: InputPort):
-        if self._check_existing_port_names(port):
+        if self._check_existing_port_names(port, self.input_ports | self.output_ports | self.variable_ports):
             self.input_ports[port.name] = port
 
     def _add_output_port(self, port: OutputPort):
-        if self._check_existing_port_names(port):
+        if self._check_existing_port_names(port, self.input_ports | self.output_ports):
             self.output_ports[port.name] = port
 
     def _add_variable_port(self, port: VariablePort):
-        if self._check_existing_port_names(port):
+        if self._check_existing_port_names(port, self.input_ports | self.variable_ports):
             self.variable_ports[port.name] = port
 
-    def _get_port_by_name(self, port: str):
-        if port in self.variable_ports:
-            return self.variable_ports[port]
-        if port in self.input_ports:
-            return self.input_ports[port]
-        if port in self.output_ports:
-            return self.output_ports[port]
+    def _get_port_by_name(self, port: str, type: str):
+        if type == "variable":
+            if port in self.variable_ports:
+                return self.variable_ports[port]
+        if type == "parameter":
+            if port in self.input_ports:
+                return self.input_ports[port]
+            if port in self.output_ports:
+                return self.output_ports[port]
         return None
 
     @abstractmethod

@@ -589,6 +589,60 @@ class TestVariablePortedObjects(unittest.TestCase):
         self.assertIn("x_1", vpo_2.variable_ports)
         self.assertIn("x_2", vpo_2.internals)
 
+    def test_output_port_creation(self):
+        # Create variable ports and output ports for x and y
+        vpo_1 = VariablePortedObject(
+            name="vpo_1",
+            assignments=[("x", "y"), ("y", "2*x")],
+        )
+
+        self.assertEqual(len(vpo_1.variable_ports), 2)
+        self.assertIn("x", vpo_1.variable_ports)
+        self.assertIn("y", vpo_1.variable_ports)
+
+        self.assertEqual(len(vpo_1.output_ports), 2)
+        self.assertIn("x", vpo_1.output_ports)
+        self.assertIn("y", vpo_1.output_ports)
+
+        # Create a variable port and output port for just x
+        vpo_2 = VariablePortedObject(
+            name="vpo_2",
+            assignments=[("x", "y"), ("y", "2*x")],
+            variable_ports=["x"]
+        )
+
+        self.assertEqual(len(vpo_2.variable_ports), 1)
+        self.assertIn("x", vpo_2.variable_ports)
+
+        self.assertEqual(len(vpo_2.output_ports), 1)
+        self.assertIn("x", vpo_2.output_ports)
+
+        # Create variable ports for x and y, but not output ports
+        vpo_3 = VariablePortedObject(
+            name="vpo_3",
+            assignments=[("x", "y"), ("y", "2*x")],
+            create_output_ports=False
+        )
+
+        self.assertEqual(len(vpo_3.variable_ports), 2)
+        self.assertIn("x", vpo_3.variable_ports)
+        self.assertIn("y", vpo_3.variable_ports)
+
+        self.assertEqual(vpo_3.output_ports, dict())
+
+        # Create a variable port for x, but no output port
+        vpo_4 = VariablePortedObject(
+            name="vpo_4",
+            assignments=[("x", "y"), ("y", "2*x")],
+            variable_ports=["x"],
+            create_output_ports=False
+        )
+
+        self.assertEqual(len(vpo_4.variable_ports), 1)
+        self.assertIn("x", vpo_4.variable_ports)
+
+        self.assertEqual(vpo_4.output_ports, dict())
+
     def test_input_port_creation(self):
         vpo_1 = VariablePortedObject(
             name="vpo_test",
@@ -627,6 +681,17 @@ class TestVariablePortedObjects(unittest.TestCase):
         self.assertEqual(len(vpo_3.input_ports), 1)
         self.assertIn("r_1", vpo_3.input_ports)
         self.assertNotIn("r_2", vpo_3.input_ports)
+
+    def test_output_parameter_creation(self):
+        vpo = VariablePortedObject(
+            name="vpo_test",
+            assignments=[("x", "2*x")]
+        )
+
+        compiled = vpo.compile()
+        self.assertIn("x", compiled.output_ports)
+        port = compiled.output_ports["x"]
+        self.assertEqual(port.assignment.expression, port.symbol)
 
     def test_single_variable_compile(self):
         vpo = VariablePortedObject(
@@ -786,6 +851,7 @@ class TestCompositePortedObjects(unittest.TestCase):
                 name=f"vpo_{i}",
                 variable_ports=["x"],
                 input_ports=[("r", i)],
+                create_output_ports=False,
                 assignments=[("x", "r*y"), ("y", "2*x")],
             )
             for i in range(2)
@@ -893,6 +959,66 @@ class TestCompositePortedObjects(unittest.TestCase):
 
         self.assertEqual(assg.expression, 1.3*sym.Symbol("x"))
 
+    def test_identical_output_and_variable_names(self):
+        vpo = VariablePortedObject(
+            name="vpo",
+            assignments=[("x", "2*x")]
+        )
+
+        cpo = CompositePortedObject(
+            name="cpo",
+            children=[vpo],
+            output_ports=["x"],
+            variable_ports=["x"],
+            directed_wires=[("vpo.x", "x")],
+            variable_wires=[(["vpo.x"], "x")]
+        )
+
+        compiled = cpo.compile()
+        self.assertEqual(len(compiled.output_ports), 1)
+        self.assertIn("x", compiled.output_ports)
+
+        self.assertEqual(len(compiled.variable_ports), 1)
+        self.assertIn("x", compiled.variable_ports)
+
+        x = sym.symbols("x")
+
+        output_port = compiled.output_ports["x"]
+        self.assertEqual(output_port.assignment.expression, x)
+
+        variable_port = compiled.variable_ports["x"]
+        self.assertEqual(variable_port.assignment.expression, 2*x)
+
+    def test_different_output_and_variable_names(self):
+        vpo = VariablePortedObject(
+            name="vpo",
+            assignments=[("x", "2*x")]
+        )
+
+        cpo = CompositePortedObject(
+            name="cpo",
+            children=[vpo],
+            output_ports=["v"],
+            variable_ports=["y"],
+            directed_wires=[("vpo.x", "v")],
+            variable_wires=[(["vpo.x"], "y")]
+        )
+
+        compiled = cpo.compile()
+        self.assertEqual(len(compiled.output_ports), 1)
+        self.assertIn("v", compiled.output_ports)
+
+        self.assertEqual(len(compiled.variable_ports), 1)
+        self.assertIn("y", compiled.variable_ports)
+
+        y = sym.symbols("y")
+
+        output_port = compiled.output_ports["v"]
+        self.assertEqual(output_port.assignment.expression, y)
+
+        variable_port = compiled.variable_ports["y"]
+        self.assertEqual(variable_port.assignment.expression, 2*y)
+
     def test_read_from_variable_port(self):
         vpo = VariablePortedObject(
             name="vpo",
@@ -970,7 +1096,8 @@ class TestCompositePortedObjects(unittest.TestCase):
 
         vpo_2 = VariablePortedObject(
             name="vpo_2",
-            assignments=[("x", "r*x")]
+            assignments=[("x", "r*x")],
+            create_output_ports=False,
         )
 
         cpo = CompositePortedObject(
@@ -993,7 +1120,7 @@ class TestCompositePortedObjects(unittest.TestCase):
         assg_x = compiled.variable_ports["x"].assignment
         assg_y = compiled.variable_ports["y"].assignment
 
-        self.assertEqual(compiled.internal_parameter_assignments.keys(), {"rate.a"})
+        self.assertEqual(compiled.internal_parameter_assignments.keys(), {"rate.a", "vpo_1.y"})
         assg_a = compiled.internal_parameter_assignments["rate.a"]
 
         x, y, rate_a = sym.symbols("x, y, rate.a")

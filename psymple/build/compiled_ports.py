@@ -4,6 +4,7 @@ from copy import deepcopy
 
 from .assignments import (
     Assignment,
+    ParameterAssignment,
 )
 
 from .ports import (
@@ -30,14 +31,17 @@ class CompiledPort(Port):
         self.assignment = deepcopy(assignment)
         self.description = port.description
 
-    def substitute_symbol(self, old_symbol, new_symbol):
+    def substitute_symbol(self, old_symbol, new_symbol, sub_output_symbol = True, sub_expression = True):
         if self.assignment:
-            self.assignment.substitute_symbol(old_symbol, new_symbol)
+            sub_symbol = True
+            if isinstance(self.assignment, ParameterAssignment):
+                sub_symbol = sub_output_symbol
+            self.assignment.substitute_symbol(old_symbol, new_symbol, sub_symbol, sub_expression)
             # In case the symbol of this port itself was substituted,
             # this will be reflected in the assignment, and we can pull
             # the updated name from there.
             self.name = self.assignment.name
-        else:
+        elif sub_output_symbol:
             assert isinstance(old_symbol, sym.Symbol)
             assert isinstance(new_symbol, sym.Symbol)
             assert isinstance(self.symbol, sym.Symbol)

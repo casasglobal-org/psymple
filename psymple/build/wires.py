@@ -20,7 +20,7 @@ class SymbolIdentification:
         self.new_symbol = new_symbol
 
     def __repr__(self):
-        return f"SymbolIdentification {self.new_symbol} = {self.old_symbol}"
+        return f"SymbolIdentification {self.old_symbol} -> {self.new_symbol}"
 
 class VariableAggregationWiring:
     """
