@@ -169,6 +169,7 @@ class TestCompilation(unittest.TestCase):
         vpo = VariablePortedObject(
             name="growth",
             assignments=[("x", "r*x")],
+            create_output_ports=False,
         )
 
         cpo = CompositePortedObject(
@@ -217,6 +218,7 @@ class TestCompilation(unittest.TestCase):
         vpo = VariablePortedObject(
             name="growth",
             assignments=[("x", "r*x")],
+            create_output_ports=False,
         )
 
         cpo = CompositePortedObject(

@@ -46,6 +46,7 @@ class velocity(CompositePortedObject):
             children=[vars, force, dist],
             input_ports=["x", "y", "x_o", "y_o", "m_o"],
             variable_ports=["v_x", "v_y"],
+            output_ports=["v_x", "v_y"],
             directed_wires=[
                 ("m_o", "force.m"),
                 ("x", "dist.x"),
@@ -56,6 +57,8 @@ class velocity(CompositePortedObject):
                 ("dist.Del_y", "vars.Del_y"),
                 ("dist.d", "force.d"),
                 ("force.mu", "vars.mu"),
+                ("vars.v_x", "v_x"),
+                ("vars.v_y", "v_y"),
             ],
             variable_wires=[
                 (["vars.v_x"], "v_x"),

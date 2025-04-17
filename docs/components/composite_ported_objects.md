@@ -150,6 +150,57 @@ When `psymple` builds the `model` composite ported object, it:
 2. Builds a [`DirectedWire`][psymple.build.wires.DirectedWire] instance for each item in the argument list `directed_wires`. In doing so, it checks that all the ports exist and are of the correct type (source ports must be input ports of `model`, or output ports/variable ports of its children, and destination ports must be input ports of children, or output ports of `model`).
 3. Builds a [`VariableAggregationWiring`][psymple.build.wires.VariableAggregationWiring] instance for each item in the argument list `variable_wires`. In doing so, it checks all the ports exist and are variable ports.
 
+### Reading variable values as inputs
+
+It is common to need to perform calculations on system variables. To facilitate this in `psymple`, instances of [`VariablePortedObject`][psymple.build.VariablePortedObject] can also be given output ports for each exposed variable. A directed wire can connect to these output ports in the same way as for output ports of functional or composite ported objects.
+
+!!! example "Example: separated growth rate"
+
+    Consider a population $x$ according to the differential equation $\frac{dx}{dt} = r_c x$, where $r_c = 0.1$ is the per-capita growth rate of the population.
+
+While this equation can be captured in a single variable ported object in `psymple`, it can also be captured as a composite ported object in which the differential equation and rate calculation are separated, as follows.
+
+```py title="Separated growth rate"
+from psymple.build import (
+    VariablePortedObject,
+    FunctionalPortedObject,
+    CompositePortedObject,
+)
+
+pop_ode = VariablePortedObject(
+    name="pop_ode",
+    assignments=[("x", "r")] # (1)!
+)
+
+growth_rate = FunctionalPortedObject(
+    name="growth_rate",
+    assignments=[("r", "r_c * x")], # (2)!
+)
+
+pop = CompositePortedObject(
+    name="pop",
+    children=[pop_ode, growth_rate],
+    input_ports=[("r_c", 0.1)],
+    variable_ports=["x"],
+    directed_wires=[
+        ("r_c", "growth_rate.r_c"),
+        ("pop_ode.x", "growth_rate.x"), # (3)!
+        ("growth_rate.r", "pop_ode.r"),
+    ],
+    variable_wires=[(["pop_ode.x"], "x")] # (4)!
+)
+```
+
+1. This specifies a generic differential equation $\frac{dx}{dt} = r$.
+
+2. This calculates the total rate $r$ as the product of the per-capita rate $r_c$ and the population variable $x$.
+
+3. The variable `x` of `pop_ode` is read using a directed wire, and fed into the input `x` of `growth_rate`.
+
+4. The variable `x` of `pop_ode` can still be exposed or aggregated using variable wires.
+
+Upon compilation, the composite object `pop` will substitute `r` for `r_c * x`, and expose the resulting assignment at the variable port `x`. 
+
 ## Next steps
 
 Once models are defined using composite ported objects, they can be used to [define a simulable system](../user_guide/system.md)

@@ -716,13 +716,15 @@ class System(FunctionHandler, SetterObject):
         G.add_nodes_from(parameter_symbols)
         for parameter in self.parameters.values():
             parsym = parameter.symbol
-            for dependency in parameter.dependent_parameters:
-                if dependency in parameter_symbols:
-                    G.add_edge(dependency, parsym)
-                elif dependency not in (variable_symbols | {self.time.symbol}):
-                    raise SystemError(
-                        f"Parameter {parsym} references undefined symbol {dependency}"
-                    )
+            if parsym != parameter.expression:
+                # Skip identity parameters
+                for dependency in parameter.dependent_parameters:
+                    if dependency in parameter_symbols:
+                        G.add_edge(dependency, parsym)
+                    elif dependency not in (variable_symbols | {self.time.symbol}):
+                        raise SystemError(
+                            f"Parameter {parsym} references undefined symbol {dependency}"
+                        )
         try:
             nodes = list(nx.topological_sort(G))
         except nx.exception.NetworkXUnfeasible:

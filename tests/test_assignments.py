@@ -58,14 +58,16 @@ class TestCreation(unittest.TestCase):
         self.assertEqual(symbol_wrapper.symbol, sym.Symbol("x"))
 
     def test_parameter_assignment_error(self):
-        # Parameter assignments cannot have their symbol appearing in expressions
+        # Parameter assignments cannot have their symbol appearing in expressions unless it is an identity
         # but assignment and differential assignment can.
 
         with self.assertRaises(DependencyError):
             assg_1 = ParameterAssignment("x", "r*x")
 
-        assg_2 = Assignment("x", "r*x")
-        assg_3 = DifferentialAssignment("x", "r*x")
+        assg_2 = ParameterAssignment("x", "x")
+
+        assg_3 = Assignment("x", "r*x")
+        assg_4 = DifferentialAssignment("x", "r*x")
 
 class TestHandling(unittest.TestCase):
     def test_symbol_substitution(self):

@@ -80,11 +80,13 @@ class Assignment(ABC):
         self.symbol_wrapper = SymbolWrapper(symbol)
         self.expression_wrapper = ExpressionWrapper(expression, parsing_locals)
 
-    def substitute_symbol(self, old_symbol, new_symbol):
+    def substitute_symbol(self, old_symbol, new_symbol, sub_symbol = True, sub_expression = True):
         # Substitutes the symbol inside self.symbol_wrapper with new_symbol
-        if self.symbol == old_symbol:
-            self.symbol = new_symbol
-        self.expression = self.expression.subs(old_symbol, new_symbol)
+        if sub_symbol:
+            if self.symbol == old_symbol:
+                self.symbol = new_symbol
+        if sub_expression:
+            self.expression = self.expression.subs(old_symbol, new_symbol)
 
     def get_free_symbols(self, global_symbols=set([Symbol("T")])):
         # Returns all the symbols of self.expression which are not the symbol wrapper or time symbol

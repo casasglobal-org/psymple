@@ -170,7 +170,6 @@ psymple/functions.py
 psymple/population_dynamics/
 psymple/io/
 psymple/unused_ported_objects/
-psymple
 doctest_runner.py
 test_json.json
 examples/mixing_problems/3-state_dependent_rates.py
