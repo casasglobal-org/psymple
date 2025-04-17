@@ -18,7 +18,7 @@
       
       
       <link rel="icon" href="../../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.11">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.12">
     
     
       
@@ -26,7 +26,7 @@
       
     
     
-      <link rel="stylesheet" href="../../assets/stylesheets/main.4af4bdda.min.css">
+      <link rel="stylesheet" href="../../assets/stylesheets/main.2afb09e1.min.css">
       
       
 
@@ -832,6 +832,21 @@
       Example
     </span>
   </a>
+  
+    <nav class="md-nav" aria-label="Example">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#reading-variable-values-as-inputs" class="md-nav__link">
+    <span class="md-ellipsis">
+      Reading variable values as inputs
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
       
@@ -2336,6 +2351,21 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="Example">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#reading-variable-values-as-inputs" class="md-nav__link">
+    <span class="md-ellipsis">
+      Reading variable values as inputs
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -2548,6 +2578,57 @@
 <li>Builds a <a class="autorefs autorefs-internal" title="&lt;code class=&quot;highlight language-python&quot;&gt;&lt;span class=&quot;n&quot;&gt;DirectedWire&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;source_port&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;destination_ports&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;&lt;/code&gt;" href="../../reference/build/wires/#psymple.build.wires.DirectedWire"><code>DirectedWire</code></a> instance for each item in the argument list <code>directed_wires</code>. In doing so, it checks that all the ports exist and are of the correct type (source ports must be input ports of <code>model</code>, or output ports/variable ports of its children, and destination ports must be input ports of children, or output ports of <code>model</code>).</li>
 <li>Builds a <a class="autorefs autorefs-internal" title="&lt;code class=&quot;highlight language-python&quot;&gt;&lt;span class=&quot;n&quot;&gt;VariableAggregationWiring&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;child_ports&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;parent_port&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;output_name&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;&lt;/code&gt;" href="../../reference/build/wires/#psymple.build.wires.VariableAggregationWiring"><code>VariableAggregationWiring</code></a> instance for each item in the argument list <code>variable_wires</code>. In doing so, it checks all the ports exist and are variable ports.</li>
 </ol>
+<h3 id="reading-variable-values-as-inputs">Reading variable values as inputs</h3>
+<p>It is common to need to perform calculations on system variables. To facilitate this in <code>psymple</code>, instances of <a class="autorefs autorefs-internal" title="&lt;code class=&quot;highlight language-python&quot;&gt;&lt;span class=&quot;n&quot;&gt;VariablePortedObject&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;name&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;input_ports&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[],&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;variable_ports&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[],&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;assignments&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[],&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;create_output_ports&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;kc&quot;&gt;True&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;create_input_ports&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;kc&quot;&gt;True&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;parsing_locals&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{})&lt;/span&gt;&lt;/code&gt;" href="../../reference/build/ported_objects/#psymple.build.VariablePortedObject"><code>VariablePortedObject</code></a> can also be given output ports for each exposed variable. A directed wire can connect to these output ports in the same way as for output ports of functional or composite ported objects.</p>
+<div class="admonition example">
+<p class="admonition-title">Example: separated growth rate</p>
+<p>Consider a population <span class="arithmatex">\(x\)</span> according to the differential equation <span class="arithmatex">\(\frac{dx}{dt} = r_c x\)</span>, where <span class="arithmatex">\(r_c = 0.1\)</span> is the per-capita growth rate of the population.</p>
+</div>
+<p>While this equation can be captured in a single variable ported object in <code>psymple</code>, it can also be captured as a composite ported object in which the differential equation and rate calculation are separated, as follows.</p>
+<div class="language-py highlight"><span class="filename">Separated growth rate</span><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">psymple.build</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>    <span class="n">VariablePortedObject</span><span class="p">,</span>
+</span><span id="__span-6-3"><a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a>    <span class="n">FunctionalPortedObject</span><span class="p">,</span>
+</span><span id="__span-6-4"><a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a>    <span class="n">CompositePortedObject</span><span class="p">,</span>
+</span><span id="__span-6-5"><a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a><span class="p">)</span>
+</span><span id="__span-6-6"><a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a>
+</span><span id="__span-6-7"><a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a><span class="n">pop_ode</span> <span class="o">=</span> <span class="n">VariablePortedObject</span><span class="p">(</span>
+</span><span id="__span-6-8"><a id="__codelineno-6-8" name="__codelineno-6-8" href="#__codelineno-6-8"></a>    <span class="n">name</span><span class="o">=</span><span class="s2">&quot;pop_ode&quot;</span><span class="p">,</span>
+</span><span id="__span-6-9"><a id="__codelineno-6-9" name="__codelineno-6-9" href="#__codelineno-6-9"></a>    <span class="n">assignments</span><span class="o">=</span><span class="p">[(</span><span class="s2">&quot;x&quot;</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">)]</span> <span class="c1"># (1)!</span>
+</span><span id="__span-6-10"><a id="__codelineno-6-10" name="__codelineno-6-10" href="#__codelineno-6-10"></a><span class="p">)</span>
+</span><span id="__span-6-11"><a id="__codelineno-6-11" name="__codelineno-6-11" href="#__codelineno-6-11"></a>
+</span><span id="__span-6-12"><a id="__codelineno-6-12" name="__codelineno-6-12" href="#__codelineno-6-12"></a><span class="n">growth_rate</span> <span class="o">=</span> <span class="n">FunctionalPortedObject</span><span class="p">(</span>
+</span><span id="__span-6-13"><a id="__codelineno-6-13" name="__codelineno-6-13" href="#__codelineno-6-13"></a>    <span class="n">name</span><span class="o">=</span><span class="s2">&quot;growth_rate&quot;</span><span class="p">,</span>
+</span><span id="__span-6-14"><a id="__codelineno-6-14" name="__codelineno-6-14" href="#__codelineno-6-14"></a>    <span class="n">assignments</span><span class="o">=</span><span class="p">[(</span><span class="s2">&quot;r&quot;</span><span class="p">,</span> <span class="s2">&quot;r_c * x&quot;</span><span class="p">)],</span> <span class="c1"># (2)!</span>
+</span><span id="__span-6-15"><a id="__codelineno-6-15" name="__codelineno-6-15" href="#__codelineno-6-15"></a><span class="p">)</span>
+</span><span id="__span-6-16"><a id="__codelineno-6-16" name="__codelineno-6-16" href="#__codelineno-6-16"></a>
+</span><span id="__span-6-17"><a id="__codelineno-6-17" name="__codelineno-6-17" href="#__codelineno-6-17"></a><span class="n">pop</span> <span class="o">=</span> <span class="n">CompositePortedObject</span><span class="p">(</span>
+</span><span id="__span-6-18"><a id="__codelineno-6-18" name="__codelineno-6-18" href="#__codelineno-6-18"></a>    <span class="n">name</span><span class="o">=</span><span class="s2">&quot;pop&quot;</span><span class="p">,</span>
+</span><span id="__span-6-19"><a id="__codelineno-6-19" name="__codelineno-6-19" href="#__codelineno-6-19"></a>    <span class="n">children</span><span class="o">=</span><span class="p">[</span><span class="n">pop_ode</span><span class="p">,</span> <span class="n">growth_rate</span><span class="p">],</span>
+</span><span id="__span-6-20"><a id="__codelineno-6-20" name="__codelineno-6-20" href="#__codelineno-6-20"></a>    <span class="n">input_ports</span><span class="o">=</span><span class="p">[(</span><span class="s2">&quot;r_c&quot;</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">)],</span>
+</span><span id="__span-6-21"><a id="__codelineno-6-21" name="__codelineno-6-21" href="#__codelineno-6-21"></a>    <span class="n">variable_ports</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;x&quot;</span><span class="p">],</span>
+</span><span id="__span-6-22"><a id="__codelineno-6-22" name="__codelineno-6-22" href="#__codelineno-6-22"></a>    <span class="n">directed_wires</span><span class="o">=</span><span class="p">[</span>
+</span><span id="__span-6-23"><a id="__codelineno-6-23" name="__codelineno-6-23" href="#__codelineno-6-23"></a>        <span class="p">(</span><span class="s2">&quot;r_c&quot;</span><span class="p">,</span> <span class="s2">&quot;growth_rate.r_c&quot;</span><span class="p">),</span>
+</span><span id="__span-6-24"><a id="__codelineno-6-24" name="__codelineno-6-24" href="#__codelineno-6-24"></a>        <span class="p">(</span><span class="s2">&quot;pop_ode.x&quot;</span><span class="p">,</span> <span class="s2">&quot;growth_rate.x&quot;</span><span class="p">),</span> <span class="c1"># (3)!</span>
+</span><span id="__span-6-25"><a id="__codelineno-6-25" name="__codelineno-6-25" href="#__codelineno-6-25"></a>        <span class="p">(</span><span class="s2">&quot;growth_rate.r&quot;</span><span class="p">,</span> <span class="s2">&quot;pop_ode.r&quot;</span><span class="p">),</span>
+</span><span id="__span-6-26"><a id="__codelineno-6-26" name="__codelineno-6-26" href="#__codelineno-6-26"></a>    <span class="p">],</span>
+</span><span id="__span-6-27"><a id="__codelineno-6-27" name="__codelineno-6-27" href="#__codelineno-6-27"></a>    <span class="n">variable_wires</span><span class="o">=</span><span class="p">[([</span><span class="s2">&quot;pop_ode.x&quot;</span><span class="p">],</span> <span class="s2">&quot;x&quot;</span><span class="p">)]</span> <span class="c1"># (4)!</span>
+</span><span id="__span-6-28"><a id="__codelineno-6-28" name="__codelineno-6-28" href="#__codelineno-6-28"></a><span class="p">)</span>
+</span></code></pre></div>
+<ol>
+<li>
+<p>This specifies a generic differential equation <span class="arithmatex">\(\frac{dx}{dt} = r\)</span>.</p>
+</li>
+<li>
+<p>This calculates the total rate <span class="arithmatex">\(r\)</span> as the product of the per-capita rate <span class="arithmatex">\(r_c\)</span> and the population variable <span class="arithmatex">\(x\)</span>.</p>
+</li>
+<li>
+<p>The variable <code>x</code> of <code>pop_ode</code> is read using a directed wire, and fed into the input <code>x</code> of <code>growth_rate</code>.</p>
+</li>
+<li>
+<p>The variable <code>x</code> of <code>pop_ode</code> can still be exposed or aggregated using variable wires.</p>
+</li>
+</ol>
+<p>Upon compilation, the composite object <code>pop</code> will substitute <code>r</code> for <code>r_c * x</code>, and expose the resulting assignment at the variable port <code>x</code>. </p>
 <h2 id="next-steps">Next steps</h2>
 <p>Once models are defined using composite ported objects, they can be used to <a href="../../user_guide/system/">define a simulable system</a></p>
 <h2 id="notes-on-best-practice">Notes on best practice</h2>
