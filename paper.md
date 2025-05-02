@@ -37,6 +37,7 @@ affiliations:
    index: 4
  - name:
     Topos Institute, Berkeley, USA
+   index: 5
 date: 13 September 2024
 bibliography: paper.bib
 ---
@@ -55,13 +56,13 @@ The development of `psymple` emerged from the complex system modelling requireme
 
 An alternative approach is mechanistic modelling, which instead of observational data use physiological data to capture the underlying mechanisms which drive species distribution, such as energy balance, population dynamics or response to climate [@ke-po:2009]. In contrast to correlative approaches, mechanistic SDMs decouple the physiology of a species from their native geography or climate, and allow SDMs in new geographic or climatic regimes to be created in the absence of observational data [@john:2019]. 
 
-An example mechanistic framework is physiologically-based demographic modelling (PBDM), which creates holistic ecosystem models based on the weather-driven biology of component species, allowing for predictive phenology, age- or mass-structured population dynamics, and distribution assessments, see [@gu-po:2022a; @gu-po:2022b; @guti+:2025a] for an overview and further references. With this approach, PBDM can account for tritrophic ecosystem interactions [@g-y-n-e:1999], or model the effects of climate change [@guti:2023].
+An example mechanistic framework is physiologically-based demographic modelling (PBDM), which creates holistic ecosystem models based on the weather-driven biology of component species, allowing for predictive phenology, age- or mass-structured population dynamics, and distribution assessments, see [@gu-po:2022a; @gu-po:2022b; @guti:2025a] for an overview and further references. With this approach, PBDM can account for tritrophic ecosystem interactions [@g-y-n-e:1999], or model the effects of climate change [@guti:2023].
 
 While correlative SDMs and mechanistic frameworks such as PBDM are today often regarded as conceptually distinct and largely unintegrated [@dorm:2012], their development can be traced back to early common roots [@fi-ni:1970; @guti:1974; @dw-go:1978]. A component of the PBDM framework is the use of physiological data to parametrise "biodemographic" functions capturing biophysical or biochemical mechanisms, such as the development, mortality and fecundity rates of a species in response to environmental variables [@po-gu:2023].
 
 The use of biodemographic functions in PBDM combines the considerable holistic advantages of mechanistic SDMs, while retaining the comparable ease of parametrisation as status-quo correlative models. More widely, there has been growing interest and development of ecological models explicitly composed of both correlative and mechanistic components [@buck:2010; @to-va:2023], combining the benefits of both areas. In the wider context of complex systems modelling, the approach of building composite models out of different techniques is called hybrid, or spectrum, modelling.  
 
-While PBDM is a highly-developed framework, it shares the same barriers to widespread introduction as general hybrid complex system models. These barriers include the lack of available modelling frameworks [@bu-c-j:2018], the lack of flexibility in existing models [@buck:2010], or the lack of modelling platforms to implement existing ideas [@guti+:2025b; @po-gu:2023]. The package `psymple` is a general platform designed to facilitate the creation of hybrid complex systems models and modelling frameworks. 
+While PBDM is a highly-developed framework, it shares the same barriers to widespread introduction as general hybrid complex system models. These barriers include the lack of available modelling frameworks [@bu-c-j:2018], the lack of flexibility in existing models [@buck:2010], or the lack of modelling platforms to implement existing ideas [@guti:2025b; @po-gu:2023]. The package `psymple` is a general platform designed to facilitate the creation of hybrid complex systems models and modelling frameworks. 
 
 Models in `psymple` are built from arbitrary combinations of modular mechanistic, dynamic components and correlative, functional components which naturally interact with each other. This structure allows for the systematic implementation of modelling frameworks such as PBDM, and, more widely, those capturing biological, economic and social systems, for which it is not feasible to capture the laws of interaction purely mechanistically. Examples include agroecological and bioeconomic models (see [@guti:2020; @gu-re:2005; r-g-s-z:1998]), and Earth system models capturing the biogeochemical interactions between the ecosystems, humanity, and climate [@flat:2011]. The development of of `psymple` is a necessary first step in the development and release of accessible and impactful tools in these areas. 
 
