@@ -70,19 +70,19 @@ Models in `psymple` are built from arbitrary combinations of modular mechanistic
 
 # Description
 
-The workings of `psymple` are based on the ideas of the dynamic systems modelling package `AlgebraicJulia.jl` [@l-b-p-f:2024], in which modular objects, called *resource sharers*, containing ordinary differential equations (ODEs), are linked by wires representing the sharing of state variables across the dynamics equations of the system. In mathematical applied category theory, the objects and wires form a formal diagram which can be interpreted as algebras over the operad of undirected wiring diagrams [@l-b-p-f:2022]. A compilation process maps this diagram to a system of ODEs by adding the right-hand side of all states connected to the same wiring system. 
+The workings of `psymple` are based on the ideas of the dynamic systems modelling package `AlgebraicJulia.jl` [@l-b-p-f:2024], in which modular objects, called *resource sharers*, containing ordinary differential equations (ODEs), are linked by wires representing the sharing of state variables across the dynamics equations of the system. In mathematical applied category theory, the objects and wires form a formal diagram which can be interpreted as an algebra over the operad of undirected wiring diagrams [@l-b-p-f:2022]. A compilation process maps this diagram to a system of ODEs by adding the right-hand side of all states connected to the same wiring system. 
 
-For example, a resource sharer $A$ given the ODE $\frac{dx_i}{dt} = f \left( x_1,t \right)$, is connected to another resource sharer $B$ containing the ODE $\frac{dx_2}{dt} = g \left(x_2,t,i_1 \right)$, where $i_1$ is a constant, by a wire identifying the states $x_1$ an $x_2$. On compilation, the resulting system contains the ODE $\frac{dz}{dt} = f \left( z,t \right) + g \left( z,t,i_1 \right)$, where $z$ is a common renaming of $x_1$ and $x_2$.  
+For example, a resource sharer $A$ containing the ODE $\frac{dx_i}{dt} = f \left( x_1,t \right)$, is connected to another resource sharer $B$ containing the ODE $\frac{dx_2}{dt} = g \left(x_2,t,i_1 \right)$, where $i_1$ is a constant, by a wire identifying the states $x_1$ an $x_2$. On compilation, the resulting system contains the ODE $\frac{dz}{dt} = f \left( z,t \right) + g \left( z,t,i_1 \right)$, where $z$ is a common renaming of $x_1$ and $x_2$.  
 
 In `psymple`, these ideas are extended to realise multivariate functions as ported objects, called functional ported objects (FPOs), alongside resource sharers, which in `psymple` are called variable ported objects (VPOs). A second type of wiring, directed wiring, is introduced, which formally represents partial functional substitution. Directed wires can read both the state variables of VPOs and the output calculations of FPOs, and pass this information to inputs of other FPOs.
 
-For example, consider a FPO $C$ containing the functional calculation $o_1 = h \left(x_1,t,i_2 \right)$ using a system state $x_1$ and external input $i_2$. Viewing $A$ and $B$ as VPOs, connecting directed wires from the state $x_1$ of $A$ to the input $x_1$ of $C$, and from the output $o_1$ of $C$ to the input $i_1$ of $B$ produces another formal diagram, which together with the variable connection between $A$ and $B$ is compiled to the single ODE
+For example, consider a FPO $C$ containing the functional calculation $o_1 = h \left(x_1,t,i_2 \right)$ using a system state $x_1$ and external input $i_2$. Viewing $A$ and $B$ as VPOs, connecting directed wires from the state $x_1$ of $A$ to the input $x_1$ of $C$, and from the output $o_1$ of $C$ to the input $i_1$ of $B$ produces another formal diagram. Together with the variable connection between $A$ and $B$, this diagram is compiled by `psymple` to the single ODE
 
 $$
 \frac{dz}{dt} = f \left( z,t \right) +  \left( z,t, h \left(z, t, i_2 \right) \right)
 $$
 
-which can then be simulated. Underneath, the equation manipulation and substitution in `psymple` is handled by the Python symbolic mathematics package `sympy` [@meur:2017].
+which can then be simulated. Underneath, the equation manipulation and substitution is handled by the Python symbolic mathematics package `sympy` [@meur:2017].
 
 In `psymple`, arbitrary nesting of these base objects happens inside a third object type called a composite ported object (CPO), which stores the information of the wiring between its child objects. CPOs can also be nested to obtain a system hierarchy which represents the modelled structure. Details of how to build VPO, FPO and CPO objects and compile them to simulatable systems is extensively covered in the [package documentation](https://casasglobal-org.github.io/psymple).
 
