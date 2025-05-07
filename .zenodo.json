@@ -35,7 +35,7 @@
             "affiliation": "Topos Institute",
         },
     ],
-    "title": "psymple",
+    "title": "Psymple: A Python package for complex systems modelling",
     "version": "1.0.2",
     "access_right": "open",
     "license": "GPL-3.0",
