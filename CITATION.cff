@@ -21,7 +21,7 @@ authors:
   - family-names: "Hosgood"
     given-names: "Timothy"
     orcid: "https://orcid.org/0000-0003-4580-0741"
-title: "psymple"
+title: "Psymple: A Python package for complex systems modelling"
 abstract: "Applied category-theoretic hybrid modelling of complex systems."
 license: GPL-3.0
 doi: 10.5281/zenodo.15237709
