@@ -79,12 +79,12 @@ In `psymple`, these ideas are extended to realise multivariate functions as port
 For example, consider a FPO $C$ containing the functional calculation $o_1 = h \left(x_1,t,i_2 \right)$ using a system state $x_1$ and external input $i_2$. Viewing $A$ and $B$ as VPOs, connecting directed wires from the state $x_1$ of $A$ to the input $x_1$ of $C$, and from the output $o_1$ of $C$ to the input $i_1$ of $B$ produces another formal diagram. Together with the variable connection between $A$ and $B$, this diagram is compiled by `psymple` to the single ODE
 
 $$
-\frac{dz}{dt} = f \left( z,t \right) +  \left( z,t, h \left(z, t, i_2 \right) \right)
+\frac{dz}{dt} = f \left( z,t \right) +  g \left( z,t, h \left(z, t, i_2 \right) \right)
 $$
 
 which can then be simulated. Underneath, the equation manipulation and substitution is handled by the Python symbolic mathematics package `sympy` [@meur:2017].
 
-In `psymple`, arbitrary nesting of these base objects happens inside a third object type called a composite ported object (CPO), which stores the information of the wiring between its child objects. CPOs can also be nested to obtain a system hierarchy that represents the modelled structure. Details of how to build VPO, FPO, and CPO objects and compile them to simulatable systems is extensively covered in the [package documentation](https://casasglobal-org.github.io/psymple).
+In `psymple`, arbitrary nesting of these base objects happens inside a third object type called a composite ported object (CPO), which stores the information of the wiring between its child objects. CPOs can also be nested to obtain a system hierarchy that represents the modelled structure. Details of how to build VPO, FPO, and CPO instances, and compile them to simulatable systems is extensively covered in the [package documentation](https://casasglobal-org.github.io/psymple).
 
 With these structures, `psymple` satisfies a specification shared by "next-generation" dynamical systems modelling frameworks [@baez:2023], including being *faceted*, where models can be considered one piece at a time; *modular*, where components naturally compose together; and *functorial*, where the data describing the model (its syntax) is systematically and reliably transformed into system behaviour (its semantics). These ideas allow for legible modelling of highly complex, specialised systems, and drive clear, adaptable, and accessible modelling practices in line with those promoted by the [Open Modeling Foundation](https://www.openmodelingfoundation.org/). 
 
