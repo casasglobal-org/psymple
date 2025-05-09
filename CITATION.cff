@@ -1,29 +1,65 @@
-cff-version: 1.2.0
-message: "If you use this software, please cite it as below."
+cff-version: "1.2.0"
 authors:
-  - family-names: "Simmons"
-    given-names: "George"
+- family-names: Simmons
+  given-names: George
+  orcid: "https://orcid.org/0000-0002-9076-4973"
+- family-names: Stern
+  given-names: David
+- family-names: Osang
+  given-names: Georg
+  orcid: "https://orcid.org/0000-0002-8882-5116"
+- family-names: Ponti
+  given-names: Luigi
+  orcid: "https://orcid.org/0000-0003-4972-8265"
+- family-names: Gutierrez
+  given-names: Andrew Paul
+  orcid: "https://orcid.org/0000-0001-7773-1715"
+- family-names: Facciolà
+  given-names: Chiara
+  orcid: "https://orcid.org/0000-0001-8359-9300"
+- family-names: Hosgood
+  given-names: Timothy
+  orcid: "https://orcid.org/0000-0003-4580-0741"
+contact:
+- family-names: Simmons
+  given-names: George
+  orcid: "https://orcid.org/0000-0002-9076-4973"
+doi: 10.5281/zenodo.15338173
+message: If you use this software, please cite our article in the
+  Journal of Open Source Software.
+preferred-citation:
+  authors:
+  - family-names: Simmons
+    given-names: George
     orcid: "https://orcid.org/0000-0002-9076-4973"
-  - family-names: "Stern"
-    given-names: "David"
-  - family-names: "Osang"
-    given-names: "Georg"
+  - family-names: Stern
+    given-names: David
+  - family-names: Osang
+    given-names: Georg
     orcid: "https://orcid.org/0000-0002-8882-5116"
-  - family-names: "Ponti"
-    given-names: "Luigi"
+  - family-names: Ponti
+    given-names: Luigi
     orcid: "https://orcid.org/0000-0003-4972-8265"
-  - family-names: "Gutierrez"
-    given-names: "Andrew Paul"
+  - family-names: Gutierrez
+    given-names: Andrew Paul
     orcid: "https://orcid.org/0000-0001-7773-1715"
-  - family-names: "Facciolà"
-    given-names: "Chiara"
+  - family-names: Facciolà
+    given-names: Chiara
     orcid: "https://orcid.org/0000-0001-8359-9300"
-  - family-names: "Hosgood"
-    given-names: "Timothy"
+  - family-names: Hosgood
+    given-names: Timothy
     orcid: "https://orcid.org/0000-0003-4580-0741"
+  date-published: 2025-05-07
+  doi: 10.21105/joss.07364
+  issn: 2475-9066
+  issue: 109
+  journal: Journal of Open Source Software
+  publisher:
+    name: Open Journals
+  start: 7364
+  title: "Psymple: A Python package for complex systems modelling"
+  abstract: "Applied category-theoretic hybrid modelling of complex systems."
+  type: article
+  url: "https://joss.theoj.org/papers/10.21105/joss.07364"
+  volume: 10
 title: "Psymple: A Python package for complex systems modelling"
-abstract: "Applied category-theoretic hybrid modelling of complex systems."
-license: GPL-3.0
-doi: 10.5281/zenodo.15237709
-url: "https://casasglobal-org.github.io/psymple"
-repository-code: "https://github.com/casasglobal-org/psymple"
