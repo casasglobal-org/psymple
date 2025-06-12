@@ -578,7 +578,7 @@ class System(FunctionHandler, SetterObject):
             )
         )
 
-    def _check_required_parameters(self):
+    def _get_required_parameters(self):
         return {
             parameter.name
             for parameter in self.parameters.values()
@@ -608,11 +608,11 @@ class System(FunctionHandler, SetterObject):
             simulation: the `Simulation` class specified by the arguments provided.
 
         Raises:
-            SystemError: if the system has not been compuled.
+            SystemError: if the system has not been compiled.
         """
         if not self.compiled:
             raise SystemError(f"System has not been compiled.")
-        if params := self._check_required_parameters() - input_parameters.keys():
+        if params := self._get_required_parameters() - input_parameters.keys():
             warnings.warn(
                 f"The parameters {params} have no default value. This must be provided before a simulation run."
             )
