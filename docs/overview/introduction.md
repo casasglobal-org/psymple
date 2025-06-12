@@ -1,6 +1,8 @@
 # Introduction
 
-The following pages give an overview of why `psymple` exists, the problems it tries to address, and how it is designed.
+The following pages give an overview of why `psymple` exists, the problems it tries to address, and how it is designed. An overview of the content presented can be found in the article on `psymple` at the following link.
+
+[![DOI](https://joss.theoj.org/papers/10.21105/joss.07364/status.svg)](https://doi.org/10.21105/joss.07364)
 
 ## Roots in ecological modelling
 
