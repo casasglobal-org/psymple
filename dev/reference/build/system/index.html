@@ -3885,7 +3885,7 @@ or function to assign.</p>
             </td>
             <td class="doc-raises-details">
               <div class="doc-md-description">
-                <p>if the system has not been compuled.</p>
+                <p>if the system has not been compiled.</p>
               </div>
             </td>
           </tr>
@@ -3952,11 +3952,11 @@ or function to assign.</p>
 </span><span id="__span-0-608"><a id="__codelineno-0-608" name="__codelineno-0-608"></a><span class="sd">        simulation: the `Simulation` class specified by the arguments provided.</span>
 </span><span id="__span-0-609"><a id="__codelineno-0-609" name="__codelineno-0-609"></a>
 </span><span id="__span-0-610"><a id="__codelineno-0-610" name="__codelineno-0-610"></a><span class="sd">    Raises:</span>
-</span><span id="__span-0-611"><a id="__codelineno-0-611" name="__codelineno-0-611"></a><span class="sd">        SystemError: if the system has not been compuled.</span>
+</span><span id="__span-0-611"><a id="__codelineno-0-611" name="__codelineno-0-611"></a><span class="sd">        SystemError: if the system has not been compiled.</span>
 </span><span id="__span-0-612"><a id="__codelineno-0-612" name="__codelineno-0-612"></a><span class="sd">    &quot;&quot;&quot;</span>
 </span><span id="__span-0-613"><a id="__codelineno-0-613" name="__codelineno-0-613"></a>    <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">compiled</span><span class="p">:</span>
 </span><span id="__span-0-614"><a id="__codelineno-0-614" name="__codelineno-0-614"></a>        <span class="k">raise</span> <span class="ne">SystemError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;System has not been compiled.&quot;</span><span class="p">)</span>
-</span><span id="__span-0-615"><a id="__codelineno-0-615" name="__codelineno-0-615"></a>    <span class="k">if</span> <span class="n">params</span> <span class="o">:=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_check_required_parameters</span><span class="p">()</span> <span class="o">-</span> <span class="n">input_parameters</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+</span><span id="__span-0-615"><a id="__codelineno-0-615" name="__codelineno-0-615"></a>    <span class="k">if</span> <span class="n">params</span> <span class="o">:=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_required_parameters</span><span class="p">()</span> <span class="o">-</span> <span class="n">input_parameters</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
 </span><span id="__span-0-616"><a id="__codelineno-0-616" name="__codelineno-0-616"></a>        <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
 </span><span id="__span-0-617"><a id="__codelineno-0-617" name="__codelineno-0-617"></a>            <span class="sa">f</span><span class="s2">&quot;The parameters </span><span class="si">{</span><span class="n">params</span><span class="si">}</span><span class="s2"> have no default value. This must be provided before a simulation run.&quot;</span>
 </span><span id="__span-0-618"><a id="__codelineno-0-618" name="__codelineno-0-618"></a>        <span class="p">)</span>
