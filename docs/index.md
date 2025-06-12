@@ -72,3 +72,15 @@ For most new users, going through the following resources in the suggested order
     [:octicons-arrow-right-24: Get involved](./development/development.md)
 
 </div>
+
+## Citing `psymple`
+
+`psymple` has been peer-reviewed and published by the [Journal of Open Source Software (JOSS)](https://joss.theoj.org/).
+
+The following link will take you to the article page on JOSS where you can also access the software paper, which provides more information on the background, development and context of `psymple`. 
+
+[![DOI](https://joss.theoj.org/papers/10.21105/joss.07364/status.svg)](https://doi.org/10.21105/joss.07364)
+
+For more information, including how to cite `psymple`, please visit the citations page.
+
+[Citing psymple](./development/citing_psymple.md){ .md-button }
