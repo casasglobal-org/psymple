@@ -38,6 +38,7 @@ class PortedObject(ABC):
         output_ports: list[OutputPort | dict | str] = [],
         variable_ports: list[VariablePort | dict | str] = [],
         parsing_locals: dict = {},
+        **kwargs,
     ):
         """
         Construct a PortedObject.
@@ -45,20 +46,21 @@ class PortedObject(ABC):
         Args:
             name: a string which must be unique for each `PortedObject` inside a common
                 [`CompositePortedObject`][psymple.build.CompositePortedObject].
-            input_ports: list of input ports to expose. 
+            input_ports: list of input ports to expose.
                 See [add_input_ports][psymple.build.abstract.PortedObject.add_input_ports].
-            output_ports: list of output ports to expose. 
+            output_ports: list of output ports to expose.
                 See [add_output_ports][psymple.build.abstract.PortedObject.add_input_ports].
-            variable_ports: list of variable ports to expose. 
+            variable_ports: list of variable ports to expose.
                 See [add_variable_ports][psymple.build.abstract.PortedObject.add_variable_ports].
             parsing_locals: a dictionary mapping strings to `sympy` objects.
+            **kwargs: arguments passed to super().__init__(). No user arguments should be supplied.
         """
         self.name = name
         # Ports exposed to the outside, indexed by their name
         self.variable_ports = {}
         self.input_ports = {}
         self.output_ports = {}
-        
+
         self.parsing_locals = parsing_locals
         self.add_input_ports(*input_ports)
         self.add_output_ports(*output_ports)
@@ -66,7 +68,7 @@ class PortedObject(ABC):
 
     def _check_existing_port_names(self, port: Port, checks: dict):
         """
-        Checks if a port name is valid by checking it is not an already a defined port 
+        Checks if a port name is valid by checking it is not an already a defined port
         in a supplied dictionary or a key in self.parsing_locals.
 
         Args:
@@ -84,7 +86,7 @@ class PortedObject(ABC):
             return False
         elif port.name in self.parsing_locals:
             warnings.warn(
-                f"The parameter '{port.name}' has been specified as a system parameter. " 
+                f"The parameter '{port.name}' has been specified as a system parameter. "
                 f"A port for '{port.name}' will not be created in '{self.name}'."
             )
             return False
@@ -260,7 +262,9 @@ class PortedObject(ABC):
             self._add_variable_port(port)
 
     def _add_input_port(self, port: InputPort):
-        if self._check_existing_port_names(port, self.input_ports | self.output_ports | self.variable_ports):
+        if self._check_existing_port_names(
+            port, self.input_ports | self.output_ports | self.variable_ports
+        ):
             self.input_ports[port.name] = port
 
     def _add_output_port(self, port: OutputPort):
@@ -268,7 +272,9 @@ class PortedObject(ABC):
             self.output_ports[port.name] = port
 
     def _add_variable_port(self, port: VariablePort):
-        if self._check_existing_port_names(port, self.input_ports | self.variable_ports):
+        if self._check_existing_port_names(
+            port, self.input_ports | self.variable_ports
+        ):
             self.variable_ports[port.name] = port
 
     def _get_port_by_name(self, port: str, type: str):
@@ -329,9 +335,15 @@ class PortedObjectWithAssignments(PortedObject):
         output_ports: list = [],
         variable_ports: list = [],
         parsing_locals: dict = {},
+        **kwargs
     ):
         super().__init__(
-            name, input_ports, output_ports, variable_ports, parsing_locals
+            name=name,
+            input_ports=input_ports,
+            output_ports=output_ports,
+            variable_ports=variable_ports,
+            parsing_locals=parsing_locals,
+            **kwargs
         )
         self.assignments = {}
 

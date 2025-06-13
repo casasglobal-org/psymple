@@ -163,6 +163,7 @@ class VariablePortedObject(PortedObjectWithAssignments):
         create_output_ports: bool = True,
         create_input_ports: bool = True,
         parsing_locals: dict = {},
+        **kwargs,
     ):
         """
         Construct a VariablePortedObject.
@@ -181,6 +182,7 @@ class VariablePortedObject(PortedObjectWithAssignments):
             create_input_ports: if `True`, automatically expose all parameters as input ports. See Notes for more
                 information.
             parsing_locals: a dictionary mapping strings to `sympy` objects.
+            **kwargs: arguments passed to super().__init__(). No user arguments should be supplied.
 
         info: Notes
             - By default, each variable (dependent variable of each ODE) is automatically exposed as a
@@ -198,10 +200,11 @@ class VariablePortedObject(PortedObjectWithAssignments):
                 a wire in a parent [`CompositePortedObject`][psymple.build.CompositePortedObject].
         """
         super().__init__(
-            name,
+            name=name,
             input_ports=input_ports,
             variable_ports=variable_ports,
             parsing_locals=parsing_locals,
+            **kwargs,
         )
         # A dict of assignments indexed by the variable name
         self.internals = {}
@@ -406,6 +409,7 @@ class FunctionalPortedObject(PortedObjectWithAssignments):
         assignments: list[ParameterAssignment | tuple | dict] = [],
         create_input_ports: bool = True,
         parsing_locals: dict = {},
+        **kwargs,
     ):
         """
         Construct a FunctionalPortedObject.
@@ -420,6 +424,7 @@ class FunctionalPortedObject(PortedObjectWithAssignments):
             create_input_ports: if `True`, automatically expose all parameters as input ports. See Notes for more
                 information.
             parsing_locals: a dictionary mapping strings to `sympy` objects.
+            **kwargs: arguments passed to super().__init__(). No user arguments should be supplied.
 
         info: Notes
             - The parameter of every created assignment is automatically exposed as an output port.
@@ -430,7 +435,7 @@ class FunctionalPortedObject(PortedObjectWithAssignments):
                 a wire in a parent [`CompositePortedObject`][psymple.build.CompositePortedObject].
         """
         # TODO: Functional ported objects should take lists of assignments to a list of output port
-        super().__init__(name, input_ports=input_ports, parsing_locals=parsing_locals)
+        super().__init__(name, input_ports=input_ports, parsing_locals=parsing_locals, **kwargs)
         self.add_parameter_assignments(*assignments, create_input_ports=create_input_ports)
         self.create_input_ports = create_input_ports
 
@@ -615,6 +620,7 @@ class CompositePortedObject(PortedObject):
         variable_wires: list[dict | tuple] = [],
         directed_wires: list[dict | tuple] = [],
         parsing_locals: dict = {},
+        **kwargs,
     ):
         """
         Construct a CompositePortedObject.
@@ -635,6 +641,7 @@ class CompositePortedObject(PortedObject):
             directed_wires: list of directed wires to create. See
                 [add_wires][psymple.build.CompositePortedObject.add_wires].
             parsing_locals: a dictionary mapping strings to `sympy` objects.
+            **kwargs: arguments passed to super().__init__(). No user arguments should be supplied.
 
         info: Note
             There is no automatic creation of ports in a `CompositePortedObject`
@@ -1178,7 +1185,7 @@ class CompiledPortedObject(CompositePortedObject):
         This class should not be instantiated on its own. It is formed from the `compile` methods
         of 1PortedObject1 subclasses. 
     """
-    def __init__(self, name: str, parsing_locals: dict = {}):
+    def __init__(self, name: str, parsing_locals: dict = {}, **kwargs):
         """
         Instantiate a CompiledPortedObject.
 
@@ -1186,8 +1193,9 @@ class CompiledPortedObject(CompositePortedObject):
             name: a string which must be unique for each `PortedObject` inside a common
                 [`CompositePortedObject`][psymple.build.CompositePortedObject].
             parsing_locals: a dictionary mapping strings to `sympy` objects.
+            **kwargs: arguments passed to super().__init__(). No user arguments should be supplied.
         """
-        super().__init__(name, parsing_locals=parsing_locals)
+        super().__init__(name, parsing_locals=parsing_locals, **kwargs)
         # free input parameters and (possibly) their default values
         self.input_ports = {}
         # values of output parameters in terms of input parameters
