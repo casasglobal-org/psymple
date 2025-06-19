@@ -328,23 +328,8 @@ class PortedObjectWithAssignments(PortedObject):
     Cannot be instantiated directly.
     """
 
-    def __init__(
-        self,
-        name: str,
-        input_ports: list = [],
-        output_ports: list = [],
-        variable_ports: list = [],
-        parsing_locals: dict = {},
-        **kwargs
-    ):
-        super().__init__(
-            name=name,
-            input_ports=input_ports,
-            output_ports=output_ports,
-            variable_ports=variable_ports,
-            parsing_locals=parsing_locals,
-            **kwargs
-        )
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
         self.assignments = {}
 
     def parse_assignment_entry(

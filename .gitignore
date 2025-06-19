@@ -182,3 +182,6 @@ file.png
 file.svg
 file.pdf
 Development Documents/class_structure.drawio
+dev_requirements.txt
+psymple/build/example_mro.py
+psymple/build/test_mro.py
