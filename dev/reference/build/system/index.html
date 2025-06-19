@@ -3038,7 +3038,7 @@ They expand functions available to the user when defining assignments.</p>
   <p>If function is callable, its signature will be inspected to determine the range of acceptable number of
 inputs. This is used to validate function entry in the creation of assignments.</p>
 <div class="language-text highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>&gt;&gt;&gt; from numpy import sin
-</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>&gt;&gt;&gt; system.add_utility_function(&quot;new_sin&quot;: sin)
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>&gt;&gt;&gt; system.add_utility_function(&quot;new_sin&quot;, sin)
 </span></code></pre></div>
 <p>Entering <code>new_sin(a,b)</code> in an assignment will raise an exception because <code>numpy.sin</code> accepts exactly one
 argument. A signature can be provided to restrict the number of inputs of a function. <em>This is currently
@@ -3140,7 +3140,7 @@ tuple containing exactly the symbols in the expression in the required order. Fo
 </span><span id="__span-0-172"><a id="__codelineno-0-172" name="__codelineno-0-172"></a>
 </span><span id="__span-0-173"><a id="__codelineno-0-173" name="__codelineno-0-173"></a><span class="sd">        ```</span>
 </span><span id="__span-0-174"><a id="__codelineno-0-174" name="__codelineno-0-174"></a><span class="sd">        &gt;&gt;&gt; from numpy import sin</span>
-</span><span id="__span-0-175"><a id="__codelineno-0-175" name="__codelineno-0-175"></a><span class="sd">        &gt;&gt;&gt; system.add_utility_function(&quot;new_sin&quot;: sin)</span>
+</span><span id="__span-0-175"><a id="__codelineno-0-175" name="__codelineno-0-175"></a><span class="sd">        &gt;&gt;&gt; system.add_utility_function(&quot;new_sin&quot;, sin)</span>
 </span><span id="__span-0-176"><a id="__codelineno-0-176" name="__codelineno-0-176"></a><span class="sd">        ```</span>
 </span><span id="__span-0-177"><a id="__codelineno-0-177" name="__codelineno-0-177"></a>
 </span><span id="__span-0-178"><a id="__codelineno-0-178" name="__codelineno-0-178"></a><span class="sd">        Entering `new_sin(a,b)` in an assignment will raise an exception because `numpy.sin` accepts exactly one</span>
