@@ -36,7 +36,14 @@
         }
     ],
     "title": "Psymple: A Python package for complex systems modelling",
-    "version": "1.0.2",
+    "description": "Psymple enables the creation and formal storage of complex systems models based on the principles of applied category theory.",
+    "related_identifiers": [
+        {    
+    "identifier": "10.21105/joss.07364",
+    "relation": "isSupplementTo",
+    "scheme": "doi"
+        }
+    ],
     "access_right": "open",
     "license": "GPL-3.0",
     "upload_type": "software",
