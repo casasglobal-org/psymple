@@ -172,7 +172,7 @@ class FunctionHandler:
 
             ```
             >>> from numpy import sin
-            >>> system.add_utility_function("new_sin": sin)
+            >>> system.add_utility_function("new_sin", sin)
             ```
 
             Entering `new_sin(a,b)` in an assignment will raise an exception because `numpy.sin` accepts exactly one
