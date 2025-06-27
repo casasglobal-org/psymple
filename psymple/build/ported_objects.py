@@ -933,11 +933,11 @@ class CompositePortedObject(PortedObject):
                 return self._get_child(child_name)
             elif parent_name in self.children:
                 parent = self.children[parent_name]
-                if (parent_type := type(parent)) == CompositePortedObject:
+                try:
                     return parent._get_child(child_name)
-                else:
+                except AttributeError:
                     raise TypeError(
-                        f"Ported object {parent_name} is of type {parent_type} and has no children."
+                        f"Ported object {parent_name} is of type {type(parent)} and has no children."
                     )
             else:
                 raise KeyError(f"{name} is not a child of {self.name}")
