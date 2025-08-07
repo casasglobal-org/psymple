@@ -499,7 +499,8 @@ class FunctionalPortedObject(PortedObjectWithAssignments):
                             "corresponding input port."
                         )
             self.assignments[parameter_name] = assignment
-            self.output_ports[parameter_name] = OutputPort(parameter_name)
+            self.add_output_ports(parameter_name)
+            #self.output_ports[parameter_name] = OutputPort(parameter_name)
 
     def compile(self, prefix_names: bool = False):
         """
