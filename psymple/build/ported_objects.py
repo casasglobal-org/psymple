@@ -456,6 +456,7 @@ class FunctionalPortedObject(PortedObjectWithAssignments):
         self,
         *assignments: list[ParameterAssignment | dict | tuple],
         create_input_ports: bool = True,
+        create_output_ports: bool = True,
     ):
         """
         Add parameter assignments to self.
@@ -473,6 +474,9 @@ class FunctionalPortedObject(PortedObjectWithAssignments):
 
             create_input_ports: if `True`, input ports for each free symbol in the expression of each
                 assignment will automatically be created.
+            create_output_ports: if `True`, output ports for each assignment will be automatically 
+                created. The only reason for this to be `False` would be to override some standard
+                functionality of parameter assignments. 
 
         Raises:
             ValueError: if an assignment with the same variable name is already defined in self
@@ -485,7 +489,7 @@ class FunctionalPortedObject(PortedObjectWithAssignments):
             parameter_name = assignment.parameter.name
             if parameter_name in self.assignments:
                 raise ValueError(
-                    f"Variable '{parameter_name}' in FunctionalPortedObject '{self.name}' doubly defined."
+                    f"Parameter '{parameter_name}' in FunctionalPortedObject '{self.name}' doubly defined."
                 )
             free_symbols = assignment.get_free_symbols()
             for symbol in free_symbols:
@@ -499,7 +503,8 @@ class FunctionalPortedObject(PortedObjectWithAssignments):
                             "corresponding input port."
                         )
             self.assignments[parameter_name] = assignment
-            self.add_output_ports(parameter_name)
+            if create_output_ports:
+                self.add_output_ports(parameter_name)
             #self.output_ports[parameter_name] = OutputPort(parameter_name)
 
     def compile(self, prefix_names: bool = False):

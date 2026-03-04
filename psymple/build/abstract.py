@@ -79,10 +79,13 @@ class PortedObject(ABC):
             bool: whether or not the port has a valid name
         """
         if port.name in checks:
+            """
+            TODO: Suppressing this warning due to unexpected behaviour in other packages.
             warnings.warn(
                 f"Port with name '{port.name}' doubly defined in PortedObject '{self.name}'. Port "
                 f"will not be created."
             )
+            """
             return False
         elif port.name in self.parsing_locals:
             warnings.warn(
